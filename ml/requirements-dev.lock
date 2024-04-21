@@ -17,71 +17,191 @@ aiostream==0.5.2
 annotated-types==0.6.0
     # via pydantic
 anyio==4.3.0
+    # via httpx
+    # via jupyter-server
     # via starlette
     # via watchfiles
+appnope==0.1.4
+    # via ipykernel
+argon2-cffi==23.1.0
+    # via jupyter-server
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
+arrow==1.3.0
+    # via isoduration
 asttokens==2.4.1
     # via stack-data
+async-lru==2.0.4
+    # via jupyterlab
 attrs==23.2.0
     # via aiohttp
+    # via jsonschema
+    # via referencing
     # via sigtools
-certifi==2024.2.2
+babel==2.14.0
+    # via jupyterlab-server
+beautifulsoup4==4.12.3
+    # via nbconvert
+bleach==6.1.0
+    # via nbconvert
+certifi==2022.12.7
+    # via httpcore
+    # via httpx
     # via modal
     # via requests
-charset-normalizer==3.3.2
+cffi==1.16.0
+    # via argon2-cffi-bindings
+charset-normalizer==2.1.1
     # via requests
 click==8.1.7
     # via modal
     # via typer
+comm==0.2.2
+    # via ipykernel
+    # via ipywidgets
+debugpy==1.8.1
+    # via ipykernel
 decorator==5.1.1
     # via ipython
+defusedxml==0.7.1
+    # via nbconvert
 executing==2.0.1
     # via stack-data
 fastapi==0.110.1
     # via modal
-filelock==3.13.4
+fastjsonschema==2.19.1
+    # via nbformat
+filelock==3.9.0
     # via huggingface-hub
     # via torch
     # via transformers
+fqdn==1.5.1
+    # via jsonschema
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
-fsspec==2024.3.1
+fsspec==2023.4.0
     # via huggingface-hub
     # via torch
 geoclip==1.2.0
     # via ml
 geographiclib==2.0
     # via geopy
+geojson==3.1.0
+    # via ml
 geopy==2.4.1
     # via geoclip
+    # via ml
 grpclib==0.4.7
     # via modal
+h11==0.14.0
+    # via httpcore
 h2==4.1.0
     # via grpclib
 hpack==4.0.0
     # via h2
-huggingface-hub==0.22.2
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.0
+    # via jupyterlab
+huggingface-hub==0.17.3
     # via tokenizers
     # via transformers
 hyperframe==6.0.1
     # via h2
-idna==3.7
+idna==3.4
     # via anyio
+    # via httpx
+    # via jsonschema
     # via requests
     # via yarl
+ipykernel==6.29.4
+    # via jupyter
+    # via jupyter-console
+    # via jupyterlab
+    # via ml
+    # via qtconsole
 ipython==8.23.0
+    # via ipykernel
+    # via ipywidgets
+    # via jupyter-console
+ipywidgets==8.1.2
+    # via jupyter
+isoduration==20.11.0
+    # via jsonschema
 jedi==0.19.1
     # via ipython
-jinja2==3.1.3
+jinja2==3.1.2
+    # via jupyter-server
+    # via jupyterlab
+    # via jupyterlab-server
+    # via nbconvert
+    # via pydeck
     # via torch
+json5==0.9.25
+    # via jupyterlab-server
+jsonpointer==2.4
+    # via jsonschema
+jsonschema==4.21.1
+    # via jupyter-events
+    # via jupyterlab-server
+    # via nbformat
+jsonschema-specifications==2023.12.1
+    # via jsonschema
+jupyter==1.0.0
+jupyter-client==8.6.1
+    # via ipykernel
+    # via jupyter-console
+    # via jupyter-server
+    # via nbclient
+    # via qtconsole
+jupyter-console==6.6.3
+    # via jupyter
+jupyter-core==5.7.2
+    # via ipykernel
+    # via jupyter-client
+    # via jupyter-console
+    # via jupyter-server
+    # via jupyterlab
+    # via nbclient
+    # via nbconvert
+    # via nbformat
+    # via qtconsole
+jupyter-events==0.10.0
+    # via jupyter-server
+jupyter-lsp==2.2.5
+    # via jupyterlab
+jupyter-server==2.14.0
+    # via jupyter-lsp
+    # via jupyterlab
+    # via jupyterlab-server
+    # via notebook
+    # via notebook-shim
+jupyter-server-terminals==0.5.3
+    # via jupyter-server
+jupyterlab==4.1.6
+    # via jupyterlab-vim
+    # via notebook
+jupyterlab-pygments==0.3.0
+    # via nbconvert
+jupyterlab-server==2.24.0
+    # via jupyterlab
+    # via notebook
+jupyterlab-vim==4.1.3
+jupyterlab-widgets==3.0.10
+    # via ipywidgets
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.5
+markupsafe==2.1.3
     # via jinja2
+    # via nbconvert
 matplotlib-inline==0.1.7
+    # via ipykernel
     # via ipython
 mdurl==0.1.2
     # via markdown-it-py
+mistune==3.0.2
+    # via nbconvert
 modal==0.62.87
     # via ml
 mpmath==1.3.0
@@ -90,72 +210,169 @@ multidict==6.0.5
     # via aiohttp
     # via grpclib
     # via yarl
-networkx==3.3
+nbclient==0.10.0
+    # via nbconvert
+nbconvert==7.16.3
+    # via jupyter
+    # via jupyter-server
+nbformat==5.10.4
+    # via jupyter-server
+    # via nbclient
+    # via nbconvert
+nest-asyncio==1.6.0
+    # via ipykernel
+networkx==3.2.1
     # via torch
-numpy==1.26.4
+notebook==7.1.3
+    # via jupyter
+notebook-shim==0.2.4
+    # via jupyterlab
+    # via notebook
+numpy==1.26.3
     # via geoclip
     # via pandas
+    # via pydeck
+    # via shapely
     # via torchvision
     # via transformers
-packaging==24.0
+overrides==7.7.0
+    # via jupyter-server
+packaging==22.0
     # via huggingface-hub
+    # via ipykernel
+    # via jupyter-server
+    # via jupyterlab
+    # via jupyterlab-server
+    # via nbconvert
+    # via qtconsole
+    # via qtpy
     # via transformers
 pandas==2.2.2
     # via geoclip
     # via ml
+pandocfilters==1.5.1
+    # via nbconvert
 parso==0.8.4
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==10.3.0
+pillow==10.2.0
     # via geoclip
+    # via streetview
     # via torchvision
+platformdirs==4.2.0
+    # via jupyter-core
+prometheus-client==0.20.0
+    # via jupyter-server
 prompt-toolkit==3.0.43
     # via ipython
+    # via jupyter-console
 protobuf==5.26.1
     # via modal
+psutil==5.9.8
+    # via ipykernel
 ptyprocess==0.7.0
     # via pexpect
+    # via terminado
 pure-eval==0.2.2
     # via stack-data
+pycparser==2.22
+    # via cffi
 pydantic==2.7.0
     # via fastapi
+    # via streetview
 pydantic-core==2.18.1
     # via pydantic
+pydeck==0.8.0
 pygments==2.17.2
     # via ipython
+    # via jupyter-console
+    # via nbconvert
+    # via qtconsole
     # via rich
+pyproject-local-kernel==0.5.5
+    # via ml
 python-dateutil==2.9.0.post0
+    # via arrow
+    # via jupyter-client
     # via pandas
+python-dotenv==1.0.1
+    # via ml
+python-json-logger==2.0.7
+    # via jupyter-events
 pytz==2024.1
     # via pandas
 pyyaml==6.0.1
     # via huggingface-hub
+    # via jupyter-events
     # via transformers
+pyzmq==26.0.0
+    # via ipykernel
+    # via jupyter-client
+    # via jupyter-console
+    # via jupyter-server
+    # via qtconsole
+qtconsole==5.5.1
+    # via jupyter
+qtpy==2.4.1
+    # via qtconsole
+referencing==0.34.0
+    # via jsonschema
+    # via jsonschema-specifications
+    # via jupyter-events
 regex==2024.4.16
     # via transformers
-requests==2.31.0
+requests==2.28.1
     # via huggingface-hub
+    # via jupyterlab-server
+    # via streetview
     # via transformers
+rfc3339-validator==0.1.4
+    # via jsonschema
+    # via jupyter-events
+rfc3986-validator==0.1.1
+    # via jsonschema
+    # via jupyter-events
 rich==13.7.1
     # via modal
+rpds-py==0.18.0
+    # via jsonschema
+    # via referencing
+ruff==0.4.0
+    # via ml
 safetensors==0.4.3
     # via transformers
+send2trash==1.8.3
+    # via jupyter-server
+shapely==2.0.4
+    # via ml
 sigtools==4.0.1
     # via synchronicity
 six==1.16.0
     # via asttokens
+    # via bleach
     # via python-dateutil
+    # via rfc3339-validator
 sniffio==1.3.1
     # via anyio
+    # via httpx
+soupsieve==2.5
+    # via beautifulsoup4
 stack-data==0.6.3
     # via ipython
 starlette==0.37.2
     # via fastapi
+streetview==0.0.6
+    # via ml
 sympy==1.12
     # via torch
 synchronicity==0.6.7
     # via modal
+terminado==0.18.1
+    # via jupyter-server
+    # via jupyter-server-terminals
+tinycss2==1.2.1
+    # via nbconvert
 tokenizers==0.15.2
     # via transformers
 toml==0.10.2
@@ -167,21 +384,43 @@ torch==2.2.2
 torchvision==0.17.2
     # via geoclip
     # via ml
-tqdm==4.66.2
+tornado==6.4
+    # via ipykernel
+    # via jupyter-client
+    # via jupyter-server
+    # via jupyterlab
+    # via notebook
+    # via terminado
+tqdm==4.64.1
     # via huggingface-hub
     # via transformers
 traitlets==5.14.2
+    # via comm
+    # via ipykernel
     # via ipython
+    # via ipywidgets
+    # via jupyter-client
+    # via jupyter-console
+    # via jupyter-core
+    # via jupyter-events
+    # via jupyter-server
+    # via jupyterlab
     # via matplotlib-inline
-transformers==4.39.3
+    # via nbclient
+    # via nbconvert
+    # via nbformat
+    # via qtconsole
+transformers==4.35.2
     # via geoclip
 typer==0.9.4
     # via modal
 types-certifi==2021.10.8.3
     # via modal
+types-python-dateutil==2.9.0.20240316
+    # via arrow
 types-toml==0.10.8.20240310
     # via modal
-typing-extensions==4.11.0
+typing-extensions==4.8.0
     # via aiostream
     # via fastapi
     # via huggingface-hub
@@ -193,11 +432,22 @@ typing-extensions==4.11.0
     # via typer
 tzdata==2024.1
     # via pandas
-urllib3==2.2.1
+uri-template==1.3.0
+    # via jsonschema
+urllib3==1.26.13
     # via requests
 watchfiles==0.21.0
     # via modal
 wcwidth==0.2.13
     # via prompt-toolkit
+webcolors==1.13
+    # via jsonschema
+webencodings==0.5.1
+    # via bleach
+    # via tinycss2
+websocket-client==1.7.0
+    # via jupyter-server
+widgetsnbextension==4.0.10
+    # via ipywidgets
 yarl==1.9.4
     # via aiohttp

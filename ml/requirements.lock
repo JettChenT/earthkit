@@ -19,56 +19,85 @@ annotated-types==0.6.0
 anyio==4.3.0
     # via starlette
     # via watchfiles
+appnope==0.1.4
+    # via ipykernel
+asttokens==2.4.1
+    # via stack-data
 attrs==23.2.0
     # via aiohttp
     # via sigtools
-certifi==2024.2.2
+certifi==2022.12.7
     # via modal
     # via requests
-charset-normalizer==3.3.2
+charset-normalizer==2.1.1
     # via requests
 click==8.1.7
     # via modal
     # via typer
+comm==0.2.2
+    # via ipykernel
+debugpy==1.8.1
+    # via ipykernel
+decorator==5.1.1
+    # via ipython
+executing==2.0.1
+    # via stack-data
 fastapi==0.110.1
     # via modal
-filelock==3.13.4
+filelock==3.9.0
     # via huggingface-hub
     # via torch
     # via transformers
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
-fsspec==2024.3.1
+fsspec==2023.4.0
     # via huggingface-hub
     # via torch
 geoclip==1.2.0
     # via ml
 geographiclib==2.0
     # via geopy
+geojson==3.1.0
+    # via ml
 geopy==2.4.1
     # via geoclip
+    # via ml
 grpclib==0.4.7
     # via modal
 h2==4.1.0
     # via grpclib
 hpack==4.0.0
     # via h2
-huggingface-hub==0.22.2
+huggingface-hub==0.17.3
     # via tokenizers
     # via transformers
 hyperframe==6.0.1
     # via h2
-idna==3.7
+idna==3.4
     # via anyio
     # via requests
     # via yarl
-jinja2==3.1.3
+ipykernel==6.29.4
+    # via ml
+ipython==8.23.0
+    # via ipykernel
+jedi==0.19.1
+    # via ipython
+jinja2==3.1.2
     # via torch
+jupyter-client==8.6.1
+    # via ipykernel
+jupyter-core==5.7.2
+    # via ipykernel
+    # via jupyter-client
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.5
+markupsafe==2.1.3
     # via jinja2
+matplotlib-inline==0.1.7
+    # via ipykernel
+    # via ipython
 mdurl==0.1.2
     # via markdown-it-py
 modal==0.62.87
@@ -79,54 +108,93 @@ multidict==6.0.5
     # via aiohttp
     # via grpclib
     # via yarl
-networkx==3.3
+nest-asyncio==1.6.0
+    # via ipykernel
+networkx==3.2.1
     # via torch
-numpy==1.26.4
+numpy==1.26.3
     # via geoclip
     # via pandas
+    # via shapely
     # via torchvision
     # via transformers
-packaging==24.0
+packaging==22.0
     # via huggingface-hub
+    # via ipykernel
     # via transformers
 pandas==2.2.2
     # via geoclip
     # via ml
-pillow==10.3.0
+parso==0.8.4
+    # via jedi
+pexpect==4.9.0
+    # via ipython
+pillow==10.2.0
     # via geoclip
+    # via streetview
     # via torchvision
+platformdirs==4.2.0
+    # via jupyter-core
+prompt-toolkit==3.0.43
+    # via ipython
 protobuf==5.26.1
     # via modal
+psutil==5.9.8
+    # via ipykernel
+ptyprocess==0.7.0
+    # via pexpect
+pure-eval==0.2.2
+    # via stack-data
 pydantic==2.7.0
     # via fastapi
+    # via streetview
 pydantic-core==2.18.1
     # via pydantic
 pygments==2.17.2
+    # via ipython
     # via rich
+pyproject-local-kernel==0.5.5
+    # via ml
 python-dateutil==2.9.0.post0
+    # via jupyter-client
     # via pandas
+python-dotenv==1.0.1
+    # via ml
 pytz==2024.1
     # via pandas
 pyyaml==6.0.1
     # via huggingface-hub
     # via transformers
+pyzmq==26.0.0
+    # via ipykernel
+    # via jupyter-client
 regex==2024.4.16
     # via transformers
-requests==2.31.0
+requests==2.28.1
     # via huggingface-hub
+    # via streetview
     # via transformers
 rich==13.7.1
     # via modal
+ruff==0.4.0
+    # via ml
 safetensors==0.4.3
     # via transformers
+shapely==2.0.4
+    # via ml
 sigtools==4.0.1
     # via synchronicity
 six==1.16.0
+    # via asttokens
     # via python-dateutil
 sniffio==1.3.1
     # via anyio
+stack-data==0.6.3
+    # via ipython
 starlette==0.37.2
     # via fastapi
+streetview==0.0.6
+    # via ml
 sympy==1.12
     # via torch
 synchronicity==0.6.7
@@ -142,10 +210,20 @@ torch==2.2.2
 torchvision==0.17.2
     # via geoclip
     # via ml
-tqdm==4.66.2
+tornado==6.4
+    # via ipykernel
+    # via jupyter-client
+tqdm==4.64.1
     # via huggingface-hub
     # via transformers
-transformers==4.39.3
+traitlets==5.14.3
+    # via comm
+    # via ipykernel
+    # via ipython
+    # via jupyter-client
+    # via jupyter-core
+    # via matplotlib-inline
+transformers==4.35.2
     # via geoclip
 typer==0.9.4
     # via modal
@@ -153,7 +231,7 @@ types-certifi==2021.10.8.3
     # via modal
 types-toml==0.10.8.20240310
     # via modal
-typing-extensions==4.11.0
+typing-extensions==4.8.0
     # via aiostream
     # via fastapi
     # via huggingface-hub
@@ -165,9 +243,11 @@ typing-extensions==4.11.0
     # via typer
 tzdata==2024.1
     # via pandas
-urllib3==2.2.1
+urllib3==1.26.13
     # via requests
 watchfiles==0.21.0
     # via modal
+wcwidth==0.2.13
+    # via prompt-toolkit
 yarl==1.9.4
     # via aiohttp
