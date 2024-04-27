@@ -72,6 +72,7 @@ h2==4.1.0
 hpack==4.0.0
     # via h2
 huggingface-hub==0.17.3
+    # via timm
     # via tokenizers
     # via transformers
 hyperframe==6.0.1
@@ -184,6 +185,7 @@ pytz==2024.1
 pyyaml==6.0.1
     # via huggingface-hub
     # via pytorch-lightning
+    # via timm
     # via transformers
 pyzmq==26.0.0
     # via ipykernel
@@ -200,6 +202,7 @@ rich==13.7.1
 ruff==0.4.0
     # via ml
 safetensors==0.4.3
+    # via timm
     # via transformers
 scikit-learn==1.4.2
     # via pytorch-metric-learning
@@ -228,6 +231,8 @@ synchronicity==0.6.7
     # via modal
 threadpoolctl==3.4.0
     # via scikit-learn
+timm==0.9.16
+    # via ml
 tokenizers==0.15.2
     # via transformers
 toml==0.10.2
@@ -237,6 +242,7 @@ torch==2.2.2
     # via ml
     # via pytorch-lightning
     # via pytorch-metric-learning
+    # via timm
     # via torchmetrics
     # via torchvision
 torchmetrics==1.0.3
@@ -245,6 +251,7 @@ torchmetrics==1.0.3
 torchvision==0.17.2
     # via geoclip
     # via ml
+    # via timm
 tornado==6.4
     # via ipykernel
     # via jupyter-client

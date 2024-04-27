@@ -2,6 +2,7 @@ import modal
 from modal import Secret, Stub, gpu, build, enter, method
 from typing import List, Tuple, Any
 import asyncio
+from .common import cosine_similarity
 import os
 
 import modal
@@ -71,14 +72,7 @@ class VPRModel:
             ).to("cuda")
         )
 
-        def _cosine_similarity(vec1: torch.Tensor, vec2: torch.Tensor) -> torch.Tensor:
-            dot_product = vec1 @ vec2.T
-            norm_vec1 = torch.norm(vec1)
-            norm_vec2 = torch.norm(vec2, dim=1)
-            similarity = dot_product / (norm_vec1 * norm_vec2)
-            return similarity
-
-        cos_sim = _cosine_similarity(img_tensor, pano_tensor)
+        cos_sim = cosine_similarity(img_tensor, pano_tensor)
         return cos_sim.tolist()[0]
 
 

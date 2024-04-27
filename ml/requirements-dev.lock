@@ -107,6 +107,7 @@ httpcore==1.0.5
 httpx==0.27.0
     # via jupyterlab
 huggingface-hub==0.17.3
+    # via timm
     # via tokenizers
     # via transformers
 hyperframe==6.0.1
@@ -325,6 +326,7 @@ pyyaml==6.0.1
     # via huggingface-hub
     # via jupyter-events
     # via pytorch-lightning
+    # via timm
     # via transformers
 pyzmq==26.0.0
     # via ipykernel
@@ -362,6 +364,7 @@ rpds-py==0.18.0
 ruff==0.4.0
     # via ml
 safetensors==0.4.3
+    # via timm
     # via transformers
 scikit-learn==1.4.2
     # via pytorch-metric-learning
@@ -400,6 +403,8 @@ terminado==0.18.1
     # via jupyter-server-terminals
 threadpoolctl==3.4.0
     # via scikit-learn
+timm==0.9.16
+    # via ml
 tinycss2==1.2.1
     # via nbconvert
 tokenizers==0.15.2
@@ -411,6 +416,7 @@ torch==2.2.2
     # via ml
     # via pytorch-lightning
     # via pytorch-metric-learning
+    # via timm
     # via torchmetrics
     # via torchvision
 torchmetrics==1.0.3
@@ -419,6 +425,7 @@ torchmetrics==1.0.3
 torchvision==0.17.2
     # via geoclip
     # via ml
+    # via timm
 tornado==6.4
     # via ipykernel
     # via jupyter-client
