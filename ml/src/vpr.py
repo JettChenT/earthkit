@@ -8,8 +8,16 @@ import modal
 
 stub = Stub("vpr")
 
-inference_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "torch==2.2.2", "pillow==10.3.0", "torchvision==0.17.2"
+inference_image = modal.Image.debian_slim(python_version="3.10").pip_install(
+    "torch==2.2.2",
+    "pillow==10.3.0",
+    "torchvision==0.17.2",
+    "pytorch-lightning",
+    "pytorch-metric-learning",
+    "faiss-gpu",
+    "torchmetrics",
+    "prettytable",
+    "xformers"
 )
 
 with inference_image.imports():
@@ -23,21 +31,13 @@ with inference_image.imports():
 class VPRModel:
     @build()
     def build(self):
-        _ = torch.hub.load(
-            "gmberton/eigenplaces",
-            "get_trained_model",
-            backbone="ResNet50",
-            fc_output_dim=2048,
-        ).to("cuda")
+        _ = torch.hub.load("serizba/salad", "dinov2_salad")
 
     @enter()
     def enter(self):
-        self.model = torch.hub.load(
-            "gmberton/eigenplaces",
-            "get_trained_model",
-            backbone="ResNet50",
-            fc_output_dim=2048,
-        ).to("cuda")
+        self.model = torch.hub.load("serizba/salad", "dinov2_salad")
+        self.model.eval()
+        self.model.cuda()
 
         self.base_transform = transforms.Compose(
             [
@@ -45,11 +45,12 @@ class VPRModel:
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
                 ),
+                transforms.Resize((644, 644))
             ]
         )
 
     @method()
-    def inference(self, image: bytes, panos: List[bytes], n: int = 5, batch_size=200):
+    def inference(self, image: bytes, panos: List[bytes], n: int = 5, batch_size=40):
         pano_tensors = []
         for i in range(0, len(panos), batch_size):
             batch = panos[i : i + batch_size]
