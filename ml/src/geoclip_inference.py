@@ -23,4 +23,5 @@ def main():
     image = urllib.request.urlopen(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/B%C3%B8rsen_1.jpg/242px-B%C3%B8rsen_1.jpg"
     ).read()
+    print("image downloaded")
     print(geoclip_inference.remote(image))

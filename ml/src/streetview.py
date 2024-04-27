@@ -72,10 +72,13 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
     return Coords(list(filter(lambda x: x, mtrix)))
 
 
+import uuid
+
 @stub.function(image=sv_image, secrets=[Secret.from_name("google-maps")])
-def streetview_locate(panos: Coords, image: bytes, batch_size=600):
+def streetview_locate(panos: Coords, image: bytes, batch_size=600, save_to_local=False):
     MAPS_KEY = os.environ["GOOGLE_MAPS_API_KEY"]
     images = []
+    session_id = str(uuid.uuid4()) if save_to_local else None
 
     def fetch_image(args):
         i, pano, dir = args
@@ -83,6 +86,11 @@ def streetview_locate(panos: Coords, image: bytes, batch_size=600):
         res = get_streetview(pano.aux["pano_id"], MAPS_KEY, heading=dir)
         res.save(buf, format="PNG")
         buf.seek(0)
+        if save_to_local:
+            os.makedirs(f"tmp/{session_id}", exist_ok=True)
+            file_path = f"tmp/{session_id}/{pano.aux['pano_id']}_dir_{dir}.png"
+            with open(file_path, "wb") as f:
+                f.write(buf.getvalue())
         return (i, buf.getvalue(), dir)
 
     print("fetching streetviews...")
@@ -111,7 +119,7 @@ def streetview_locate(panos: Coords, image: bytes, batch_size=600):
     for i, sim in enumerate(similarity):
         cord_i = images[i][0]
         cord = panos[cord_i]
-        if "max_xim" not in cord.aux:
+        if "max_sim" not in cord.aux:
             cord.aux["max_sim"] = sim
             cord.aux["max_sim_ind"] = 0
             cord.aux["sims"] = [{"dir": images[i][2], "sim": sim, "index": i}]
@@ -126,6 +134,8 @@ def streetview_locate(panos: Coords, image: bytes, batch_size=600):
 
 @stub.local_entrypoint()
 def main():
+    import dotenv
+    dotenv.load_dotenv()
     bounds = Bounds.from_points(
         Point(lat=37.789733, lon=-122.402614), Point(lat=37.784409, lon=-122.394974)
     )
@@ -133,6 +143,7 @@ def main():
     sampled_views: Coords = sample_streetviews.remote(bounds, interval)
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()
-    proced_views: Coords = streetview_locate.remote(sampled_views, im)
+    proced_views: Coords = streetview_locate.local(sampled_views, im, save_to_local=True)
     print(proced_views[:30])
-    sampled_views.plot()
+    sampled_views.plot("tmp/sampled.html")
+    proced_views[:30].plot("tmp/processed.html")

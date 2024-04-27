@@ -70,10 +70,10 @@ class Coords:
                 sampled_coords.append(point)
         return sampled_coords
 
-    def plot(self, radius=0.3):
+    def plot(self, f_out="tmp/panos_plot.html", radius=0.3):
         import pydeck as pdk
 
-        plt_coords = [{"lat": x.lat, "lng": x.lon} for x in self.coords]
+        plt_coords = [{"lat": x.lat, "lng": x.lon, "aux":x.aux} for x in self.coords]
         layer = pdk.Layer(
             "ScatterplotLayer",
             plt_coords,
@@ -81,6 +81,7 @@ class Coords:
             radius_scale=6,
             get_radius=radius,
             get_fill_color=[255, 140, 0],
+            pickable=True
         )
 
         # Calculate the upper and lower bounds for latitude and longitude
@@ -96,11 +97,14 @@ class Coords:
         )
 
         r = pdk.Deck(layers=[layer], initial_view_state=view_state)
-        r.to_html("tmp/panos_plot.html")
-        print("Plot generated and saved as 'panos_plot.html'.")
+        r.to_html(f_out)
+        print(f"Plot generated and saved to '{f_out}'.")
 
     def __getitem__(self, idx):
-        return self.coords[idx]
+        if isinstance(idx, int):
+            return self.coords[idx]
+        elif isinstance(idx, slice):
+            return Coords(self.coords[idx])
 
     def __iter__(self):
         return iter(self.coords)

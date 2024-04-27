@@ -42,7 +42,7 @@ decorator==5.1.1
     # via ipython
 executing==2.0.1
     # via stack-data
-fastapi==0.110.1
+fastapi==0.110.2
     # via modal
 filelock==3.9.0
     # via huggingface-hub
@@ -100,7 +100,7 @@ matplotlib-inline==0.1.7
     # via ipython
 mdurl==0.1.2
     # via markdown-it-py
-modal==0.62.87
+modal==0.62.98
     # via ml
 mpmath==1.3.0
     # via sympy

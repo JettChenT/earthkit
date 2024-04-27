@@ -5,3 +5,4 @@ __pycache__
 tmp/
 .images
 .env
+.DS_STORE
