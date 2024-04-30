@@ -37,6 +37,10 @@ click==8.1.7
     # via typer
 comm==0.2.2
     # via ipykernel
+contourpy==1.2.1
+    # via matplotlib
+cycler==0.12.1
+    # via matplotlib
 debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
@@ -49,6 +53,8 @@ filelock==3.9.0
     # via huggingface-hub
     # via torch
     # via transformers
+fonttools==4.51.0
+    # via matplotlib
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
@@ -96,6 +102,8 @@ jupyter-client==8.6.1
 jupyter-core==5.7.2
     # via ipykernel
     # via jupyter-client
+kiwisolver==1.4.5
+    # via matplotlib
 lightning-utilities==0.11.2
     # via pytorch-lightning
     # via torchmetrics
@@ -103,6 +111,8 @@ markdown-it-py==3.0.0
     # via rich
 markupsafe==2.1.3
     # via jinja2
+matplotlib==3.8.4
+    # via ml
 matplotlib-inline==0.1.7
     # via ipykernel
     # via ipython
@@ -121,7 +131,9 @@ nest-asyncio==1.6.0
 networkx==3.2.1
     # via torch
 numpy==1.26.3
+    # via contourpy
     # via geoclip
+    # via matplotlib
     # via pandas
     # via pytorch-lightning
     # via pytorch-metric-learning
@@ -135,6 +147,7 @@ packaging==22.0
     # via huggingface-hub
     # via ipykernel
     # via lightning-utilities
+    # via matplotlib
     # via pytorch-lightning
     # via torchmetrics
     # via transformers
@@ -147,6 +160,7 @@ pexpect==4.9.0
     # via ipython
 pillow==10.2.0
     # via geoclip
+    # via matplotlib
     # via streetview
     # via torchvision
 platformdirs==4.2.0
@@ -169,10 +183,13 @@ pydantic-core==2.18.1
 pygments==2.17.2
     # via ipython
     # via rich
+pyparsing==3.1.2
+    # via matplotlib
 pyproject-local-kernel==0.5.5
     # via ml
 python-dateutil==2.9.0.post0
     # via jupyter-client
+    # via matplotlib
     # via pandas
 python-dotenv==1.0.1
     # via ml

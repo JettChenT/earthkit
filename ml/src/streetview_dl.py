@@ -1,7 +1,7 @@
 import modal
 from modal import Secret, Stub
 from typing import List, Tuple
-from streetview import search_panoramas, get_streetview
+from streetview import search_panoramas, get_streetview, get_panorama
 from concurrent.futures import ThreadPoolExecutor
 from .geo import Coords, Point, Bounds, Distance
 from io import BytesIO

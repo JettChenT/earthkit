@@ -6,3 +6,4 @@ tmp/
 .images
 .env
 .DS_Store
+weights/

@@ -23,7 +23,7 @@ image = (
         "pandas",
         "tqdm"
     )
-    .copy_local_dir("./weights")
+    .copy_local_dir("./weights", "/weights")
 )
 
 @stub.cls(gpu=gpu.A10G(), image=image)
@@ -31,7 +31,7 @@ class CrossViewModel:
     @enter()
     def build(self):
         self.model = TimmModel("convnext_base.fb_in22k_ft_in1k_384", pretrained=True, img_size=384)
-        model_state_dict = torch.load("./weights/s4geo_cvusa_weights_e40_98.6830.pth", map_location=torch.device("cuda"))
+        model_state_dict = torch.load("/weights/s4geo_cvusa_weights_e40_98.6830.pth", map_location=torch.device("cuda"))
         self.model.load_state_dict(model_state_dict)
         self.model = self.model.to(torch.device("cuda"))
         self.model.eval()
@@ -56,6 +56,6 @@ class CrossViewModel:
         src_features = torch.nn.functional.normalize(src_features, dim=-1)
         target_features = torch.nn.functional.normalize(target_features, dim=-1)
 
-        similarity = cosine_similarity(src_features, target_features.t())
+        similarity = cosine_similarity(src_features, target_features)
 
         return similarity.tolist()
