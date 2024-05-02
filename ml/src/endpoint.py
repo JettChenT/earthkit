@@ -1,6 +1,7 @@
 from modal import App, asgi_app
 from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, create_model, ValidationError
 import modal
 from typing import List, Type, TypeVar
@@ -12,6 +13,15 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
 )
 
 web_app = FastAPI()
+
+web_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app = App("ek-endpoint")
 
 class SampleStreetviewsRequest(BaseModel):
