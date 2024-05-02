@@ -31,10 +31,10 @@ const sideBarData: SideBarItem[] = [
   },
 ];
 
-export const Sidebar = () => {
+export default function Sidebar() {
   const { tool, setTool } = useStore();
   return (
-    <div className="flex-1">
+    <div className="flex-initial w-44 py-5">
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
         {sideBarData.map((item) => (
           <button
@@ -51,4 +51,4 @@ export const Sidebar = () => {
       </nav>
     </div>
   );
-};
+}
