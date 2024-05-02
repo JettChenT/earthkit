@@ -27,6 +27,7 @@ export default function MapDisplay() {
         {layers.map((layer) => {
           return (
             <ScatterplotLayer
+              key={layer.id}
               id={layer.id}
               data={layer.coords}
               getPosition={(d) => [d.lat, d.lon]}
