@@ -18,6 +18,8 @@ def satellite_locate(target: bytes, bounds: Bounds, zoom = 20):
     prediction_res = CrossViewModel().predict.remote(images, target)
     for (i, r) in enumerate(prediction_res):
         res[i].aux['sim'] = r
+        res[i].aux.pop('image', None)
+    res.coords.sort(key=lambda x: x.aux['sim'])
     return res
 
 @stub.local_entrypoint()

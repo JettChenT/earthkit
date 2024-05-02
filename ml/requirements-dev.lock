@@ -72,7 +72,8 @@ defusedxml==0.7.1
     # via nbconvert
 executing==2.0.1
     # via stack-data
-fastapi==0.110.2
+fastapi==0.110.3
+    # via ml
     # via modal
 fastjsonschema==2.19.1
     # via nbformat
@@ -308,10 +309,11 @@ pure-eval==0.2.2
     # via stack-data
 pycparser==2.22
     # via cffi
-pydantic==2.7.0
+pydantic==2.7.1
     # via fastapi
+    # via ml
     # via streetview
-pydantic-core==2.18.1
+pydantic-core==2.18.2
     # via pydantic
 pydeck==0.8.0
 pygments==2.17.2
@@ -333,6 +335,8 @@ python-dotenv==1.0.1
     # via ml
 python-json-logger==2.0.7
     # via jupyter-events
+python-multipart==0.0.9
+    # via ml
 pytorch-lightning==2.2.3
     # via ml
 pytorch-metric-learning==2.5.0

@@ -15,7 +15,7 @@ def geoclip_inference(image: bytes):
 
     model = GeoCLIP().to("cuda")
     top_pred_gps, top_pred_labels = model.predict(io.BytesIO(image), top_k=20)
-    return top_pred_gps, top_pred_labels
+    return top_pred_gps.tolist(), top_pred_labels.tolist()
 
 
 @stub.local_entrypoint()
