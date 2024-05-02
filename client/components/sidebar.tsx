@@ -36,6 +36,7 @@ export default function Sidebar() {
   return (
     <div className="flex-initial w-44 py-5">
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        <h1 className="text-2xl font-bold mb-3 ml-2">EarthKit</h1>
         {sideBarData.map((item) => (
           <button
             key={item.tool}

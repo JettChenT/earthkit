@@ -4,6 +4,7 @@ import DeckGL from "@deck.gl/react";
 import { MapView, MapViewState } from "@deck.gl/core";
 import { LineLayer } from "@deck.gl/layers";
 import { Map } from "react-map-gl";
+import Operations from "./ops";
 
 const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -122.41669,
@@ -20,6 +21,7 @@ export default function MapDisplay() {
           mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         />
+        <Operations />
       </DeckGL>
     </div>
   );
