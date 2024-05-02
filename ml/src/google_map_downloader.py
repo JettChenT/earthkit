@@ -30,9 +30,8 @@ def download_tile(x, y, zoom):
         image_data = response.read()
         image = BytesIO(image_data).read()
     pnt = tile_to_lat_lng(x, y, zoom)
-    pnt.aux.update(
-        {'image': image, 'x': x, 'y': y, 'zoom': zoom}
-    )
+    # print(f"Downloading tile: {x}, {y}, {zoom}")
+    pnt.aux = {'image': image, 'x': x, 'y': y, 'zoom': zoom}
     return pnt
 
 def download_google_map_area(bounds: Bounds, zoom=17) -> Coords:
@@ -50,6 +49,8 @@ def download_google_map_area(bounds: Bounds, zoom=17) -> Coords:
     r_x, r_y = lat_lng_to_tile(bounds.hi, zoom)
     start_x, start_y = min(l_x, r_x), min(l_y, r_y)
     end_x, end_y = max(l_x, r_x), max(l_y, r_y)
+    print(f"Starting tile: {start_x}, {start_y}")
+    print(f"Ending tile: {end_x}, {end_y}")
 
     with ThreadPoolExecutor() as executor:
         total_tiles = (end_x - start_x + 1) * (end_y - start_y + 1)
@@ -84,19 +85,22 @@ def main():
     zoom = 20 
     try:
         tiles = download_google_map_area(bounds, zoom)
+        print(f"{len(tiles)} tiles downloaded")
         if not os.path.exists('tiles'):
             os.makedirs('tiles')
-        tile_width, tile_height = tiles[0].aux['image'].size
+        tile_width, tile_height = Image.open(BytesIO(tiles[0].aux['image'])).size
         total_width = (max(x for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles]) - min(x for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles]) + 1) * tile_width
         total_height = (max(y for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles]) - min(y for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles]) + 1) * tile_height
         stitched_image = Image.new('RGB', (total_width, total_height))
         fig, ax = plt.subplots()
         for tile in tiles:
-            x, y, image = tile.aux['x'], tile.aux['y'], tile.aux['image']
+            x, y, image = tile.aux['x'], tile.aux['y'], Image.open(BytesIO(tile.aux['image']))
+            print(x,y,tile.lat,tile.lon)
             top_left_x = (x - min(x for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles])) * tile_width
             top_left_y = (y - min(y for x, y, image in [(tile.aux['x'], tile.aux['y'], tile.aux['image']) for tile in tiles])) * tile_height
             stitched_image.paste(image, (top_left_x, top_left_y))
             rect = Rectangle((top_left_x, top_left_y), tile_width, tile_height, fill=False, color='red')
+            image.save(f"tiles/{x}_{y}_{zoom}.png")
             ax.add_patch(rect)
 
         ax.imshow(stitched_image)

@@ -108,6 +108,9 @@ class Coords:
 
     def __iter__(self):
         return iter(self.coords)
+    
+    def __len__(self):
+        return len(self.coords)
 
 
 @attr.s
