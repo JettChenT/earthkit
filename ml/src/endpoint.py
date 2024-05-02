@@ -4,8 +4,8 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, create_model, ValidationError
 import modal
 from typing import List, Type, TypeVar
-import requests
 from . import schema, geo
+from .utils import proc_im_url
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geopy==2.4.1", "requests==2.28.1"
@@ -35,14 +35,17 @@ class SVLocateRequest(BaseModel):
 @web_app.post("/streetview/locate")
 def streetview_locate(request: SVLocateRequest):
     f = modal.Function.lookup("streetview-locate", "streetview_locate")
-    img = requests.get(request.image_url).content
+    img = proc_im_url(request.image_url)
     res: geo.Coords = f.remote(request.coords.to_geo(), img)
     return schema.Coords.from_geo(res)
 
+class GeoclipRequest(BaseModel):
+    image_url: str
+
 @web_app.post('/geoclip')
-def geoclip_inference(image_url: str):
+def geoclip_inference(request: GeoclipRequest):
     f = modal.Function.lookup("geoclip", "geoclip_inference")
-    img = requests.get(image_url).content
+    img = proc_im_url(request.image_url)
     res_gps, res_pred = f.remote(img)
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[0], lat=gps[1], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
@@ -56,7 +59,7 @@ class SatelliteLocateRequest(BaseModel):
 @web_app.post("/satellite/locate")
 def satellite_locate(request: SatelliteLocateRequest):
     f = modal.Function.lookup("satellite", "satellite_locate")
-    img = requests.get(request.image_url).content
+    img = proc_im_url(request.image_url)
     res: geo.Coords = f.remote(img, request.bounds.to_geo())
     return schema.Coords.from_geo(res)
 
