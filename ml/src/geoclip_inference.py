@@ -1,6 +1,6 @@
 import modal
 from modal import gpu, build, enter, method
-from geoclip import GeoCLIP
+from .geoclip_mod.gclip import GeoCLIP
 import urllib.request
 import io
 
@@ -11,19 +11,15 @@ app = modal.App("geoclip", image=image)
 
 @app.cls(
     gpu=gpu.A10G(),
-    enable_memory_snapshot=True
 )
 class GeoCLIPModel:
     @build()
     def build(self):
         _ = GeoCLIP()
-
-    @enter(snap=True)
-    def load(self):
-        self.model = GeoCLIP()
     
-    @enter(snap=False)
+    @enter()
     def setup(self):
+        self.model = GeoCLIP()
         self.model = self.model.to("cuda")
     
     @method()

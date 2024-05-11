@@ -307,6 +307,7 @@ ptyprocess==0.7.0
     # via terminado
 pure-eval==0.2.2
     # via stack-data
+py-spy==0.3.14
 pycparser==2.22
     # via cffi
 pydantic==2.7.1
@@ -489,6 +490,7 @@ typing-extensions==4.8.0
     # via aiostream
     # via fastapi
     # via huggingface-hub
+    # via ipython
     # via lightning-utilities
     # via modal
     # via pydantic

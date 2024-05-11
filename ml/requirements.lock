@@ -300,6 +300,7 @@ typing-extensions==4.8.0
     # via aiostream
     # via fastapi
     # via huggingface-hub
+    # via ipython
     # via lightning-utilities
     # via modal
     # via pydantic
