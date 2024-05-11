@@ -1,20 +1,22 @@
 import { FileUploader } from "react-drag-drop-files";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { API_URL } from "@/lib/constants";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   DeckGL,
   FlyToInterpolator,
   MapViewState,
+  PickingInfo,
   ScatterplotLayer,
   WebMercatorViewport,
 } from "deck.gl";
 import { INITIAL_VIEW_STATE } from "../map";
 import { Map } from "react-map-gl";
 import OperationContainer from "./ops";
-import { Coords, getbbox } from "@/lib/geo";
+import { Coords, Point, getbbox } from "@/lib/geo";
 
 const fileTypes = ["JPG", "PNG", "GIF"];
 
@@ -37,7 +39,6 @@ export default function GeoCLIPPanel() {
   const onInference = () => {
     setIsRunning(true);
     setPredictions(null);
-    setViewState(INITIAL_VIEW_STATE);
     fetch(`${API_URL}/geoclip`, {
       method: "POST",
       body: JSON.stringify({
@@ -83,9 +84,15 @@ export default function GeoCLIPPanel() {
   const onCancel = () => {
     setIsRunning(false);
     setImage(null);
+    setPredictions(null);
+    setViewState({
+      ...INITIAL_VIEW_STATE,
+      transitionInterpolator: new FlyToInterpolator({ speed: 4 }),
+      transitionDuration: "auto",
+    });
   };
 
-  const layer = new ScatterplotLayer({
+  const layer = new ScatterplotLayer<Point>({
     id: "geoclip_pred",
     data: predictions?.coords,
     getPosition: (d) => [d.lat, d.lon],
@@ -95,10 +102,29 @@ export default function GeoCLIPPanel() {
     radiusScale: 1,
     radiusMinPixels: 5,
     radiusMaxPixels: 100,
+    onClick: (info: PickingInfo<Point>) => {
+      if (!info.object) return;
+      const { lat, lon } = info.object;
+      toast(`Copied ${lat}, ${lon} to clipboard`);
+      navigator.clipboard.writeText(`${lat}, ${lon}`);
+    },
   });
 
+  const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
+    return object
+      ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
+      Confidence: ${object.aux.conf.toFixed(2)}
+      Click to copy full coordinates`
+      : null;
+  }, []);
+
   return (
-    <DeckGL initialViewState={viewState} controller layers={[layer]}>
+    <DeckGL
+      initialViewState={viewState}
+      controller
+      layers={[layer]}
+      getTooltip={getTooltip}
+    >
       <Map
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}

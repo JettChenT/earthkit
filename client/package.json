@@ -17,10 +17,12 @@
     "lucide-react": "^0.376.0",
     "mapbox-gl": "^3.3.0",
     "next": "14.2.3",
+    "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
     "react-drag-drop-files": "^2.3.10",
     "react-map-gl": "^7.1.7",
+    "sonner": "^1.4.41",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^4.5.2"
