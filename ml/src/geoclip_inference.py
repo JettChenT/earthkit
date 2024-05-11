@@ -1,28 +1,40 @@
 import modal
-from modal import gpu
+from modal import gpu, build, enter, method
+from geoclip import GeoCLIP
 import urllib.request
-
-stub = modal.Stub("geoclip")
+import io
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "torch==2.2.2", "pandas==2.2.2", "geoclip==1.2.0"
 )
+app = modal.App("geoclip", image=image)
 
+@app.cls(
+    gpu=gpu.A10G(),
+    enable_memory_snapshot=True
+)
+class GeoCLIPModel:
+    @build()
+    def build(self):
+        _ = GeoCLIP()
 
-@stub.function(image=image, gpu=gpu.A10G())
-def geoclip_inference(image: bytes):
-    from geoclip import GeoCLIP
-    import io
+    @enter(snap=True)
+    def load(self):
+        self.model = GeoCLIP()
+    
+    @enter(snap=False)
+    def setup(self):
+        self.model = self.model.to("cuda")
+    
+    @method()
+    def inference(self, image: bytes):
+        top_pred_gps, top_pred_labels = self.model.predict(io.BytesIO(image), top_k=20)
+        return top_pred_gps.tolist(), top_pred_labels.tolist()
 
-    model = GeoCLIP().to("cuda")
-    top_pred_gps, top_pred_labels = model.predict(io.BytesIO(image), top_k=20)
-    return top_pred_gps.tolist(), top_pred_labels.tolist()
-
-
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main():
     image = urllib.request.urlopen(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/B%C3%B8rsen_1.jpg/242px-B%C3%B8rsen_1.jpg"
     ).read()
     print("image downloaded")
-    print(geoclip_inference.remote(image))
+    print(GeoCLIPModel().inference.remote(image))

@@ -54,9 +54,11 @@ class GeoclipRequest(BaseModel):
 
 @web_app.post('/geoclip')
 def geoclip_inference(request: GeoclipRequest):
-    f = modal.Function.lookup("geoclip", "geoclip_inference")
+    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+    print("downloading image...")
     img = proc_im_url(request.image_url)
-    res_gps, res_pred = f.remote(img)
+    print("running inference...")
+    res_gps, res_pred = c.inference.remote(img)
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[0], lat=gps[1], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
     ]
