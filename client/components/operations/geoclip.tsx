@@ -4,14 +4,25 @@ import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { API_URL } from "@/lib/constants";
 import { Loader2 } from "lucide-react";
-import { ProbScatterLayer } from "@/lib/layers";
+import {
+  DeckGL,
+  FlyToInterpolator,
+  MapViewState,
+  ScatterplotLayer,
+  WebMercatorViewport,
+} from "deck.gl";
+import { INITIAL_VIEW_STATE } from "../map";
+import { Map } from "react-map-gl";
+import OperationContainer from "./ops";
+import { Coords, getbbox } from "@/lib/geo";
 
 const fileTypes = ["JPG", "PNG", "GIF"];
 
 export default function GeoCLIPPanel() {
   const [image, setImage] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const { setLayers } = useStore();
+  const [predictions, setPredictions] = useState<Coords | null>(null);
+  const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
 
   const onUpload = (file: File) => {
     console.log("on drop!");
@@ -25,6 +36,8 @@ export default function GeoCLIPPanel() {
 
   const onInference = () => {
     setIsRunning(true);
+    setPredictions(null);
+    setViewState(INITIAL_VIEW_STATE);
     fetch(`${API_URL}/geoclip`, {
       method: "POST",
       body: JSON.stringify({
@@ -38,19 +51,32 @@ export default function GeoCLIPPanel() {
       .then((data) => {
         console.log(data);
         const max_conf = Math.max(...data.map((d: any) => d.aux.pred));
-        const adjusted_data = data.map((d: any) => {
-          d.aux.conf = Math.sqrt(d.aux.pred / max_conf);
-          return d;
-        });
-        const layer = {
-          id: "geoclip_pred",
-          name: "geoclip prediction",
-          type: "prob_scatter",
-          coords: adjusted_data,
-          key: "conf",
+        const adjusted_data: Coords = {
+          coords: data.map((d: any) => {
+            d.aux.conf = Math.sqrt(d.aux.pred / max_conf);
+            return d;
+          }),
         };
-        setLayers([layer as ProbScatterLayer]);
+        setPredictions(adjusted_data);
         setIsRunning(false);
+        const vp = layer.context.viewport as WebMercatorViewport;
+        const bounds = getbbox(adjusted_data);
+        console.log(adjusted_data);
+        console.log(bounds);
+        const { longitude, latitude, zoom } = vp.fitBounds(
+          [
+            [bounds.lo.lat, bounds.lo.lon],
+            [bounds.hi.lat, bounds.hi.lon],
+          ],
+          { padding: 100 }
+        );
+        setViewState({
+          longitude,
+          latitude,
+          zoom,
+          transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
+          transitionDuration: "auto",
+        });
       });
   };
 
@@ -59,45 +85,63 @@ export default function GeoCLIPPanel() {
     setImage(null);
   };
 
+  const layer = new ScatterplotLayer({
+    id: "geoclip_pred",
+    data: predictions?.coords,
+    getPosition: (d) => [d.lat, d.lon],
+    getRadius: (d) => 0.1,
+    getFillColor: (d) => [d.aux.conf * 255, 0, 0],
+    pickable: true,
+    radiusScale: 1,
+    radiusMinPixels: 5,
+    radiusMaxPixels: 100,
+  });
+
   return (
-    <div>
-      <p className="prose prose-sm leading-5 mb-2">
-        <h3>GeoCLIP Geoestimation</h3>
-        <a
-          className="text-primary"
-          href="https://github.com/VicenteVivan/geo-clip"
-        >
-          GeoCLIP
-        </a>{" "}
-        predicts the location of an image based on its visual features.
-      </p>
-      {image ? (
-        <img className="rounded-md" src={image} />
-      ) : (
-        <FileUploader handleChange={onUpload} name="file" types={fileTypes}>
-          <div className="w-full h-32 bg-slate-300 bg-opacity-20 rounded-md flex items-center justify-center hover:bg-slate-300 hover:bg-opacity-30 border-dashed border-2 border-slate-200 hover:cursor-pointer">
-            <div className="text-lg font-bold">Import Image</div>
-          </div>
-        </FileUploader>
-      )}
-      <div>
-        <Button
-          className={`mt-3`}
-          disabled={!image || isRunning}
-          onClick={onInference}
-        >
-          {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
-          {isRunning ? "Predicting..." : "Predict"}
-        </Button>
-        <Button
-          className={`mt-3 ml-2`}
-          variant="secondary"
-          onClick={onCancel}
-          disabled={!image}
-        >
-          Cancel
-        </Button>
-      </div>
-    </div>
+    <DeckGL initialViewState={viewState} controller layers={[layer]}>
+      <Map
+        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+      ></Map>
+      <OperationContainer className="w-64">
+        <p className="prose prose-sm leading-5 mb-2">
+          <h3>GeoCLIP Geoestimation</h3>
+          <a
+            className="text-primary"
+            href="https://github.com/VicenteVivan/geo-clip"
+          >
+            GeoCLIP
+          </a>{" "}
+          predicts the location of an image based on its visual features.
+        </p>
+        {image ? (
+          <img className="rounded-md" src={image} />
+        ) : (
+          <FileUploader handleChange={onUpload} name="file" types={fileTypes}>
+            <div className="w-full h-32 bg-slate-300 bg-opacity-20 rounded-md flex items-center justify-center hover:bg-slate-300 hover:bg-opacity-30 border-dashed border-2 border-slate-200 hover:cursor-pointer">
+              <div className="text-lg font-bold">Import Image</div>
+            </div>
+          </FileUploader>
+        )}
+        <div className="flex flex-col items-center">
+          <Button
+            className={`mt-3 w-full`}
+            disabled={!image || isRunning}
+            onClick={onInference}
+          >
+            {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
+            {isRunning ? "Predicting..." : "Predict"}
+          </Button>
+          <Button
+            className={`mt-3 w-full`}
+            variant="secondary"
+            onClick={onCancel}
+            disabled={!image}
+          >
+            Cancel
+          </Button>
+        </div>
+      </OperationContainer>
+    </DeckGL>
   );
 }
