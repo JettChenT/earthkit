@@ -1,4 +1,5 @@
 import modal
+from modal import gpu
 import urllib.request
 
 stub = modal.Stub("geoclip")
@@ -8,7 +9,7 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
 )
 
 
-@stub.function(image=image, gpu="T4")
+@stub.function(image=image, gpu=gpu.A10G())
 def geoclip_inference(image: bytes):
     from geoclip import GeoCLIP
     import io
