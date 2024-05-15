@@ -17,24 +17,13 @@ import { INITIAL_VIEW_STATE } from "../map";
 import { Map } from "react-map-gl";
 import OperationContainer from "./widgets/ops";
 import { Coords, Point, getbbox } from "@/lib/geo";
-
-const fileTypes = ["JPG", "PNG", "GIF"];
+import ImageUpload from "./widgets/imageUpload";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [predictions, setPredictions] = useState<Coords | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
-
-  const onUpload = (file: File) => {
-    console.log("on drop!");
-    console.log(file);
-    var reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function () {
-      setImage(reader.result as string);
-    };
-  };
 
   const onInference = () => {
     setIsRunning(true);
@@ -131,7 +120,7 @@ export default function GeoCLIP() {
       ></Map>
       <OperationContainer className="w-64">
         <article className="prose prose-sm leading-5 mb-2">
-          <h3 className="font-bold">GeoCLIP Geoestimation</h3>
+          <h3>GeoCLIP Geoestimation</h3>
           <a
             className="text-primary"
             href="https://github.com/VicenteVivan/geo-clip"
@@ -140,15 +129,7 @@ export default function GeoCLIP() {
           </a>{" "}
           predicts the location of an image based on its visual features.
         </article>
-        {image ? (
-          <img className="rounded-md" src={image} />
-        ) : (
-          <FileUploader handleChange={onUpload} name="file" types={fileTypes}>
-            <div className="w-full h-32 bg-slate-300 bg-opacity-20 rounded-md flex items-center justify-center hover:bg-slate-300 hover:bg-opacity-30 border-dashed border-2 border-slate-200 hover:cursor-pointer">
-              <div className="text-lg font-bold">Import Image</div>
-            </div>
-          </FileUploader>
-        )}
+        <ImageUpload onSetImage={setImage} image={image} />
         <div className="flex flex-col items-center">
           <Button
             className={`mt-3 w-full`}

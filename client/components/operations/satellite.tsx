@@ -14,12 +14,14 @@ import {
 } from "@deck.gl-community/editable-layers";
 import { Point } from "@/lib/geo";
 import LatLngDisplay from "./widgets/InfoBar";
+import ImageUpload from "./widgets/imageUpload";
 
 const selectedFeatureIndexes: number[] = [];
 
 export default function Satellite() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
     type: "FeatureCollection",
     features: [],
@@ -76,25 +78,41 @@ export default function Satellite() {
           ></Map>
         </DeckGL>
       </div>
-      <OperationContainer>
-        {selecting ? (
-          <div className="flex flex-row gap-2">
-            <Button
-              onClick={() => {
-                setSelected(true);
-                setSelecting(false);
-                console.log(featCollection);
-              }}
-            >
-              Done
-            </Button>
-            <Button onClick={() => setSelecting(false)} variant="secondary">
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <Button onClick={() => setSelecting(true)}>Select Area</Button>
-        )}
+      <OperationContainer className="bg-opacity-85">
+        <article className="prose prose-sm leading-5 mb-3">
+          <h3>Satellite Geolocalization</h3>
+          Select an area on the map to get the crossview location of the
+          satellite. This uses the{" "}
+          <a href="https://paperswithcode.com/paper/sample4geo-hard-negative-sampling-for-cross">
+            Sample4Geo
+          </a>{" "}
+          model.
+        </article>
+        <div className="flex flex-col gap-2">
+          <ImageUpload
+            onSetImage={setImage}
+            image={image}
+            className="border-stone-400"
+          />
+          {selecting ? (
+            <div className="flex flex-row gap-2">
+              <Button
+                onClick={() => {
+                  setSelected(true);
+                  setSelecting(false);
+                  console.log(featCollection);
+                }}
+              >
+                Done
+              </Button>
+              <Button onClick={() => setSelecting(false)} variant="secondary">
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={() => setSelecting(true)}>Select Area</Button>
+          )}
+        </div>
       </OperationContainer>
       <LatLngDisplay cursorCoords={cursorCoords} />
     </div>
