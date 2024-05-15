@@ -15,7 +15,7 @@ import {
 } from "deck.gl";
 import { INITIAL_VIEW_STATE } from "../map";
 import { Map } from "react-map-gl";
-import OperationContainer from "./ops";
+import OperationContainer from "./widgets/ops";
 import { Coords, Point, getbbox } from "@/lib/geo";
 
 const fileTypes = ["JPG", "PNG", "GIF"];

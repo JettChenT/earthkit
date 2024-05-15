@@ -5,7 +5,7 @@ import { DeckGL, MapViewState } from "deck.gl";
 import { useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "../map";
-import OperationContainer from "./ops";
+import OperationContainer from "./widgets/ops";
 import {
   EditableGeoJsonLayer,
   ViewMode,
@@ -13,6 +13,7 @@ import {
   FeatureCollection,
 } from "@deck.gl-community/editable-layers";
 import { Point } from "@/lib/geo";
+import LatLngDisplay from "./widgets/InfoBar";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -70,7 +71,7 @@ export default function Satellite() {
         >
           <Map
             mapboxAccessToken={MAPBOX_TOKEN}
-            mapStyle="mapbox://styles/mapbox/satellite-v9"
+            mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
             ref={mapRef}
           ></Map>
         </DeckGL>
@@ -95,10 +96,7 @@ export default function Satellite() {
           <Button onClick={() => setSelecting(true)}>Select Area</Button>
         )}
       </OperationContainer>
-      <div className="absolute bottom-3 right-3 bg-white p-3 rounded-md bg-opacity-80 font-mono">
-        <div>Lat: {cursorCoords.lat.toFixed(8)}</div>
-        <div>Lon: {cursorCoords.lon.toFixed(8)}</div>
-      </div>
+      <LatLngDisplay cursorCoords={cursorCoords} />
     </div>
   );
 }
