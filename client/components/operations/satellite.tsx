@@ -12,6 +12,7 @@ import {
   DrawRectangleMode,
   FeatureCollection,
 } from "@deck.gl-community/editable-layers";
+import { Point } from "@/lib/geo";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -22,9 +23,22 @@ export default function Satellite() {
     type: "FeatureCollection",
     features: [],
   });
+  const [cursorCoords, setCursorCoords] = useState<Point>({
+    lat: 0,
+    lon: 0,
+    aux: null,
+  });
   const mapRef = useRef<MapRef>(null);
   const viewMode = useMemo(() => {
-    return selecting ? DrawRectangleMode : ViewMode;
+    let vm = selecting ? DrawRectangleMode : ViewMode;
+    vm.prototype.handlePointerMove = ({ mapCoords }) => {
+      setCursorCoords({
+        lon: mapCoords[0],
+        lat: mapCoords[1],
+        aux: null,
+      });
+    };
+    return vm;
   }, [selecting]);
 
   const layer = new EditableGeoJsonLayer({
@@ -81,6 +95,10 @@ export default function Satellite() {
           <Button onClick={() => setSelecting(true)}>Select Area</Button>
         )}
       </OperationContainer>
+      <div className="absolute bottom-3 right-3 bg-white p-3 rounded-md bg-opacity-80 font-mono">
+        <div>Lat: {cursorCoords.lat.toFixed(8)}</div>
+        <div>Lon: {cursorCoords.lon.toFixed(8)}</div>
+      </div>
     </div>
   );
 }
