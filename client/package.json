@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@deck.gl-community/editable-layers": "^9.0.0-alpha.1",
     "@deck.gl/google-maps": "^9.0.14",
     "@deck.gl/react": "^9.0.12",
     "@radix-ui/react-label": "^2.0.2",

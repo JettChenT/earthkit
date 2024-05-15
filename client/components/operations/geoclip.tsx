@@ -130,8 +130,8 @@ export default function GeoCLIP() {
         mapboxAccessToken={MAPBOX_TOKEN}
       ></Map>
       <OperationContainer className="w-64">
-        <p className="prose prose-sm leading-5 mb-2">
-          <span className="font-bold h-3">GeoCLIP Geoestimation</span>
+        <article className="prose prose-sm leading-5 mb-2">
+          <h3 className="font-bold">GeoCLIP Geoestimation</h3>
           <a
             className="text-primary"
             href="https://github.com/VicenteVivan/geo-clip"
@@ -139,7 +139,7 @@ export default function GeoCLIP() {
             GeoCLIP
           </a>{" "}
           predicts the location of an image based on its visual features.
-        </p>
+        </article>
         {image ? (
           <img className="rounded-md" src={image} />
         ) : (
