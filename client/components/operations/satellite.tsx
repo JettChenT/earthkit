@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
-import { DeckGL, MapViewState } from "deck.gl";
+import { DeckGL, MapViewState, ScatterplotLayer } from "deck.gl";
 import { useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "../map";
@@ -12,7 +12,7 @@ import {
   DrawRectangleMode,
   FeatureCollection,
 } from "@deck.gl-community/editable-layers";
-import { Point, Bounds } from "@/lib/geo";
+import { Point, Bounds, Coords } from "@/lib/geo";
 import LatLngDisplay from "./widgets/InfoBar";
 import ImageUpload from "./widgets/imageUpload";
 
@@ -31,6 +31,7 @@ export default function Satellite() {
     lon: 0,
     aux: null,
   });
+  const [results, setResults] = useState<Coords | null>(null);
   const mapRef = useRef<MapRef>(null);
   const viewMode = useMemo(() => {
     let vm = selecting ? DrawRectangleMode : ViewMode;
@@ -57,8 +58,21 @@ export default function Satellite() {
     },
   });
 
+  const resultsLayer = new ScatterplotLayer({
+    id: "results-layer",
+    data: results?.coords,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d) => 3,
+    getFillColor: (d) => [255 * d.aux.sim, 140, 0],
+    pickable: true,
+    radiusScale: 1,
+    radiusMinPixels: 5,
+    radiusMaxPixels: 100,
+  });
+
   const onLocate = () => {
     setLocating(true);
+    setSelecting(false);
     console.log(featCollection);
     const bounds: Bounds = {
       lo: {
@@ -85,6 +99,7 @@ export default function Satellite() {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        setResults(data);
         setLocating(false);
       });
   };
@@ -99,7 +114,7 @@ export default function Satellite() {
         <DeckGL
           initialViewState={INITIAL_VIEW_STATE}
           controller
-          layers={[layer]}
+          layers={[layer, resultsLayer]}
           getCursor={(st) => {
             if (selecting) return "crosshair";
             if (st.isDragging) return "grabbing";
