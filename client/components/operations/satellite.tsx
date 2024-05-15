@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { MAPBOX_TOKEN } from "@/lib/constants";
+import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
 import { DeckGL, MapViewState } from "deck.gl";
 import { useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
@@ -12,7 +12,7 @@ import {
   DrawRectangleMode,
   FeatureCollection,
 } from "@deck.gl-community/editable-layers";
-import { Point } from "@/lib/geo";
+import { Point, Bounds } from "@/lib/geo";
 import LatLngDisplay from "./widgets/InfoBar";
 import ImageUpload from "./widgets/imageUpload";
 
@@ -20,8 +20,8 @@ const selectedFeatureIndexes: number[] = [];
 
 export default function Satellite() {
   const [selecting, setSelecting] = useState(false);
-  const [selected, setSelected] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
     type: "FeatureCollection",
     features: [],
@@ -50,9 +50,44 @@ export default function Satellite() {
     mode: viewMode,
     selectedFeatureIndexes,
     onEdit: ({ updatedData }) => {
-      setFeatCollection(updatedData);
+      setFeatCollection({
+        type: "FeatureCollection",
+        features: updatedData.features.slice(-1),
+      });
     },
   });
+
+  const onLocate = () => {
+    setLocating(true);
+    console.log(featCollection);
+    const bounds: Bounds = {
+      lo: {
+        lat: featCollection.features[0].geometry.coordinates[0][0][1],
+        lon: featCollection.features[0].geometry.coordinates[0][0][0],
+        aux: {},
+      },
+      hi: {
+        lat: featCollection.features[0].geometry.coordinates[0][2][1],
+        lon: featCollection.features[0].geometry.coordinates[0][2][0],
+        aux: {},
+      },
+    };
+    fetch(`${API_URL}/satellite/locate`, {
+      method: "POST",
+      body: JSON.stringify({
+        bounds,
+        image_url: image,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setLocating(false);
+      });
+  };
 
   return (
     <div>
@@ -97,20 +132,31 @@ export default function Satellite() {
           {selecting ? (
             <div className="flex flex-row gap-2">
               <Button
+                disabled={featCollection.features.length === 0 || locating}
                 onClick={() => {
-                  setSelected(true);
-                  setSelecting(false);
                   console.log(featCollection);
+                  onLocate();
                 }}
               >
-                Done
+                {locating ? "Locating..." : "Locate"}
               </Button>
-              <Button onClick={() => setSelecting(false)} variant="secondary">
-                Cancel
+              <Button
+                onClick={() => {
+                  setSelecting(false);
+                  setFeatCollection({
+                    type: "FeatureCollection",
+                    features: [],
+                  });
+                }}
+                variant="secondary"
+              >
+                Cancel Selection
               </Button>
             </div>
           ) : (
-            <Button onClick={() => setSelecting(true)}>Select Area</Button>
+            <Button onClick={() => setSelecting(true)}>
+              Select Search Range
+            </Button>
           )}
         </div>
       </OperationContainer>
