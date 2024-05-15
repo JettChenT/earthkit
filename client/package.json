@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@deck.gl/google-maps": "^9.0.14",
     "@deck.gl/react": "^9.0.12",
+    "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@vis.gl/react-google-maps": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "deck.gl": "^9.0.12",

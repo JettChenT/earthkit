@@ -2,7 +2,8 @@
 import React from "react";
 import { MapViewState } from "@deck.gl/core";
 import { useStore } from "@/lib/store";
-import GeoCLIPPanel from "./operations/geoclip";
+import GeoCLIP from "./operations/geoclip";
+import Satellite from "./operations/satellite";
 
 export const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -122.41669,
@@ -17,7 +18,9 @@ export default function MapDisplay() {
       {(() => {
         switch (tool) {
           case "geoclip":
-            return <GeoCLIPPanel />;
+            return <GeoCLIP />;
+          case "satellite":
+            return <Satellite />;
           default:
             return <div>TODO</div>;
         }

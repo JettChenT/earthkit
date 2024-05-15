@@ -2,7 +2,7 @@ import { FileUploader } from "react-drag-drop-files";
 import { useCallback, useState } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { API_URL } from "@/lib/constants";
+import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -20,7 +20,7 @@ import { Coords, Point, getbbox } from "@/lib/geo";
 
 const fileTypes = ["JPG", "PNG", "GIF"];
 
-export default function GeoCLIPPanel() {
+export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [predictions, setPredictions] = useState<Coords | null>(null);
@@ -127,11 +127,11 @@ export default function GeoCLIPPanel() {
     >
       <Map
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        mapboxAccessToken={MAPBOX_TOKEN}
       ></Map>
       <OperationContainer className="w-64">
         <p className="prose prose-sm leading-5 mb-2">
-          <h3>GeoCLIP Geoestimation</h3>
+          <span className="font-bold h-3">GeoCLIP Geoestimation</span>
           <a
             className="text-primary"
             href="https://github.com/VicenteVivan/geo-clip"
