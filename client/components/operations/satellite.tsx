@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
-import { DeckGL, MapViewState, ScatterplotLayer } from "deck.gl";
-import { useMemo, useRef, useState } from "react";
+import { DeckGL, MapViewState, PickingInfo, ScatterplotLayer } from "deck.gl";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "../map";
 import OperationContainer from "./widgets/ops";
@@ -20,6 +20,7 @@ const selectedFeatureIndexes: number[] = [];
 
 export default function Satellite() {
   const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
@@ -70,8 +71,18 @@ export default function Satellite() {
     radiusMaxPixels: 100,
   });
 
+  const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
+    if (!object?.lat) return null;
+    return object
+      ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
+      Confidence: ${object.aux.sim.toFixed(2)}
+      Click to copy full coordinates`
+      : null;
+  }, []);
+
   const onLocate = () => {
     setLocating(true);
+    setSelected(true);
     setSelecting(false);
     console.log(featCollection);
     const bounds: Bounds = {
@@ -115,6 +126,7 @@ export default function Satellite() {
           initialViewState={INITIAL_VIEW_STATE}
           controller
           layers={[layer, resultsLayer]}
+          getTooltip={getTooltip}
           getCursor={(st) => {
             if (selecting) return "crosshair";
             if (st.isDragging) return "grabbing";
@@ -144,7 +156,7 @@ export default function Satellite() {
             image={image}
             className="border-stone-400"
           />
-          {selecting ? (
+          {selecting || selected ? (
             <div className="flex flex-row gap-2">
               <Button
                 disabled={featCollection.features.length === 0 || locating}
