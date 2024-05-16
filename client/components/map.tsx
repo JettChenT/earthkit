@@ -4,6 +4,7 @@ import { MapViewState } from "@deck.gl/core";
 import { useStore } from "@/lib/store";
 import GeoCLIP from "./operations/geoclip";
 import Satellite from "./operations/satellite";
+import StreetView from "./operations/streetview";
 
 export const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -122.41669,
@@ -21,8 +22,8 @@ export default function MapDisplay() {
             return <GeoCLIP />;
           case "satellite":
             return <Satellite />;
-          default:
-            return <div>TODO</div>;
+          case "streetview":
+            return <StreetView />;
         }
       })()}
     </div>

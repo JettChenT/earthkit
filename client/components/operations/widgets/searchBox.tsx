@@ -1,3 +1,4 @@
+"use client";
 import { MAPBOX_TOKEN } from "@/lib/constants";
 import { SearchBox } from "@mapbox/search-js-react";
 import {

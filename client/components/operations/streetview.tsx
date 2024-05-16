@@ -87,12 +87,16 @@ export default function StreetView() {
     console.log(featCollection);
     const bounds: Bounds = {
       lo: {
+        // @ts-ignore
         lat: featCollection.features[0].geometry.coordinates[0][0][1],
+        // @ts-ignore
         lon: featCollection.features[0].geometry.coordinates[0][0][0],
         aux: {},
       },
       hi: {
+        // @ts-ignore
         lat: featCollection.features[0].geometry.coordinates[0][2][1],
+        // @ts-ignore
         lon: featCollection.features[0].geometry.coordinates[0][2][0],
         aux: {},
       },
