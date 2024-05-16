@@ -14,6 +14,7 @@
     "@deck.gl/react": "^9.0.12",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@uploadthing/react": "^6.5.4",
     "@vis.gl/react-google-maps": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -29,6 +30,7 @@
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
+    "uploadthing": "^6.10.4",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

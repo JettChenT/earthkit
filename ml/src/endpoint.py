@@ -51,6 +51,7 @@ def streetview_locate(request: SVLocateRequest):
 
 class GeoclipRequest(BaseModel):
     image_url: str
+    top_k: int = 100
 
 @web_app.post('/geoclip')
 def geoclip_inference(request: GeoclipRequest):
@@ -58,11 +59,17 @@ def geoclip_inference(request: GeoclipRequest):
     print("downloading image...")
     img = proc_im_url(request.image_url)
     print("running inference...")
-    res_gps, res_pred = c.inference.remote(img)
+    res_gps, res_pred = c.inference.remote(img, request.top_k)
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[0], lat=gps[1], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
     ]
     return pnts
+
+@web_app.get("/geoclip/poke")
+def geoclip_poke():
+    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+    c.inference.remote(None, poke=True)
+    return {"ok": True}
 
 class SatelliteLocateRequest(BaseModel):
     bounds: schema.Bounds[None]

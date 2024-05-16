@@ -23,8 +23,10 @@ class GeoCLIPModel:
         self.model = self.model.to("cuda")
     
     @method()
-    def inference(self, image: bytes):
-        top_pred_gps, top_pred_labels = self.model.predict(io.BytesIO(image), top_k=20)
+    def inference(self, image: bytes, top_k=100, poke=False):
+        if poke:
+            return
+        top_pred_gps, top_pred_labels = self.model.predict(io.BytesIO(image), top_k=top_k)
         return top_pred_gps.tolist(), top_pred_labels.tolist()
 
 @app.local_entrypoint()

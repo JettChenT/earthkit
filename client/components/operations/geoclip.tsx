@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   DeckGL,
   FlyToInterpolator,
+  HeatmapLayer,
   MapViewState,
   PickingInfo,
   ScatterplotLayer,
@@ -32,6 +33,7 @@ export default function GeoCLIP() {
       method: "POST",
       body: JSON.stringify({
         image_url: image,
+        top_k: 100,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -81,22 +83,13 @@ export default function GeoCLIP() {
     });
   };
 
-  const layer = new ScatterplotLayer<Point>({
+  const layer = new HeatmapLayer<Point>({
     id: "geoclip_pred",
     data: predictions?.coords,
     getPosition: (d) => [d.lat, d.lon],
-    getRadius: (d) => 0.1,
-    getFillColor: (d) => [d.aux.conf * 255, 0, 0],
+    getWeight: (d) => d.aux.conf,
     pickable: true,
-    radiusScale: 1,
-    radiusMinPixels: 5,
-    radiusMaxPixels: 100,
-    onClick: (info: PickingInfo<Point>) => {
-      if (!info.object) return;
-      const { lat, lon } = info.object;
-      toast(`Copied ${lat}, ${lon} to clipboard`);
-      navigator.clipboard.writeText(`${lat}, ${lon}`);
-    },
+    radiusPixels: 25,
   });
 
   const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
@@ -129,7 +122,15 @@ export default function GeoCLIP() {
           </a>{" "}
           predicts the location of an image based on its visual features.
         </article>
-        <ImageUpload onSetImage={setImage} image={image} />
+        <ImageUpload
+          onSetImage={(img) => {
+            setImage(img);
+          }}
+          onUploadBegin={() => {
+            fetch(`${API_URL}/geoclip/poke`);
+          }}
+          image={image}
+        />
         <div className="flex flex-col items-center">
           <Button
             className={`mt-3 w-full`}
@@ -139,14 +140,15 @@ export default function GeoCLIP() {
             {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
             {isRunning ? "Predicting..." : "Predict"}
           </Button>
-          <Button
-            className={`mt-3 w-full`}
-            variant="secondary"
-            onClick={onCancel}
-            disabled={!image}
-          >
-            Cancel
-          </Button>
+          {image && (
+            <Button
+              className={`mt-3 w-full`}
+              variant="secondary"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </OperationContainer>
     </DeckGL>
