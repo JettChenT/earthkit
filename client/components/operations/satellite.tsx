@@ -21,7 +21,8 @@ import { INITIAL_VIEW_STATE } from "../map";
 import LatLngDisplay from "./widgets/InfoBar";
 import ImageUpload from "./widgets/imageUpload";
 import OperationContainer from "./widgets/ops";
-import { ESearchBox } from "./widgets/searchBox";
+import dynamic from "next/dynamic";
+const ESearchBox = dynamic(() => import("./widgets/searchBox"));
 
 const selectedFeatureIndexes: number[] = [];
 

@@ -26,7 +26,7 @@ const searchTypes = [
 ];
 const searchTypesSet = new Set(searchTypes);
 
-export function ESearchBox({ setViewState, dglref }: ESearchBoxProps) {
+export default function ESearchBox({ setViewState, dglref }: ESearchBoxProps) {
   const [value, setValue] = useState("");
   return (
     <form className="absolute left-3 top-3">
