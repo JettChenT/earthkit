@@ -1,20 +1,27 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
-import { DeckGL, MapViewState, PickingInfo, ScatterplotLayer } from "deck.gl";
+import { Bounds, Coords, Point } from "@/lib/geo";
+import {
+  DrawRectangleMode,
+  EditableGeoJsonLayer,
+  FeatureCollection,
+  ViewMode,
+} from "@deck.gl-community/editable-layers";
+import {
+  DeckGL,
+  DeckGLRef,
+  MapViewState,
+  PickingInfo,
+  ScatterplotLayer,
+} from "deck.gl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "../map";
-import OperationContainer from "./widgets/ops";
-import {
-  EditableGeoJsonLayer,
-  ViewMode,
-  DrawRectangleMode,
-  FeatureCollection,
-} from "@deck.gl-community/editable-layers";
-import { Point, Bounds, Coords } from "@/lib/geo";
 import LatLngDisplay from "./widgets/InfoBar";
 import ImageUpload from "./widgets/imageUpload";
+import OperationContainer from "./widgets/ops";
+import { ESearchBox } from "./widgets/searchBox";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -23,6 +30,7 @@ export default function Satellite() {
   const [selected, setSelected] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
     type: "FeatureCollection",
     features: [],
@@ -87,12 +95,16 @@ export default function Satellite() {
     console.log(featCollection);
     const bounds: Bounds = {
       lo: {
+        // @ts-ignore
         lat: featCollection.features[0].geometry.coordinates[0][0][1],
+        // @ts-ignore
         lon: featCollection.features[0].geometry.coordinates[0][0][0],
         aux: {},
       },
       hi: {
+        // @ts-ignore
         lat: featCollection.features[0].geometry.coordinates[0][2][1],
+        // @ts-ignore
         lon: featCollection.features[0].geometry.coordinates[0][2][0],
         aux: {},
       },
@@ -115,6 +127,8 @@ export default function Satellite() {
       });
   };
 
+  const deckRef = useRef<DeckGLRef>(null);
+
   return (
     <div>
       <div
@@ -123,7 +137,8 @@ export default function Satellite() {
         }`}
       >
         <DeckGL
-          initialViewState={INITIAL_VIEW_STATE}
+          ref={deckRef}
+          initialViewState={viewState}
           controller
           layers={[layer, resultsLayer]}
           getTooltip={getTooltip}
@@ -174,6 +189,7 @@ export default function Satellite() {
                     type: "FeatureCollection",
                     features: [],
                   });
+                  setResults(null);
                 }}
                 variant="secondary"
               >
@@ -188,6 +204,7 @@ export default function Satellite() {
         </div>
       </OperationContainer>
       <LatLngDisplay cursorCoords={cursorCoords} />
+      <ESearchBox setViewState={setViewState} dglref={deckRef} />
     </div>
   );
 }

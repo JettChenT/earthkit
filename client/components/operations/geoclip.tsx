@@ -1,24 +1,20 @@
-import { FileUploader } from "react-drag-drop-files";
-import { useCallback, useState } from "react";
-import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Coords, Point, getbbox } from "@/lib/geo";
 import {
   DeckGL,
   FlyToInterpolator,
   HeatmapLayer,
   MapViewState,
   PickingInfo,
-  ScatterplotLayer,
   WebMercatorViewport,
 } from "deck.gl";
-import { INITIAL_VIEW_STATE } from "../map";
+import { Loader2 } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Map } from "react-map-gl";
-import OperationContainer from "./widgets/ops";
-import { Coords, Point, getbbox } from "@/lib/geo";
+import { INITIAL_VIEW_STATE } from "../map";
 import ImageUpload from "./widgets/imageUpload";
+import OperationContainer from "./widgets/ops";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -65,7 +61,7 @@ export default function GeoCLIP() {
         setViewState({
           longitude,
           latitude,
-          zoom,
+          zoom: Math.max(zoom - 2, 2),
           transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
           transitionDuration: "auto",
         });
