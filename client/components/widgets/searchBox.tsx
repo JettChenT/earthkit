@@ -1,11 +1,11 @@
 "use client";
 import { MAPBOX_TOKEN } from "@/lib/constants";
 import { SearchBox } from "@mapbox/search-js-react";
+import dynamic from "next/dynamic";
 import {
   DeckGLRef,
   FlyToInterpolator,
   MapViewState,
-  Viewport,
   WebMercatorViewport,
 } from "deck.gl";
 import { RefObject, useState } from "react";

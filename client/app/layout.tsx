@@ -3,6 +3,8 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import Sidebar from "@/components/sidebar";
+import ResourceBar from "@/components/resource_bar";
 
 export const metadata: Metadata = {
   title: "EarthKit",
@@ -27,7 +29,11 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        {children}
+        <main className="h-screen w-screen flex overflow-hidden">
+          <Sidebar />
+          <div className="h-full flex-1 relative"> {children}</div>
+          <ResourceBar />
+        </main>
         <Toaster />
       </body>
     </html>

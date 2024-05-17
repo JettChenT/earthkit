@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
 import { Coords, Point, getbbox } from "@/lib/geo";
@@ -12,9 +13,9 @@ import {
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Map } from "react-map-gl";
-import { INITIAL_VIEW_STATE } from "../map";
-import ImageUpload from "./widgets/imageUpload";
-import OperationContainer from "./widgets/ops";
+import { INITIAL_VIEW_STATE } from "@/lib/constants";
+import ImageUpload from "@/components/widgets/imageUpload";
+import OperationContainer from "@/components/widgets/ops";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
