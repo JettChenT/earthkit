@@ -8,13 +8,24 @@ import {
   FeatureCollection,
   ViewMode,
 } from "@deck.gl-community/editable-layers";
-import { DeckGL, PickingInfo, ScatterplotLayer } from "deck.gl";
+import {
+  DeckGL,
+  DeckGLRef,
+  MapViewState,
+  PickingInfo,
+  ScatterplotLayer,
+} from "deck.gl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "../map";
 import LatLngDisplay from "./widgets/InfoBar";
 import ImageUpload from "./widgets/imageUpload";
 import OperationContainer from "./widgets/ops";
+import ky from "ky";
+import dynamic from "next/dynamic";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
+const ESearchBox = dynamic(() => import("./widgets/searchBox"));
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -22,7 +33,11 @@ export default function StreetView() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
+  const [distKm, setDistKm] = useState(0.05);
+  const deckRef = useRef<DeckGLRef>(null);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
     type: "FeatureCollection",
     features: [],
@@ -32,7 +47,8 @@ export default function StreetView() {
     lon: 0,
     aux: null,
   });
-  const [results, setResults] = useState<Coords | null>(null);
+  const [sampled, setSampled] = useState<Coords | null>(null);
+  const [located, setLocated] = useState<Coords | null>(null);
   const mapRef = useRef<MapRef>(null);
   const viewMode = useMemo(() => {
     let vm = selecting ? DrawRectangleMode : ViewMode;
@@ -59,15 +75,15 @@ export default function StreetView() {
     },
   });
 
-  const resultsLayer = new ScatterplotLayer({
+  const sampledLayer = new ScatterplotLayer({
     id: "results-layer",
-    data: results?.coords,
+    data: sampled?.coords,
     getPosition: (d) => [d.lon, d.lat],
-    getRadius: (d) => 3,
-    getFillColor: (d) => [255 * d.aux.sim, 140, 0],
+    getRadius: (d) => 1,
+    getFillColor: (d) => [255, 140, 0],
     pickable: true,
     radiusScale: 1,
-    radiusMinPixels: 5,
+    radiusMinPixels: 2,
     radiusMaxPixels: 100,
   });
 
@@ -75,13 +91,12 @@ export default function StreetView() {
     if (!object?.lat) return null;
     return object
       ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
-      Confidence: ${object.aux.sim.toFixed(2)}
       Click to copy full coordinates`
       : null;
   }, []);
 
-  const onLocate = () => {
-    setLocating(true);
+  const onSample = () => {
+    setSampling(true);
     setSelected(true);
     setSelecting(false);
     console.log(featCollection);
@@ -101,20 +116,49 @@ export default function StreetView() {
         aux: {},
       },
     };
-    fetch(`${API_URL}/satellite/locate`, {
-      method: "POST",
-      body: JSON.stringify({
+    ky.post(`${API_URL}/streetview/sample`, {
+      timeout: false,
+      json: {
         bounds,
-        image_url: image,
-      }),
-      headers: {
-        "Content-Type": "application/json",
+        dist_km: distKm,
       },
     })
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        setResults(data);
+        setSampled(data as Coords);
+        setSampling(false);
+      });
+  };
+
+  const locateResultsLayer = new ScatterplotLayer<Point>({
+    id: "locate-results-layer",
+    data: located?.coords,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d) => 1,
+    getFillColor: (d) => [255 * d.aux.max_sim, 140, 0],
+    pickable: true,
+    radiusMinPixels: 2,
+    radiusMaxPixels: 100,
+  });
+
+  const onLocate = () => {
+    setLocating(true);
+    ky.post(`${API_URL}/streetview/locate`, {
+      timeout: false,
+      json: {
+        image_url: image,
+        coords: { coords: sampled!.coords },
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setLocated(data as Coords);
+        setLocating(false);
+      })
+      .catch((e) => {
+        console.log(e);
         setLocating(false);
       });
   };
@@ -127,10 +171,11 @@ export default function StreetView() {
         }`}
       >
         <DeckGL
-          initialViewState={INITIAL_VIEW_STATE}
+          initialViewState={viewState}
           controller
-          layers={[layer, resultsLayer]}
+          layers={[layer, sampledLayer]}
           getTooltip={getTooltip}
+          ref={deckRef}
           getCursor={(st) => {
             if (selecting) return "crosshair";
             if (st.isDragging) return "grabbing";
@@ -146,13 +191,9 @@ export default function StreetView() {
       </div>
       <OperationContainer className="bg-opacity-85">
         <article className="prose prose-sm leading-5 mb-3">
-          <h3>Satellite Geolocalization</h3>
-          Select an area on the map to get the crossview location of the
-          satellite. This uses the{" "}
-          <a href="https://paperswithcode.com/paper/sample4geo-hard-negative-sampling-for-cross">
-            Sample4Geo
-          </a>{" "}
-          model.
+          <h3>Streetview Geolocalization</h3>
+          Select an area, and this will iterate through streetview images within
+          that area to find the best match for your image.
         </article>
         <div className="flex flex-col gap-2">
           <ImageUpload
@@ -160,16 +201,25 @@ export default function StreetView() {
             image={image}
             className="border-stone-400"
           />
+          <Label htmlFor="dist-slider">Sample Density: {distKm * 1000} m</Label>
+          <Slider
+            id="dist-slider"
+            value={[distKm]}
+            onValueChange={(v) => setDistKm(v[0])}
+            min={0.01}
+            max={0.1}
+            step={0.001}
+          />
           {selecting || selected ? (
             <div className="flex flex-row gap-2">
               <Button
-                disabled={featCollection.features.length === 0 || locating}
+                disabled={featCollection.features.length === 0 || sampling}
                 onClick={() => {
                   console.log(featCollection);
-                  onLocate();
+                  onSample();
                 }}
               >
-                {locating ? "Locating..." : "Locate"}
+                {sampling ? "Fetching..." : "Fetch Streetviews"}
               </Button>
               <Button
                 onClick={() => {
@@ -181,7 +231,7 @@ export default function StreetView() {
                 }}
                 variant="secondary"
               >
-                Cancel Selection
+                Cancel
               </Button>
             </div>
           ) : (
@@ -189,8 +239,12 @@ export default function StreetView() {
               Select Search Range
             </Button>
           )}
+          <Button onClick={onLocate} disabled={!sampled || locating}>
+            {locating ? "Locating..." : "Run Geolocalizaion"}
+          </Button>
         </div>
       </OperationContainer>
+      <ESearchBox setViewState={setViewState} dglref={deckRef} />
       <LatLngDisplay cursorCoords={cursorCoords} />
     </div>
   );

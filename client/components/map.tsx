@@ -24,6 +24,8 @@ export default function MapDisplay() {
             return <Satellite />;
           case "streetview":
             return <StreetView />;
+          default:
+            return null;
         }
       })()}
     </div>
