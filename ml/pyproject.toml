@@ -9,7 +9,6 @@ dependencies = [
     "torch>=2.2.2",
     "torchvision>=0.17.2",
     "geojson>=3.1.0",
-    "streetview>=0.0.6",
     "ruff>=0.4.0",
     "shapely>=2.0.4",
     "ipykernel>=6.29.4",
@@ -25,6 +24,7 @@ dependencies = [
     "fastapi>=0.110.3",
     "pydantic>=2.7.1",
     "python-multipart>=0.0.9",
+    "pyequilib>=0.5.8",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
