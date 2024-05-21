@@ -23,6 +23,8 @@ with inference_image.imports():
     from io import BytesIO
 
 
+ImgType = bytes | np.ndarray | Image.Image
+
 @stub.cls(gpu=gpu.A10G(), image=inference_image, enable_memory_snapshot=True)
 class VPRModel:
     @build()
@@ -58,7 +60,7 @@ class VPRModel:
         self.model = self.model.cuda()
 
     @method()
-    def inference(self, image: bytes | np.ndarray, panos: List[bytes | np.ndarray], n: int = 5, batch_size=50):
+    def inference(self, image: ImgType, panos: List[ImgType], n: int = 5, batch_size=50):
         import time
         t_loading = 0
         t_transforms = 0
@@ -68,7 +70,7 @@ class VPRModel:
         print(f"running inference on {len(panos)} panos")
         tns_transform = transforms.ToTensor()
 
-        def load_and_transform(image: bytes | np.ndarray):
+        def load_and_transform(image: ImgType):
             with torch.no_grad():
                 if isinstance(image, bytes):
                     image = Image.open(BytesIO(image)).convert("RGB")

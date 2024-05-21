@@ -2,19 +2,16 @@ import modal
 from modal import Secret, Stub
 from typing import List, Tuple
 from .streetview import search_panoramas, get_streetview, get_panorama
-from concurrent.futures import ThreadPoolExecutor
 from .geo import Coords, Point, Bounds, Distance
-from equilib import equi2pers
-import numpy as np
-from io import BytesIO
-import os
+from PIL import Image
+from concurrent.futures import ThreadPoolExecutor
 
 import modal
 
 stub = Stub("streetview-locate")
 
 sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "pyequilib==0.5.8", "torch"
+    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1"
 )
 
 
@@ -72,6 +69,23 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
             mtrix[x * w_len + y] = pnt
     return Coords(list(filter(lambda x: x, mtrix)))
 
+M_TOP = 100
+M_BOTTOM = 180
+def crop_pano(pano: Image.Image, n_img=6) -> List[Image.Image]:
+    panorama = pano.crop((0, M_TOP, pano.width, pano.height - M_BOTTOM))
+    wid, hei = panorama.size
+    num_crops = n_img
+
+    cropped_images = []
+    stride = (wid - hei) / (num_crops - 1)
+    for i in range(num_crops):
+        left = i * stride
+        right = left + hei
+        crop_box = (left, 0, right, hei)
+        cropped_img = panorama.crop(crop_box)
+        cropped_images.append(cropped_img)
+    return cropped_images
+
 
 @stub.function(image=sv_image)
 def streetview_locate(panos: Coords, image: bytes, batch_size=400, download_only=False):
@@ -79,31 +93,12 @@ def streetview_locate(panos: Coords, image: bytes, batch_size=400, download_only
 
     def fetch_image(args):
         i, pano = args
-        buf = BytesIO()
         pano = get_panorama(pano.aux["pano_id"], zoom=2, multi_threaded=True)
-        # return (i, [{
-        #     "image": pano, 
-        #     "dir": 0
-        # }])
-        pano = np.transpose(np.asarray(pano), (2,0,1))
-        res = []
-        for dir in range(4):
-            pers = equi2pers(
-                equi=pano,
-                rots = {
-                    'roll':0,
-                    'pitch':0,
-                    'yaw': np.pi/2*dir
-                },
-                height=640,
-                width=640,
-                fov_x=120,
-            )
-            res.append({
-                "image": np.transpose(pers, (1,2,0)),
-                "dir": dir*90
-            })
-        return (i, res)
+        crops = crop_pano(pano)
+        return (i, [{
+            "image": cropped, 
+            "dir": dir
+        } for dir, cropped in enumerate(crops)])
 
     print("fetching streetviews...")
     with ThreadPoolExecutor() as executor:
@@ -137,9 +132,9 @@ def streetview_locate(panos: Coords, image: bytes, batch_size=400, download_only
             cord.aux["max_sim_ind"] = 0
             cord.aux["sims"] = [{"dir": images[i][2], "sim": sim, "index": i}]
         else:
-            cord.aux["max_sim"] = max(cord.aux["max_sim"], sim)
             if sim > cord.aux["max_sim"]:
                 cord.aux["max_sim_ind"] = len(cord.aux["sims"])
+            cord.aux["max_sim"] = max(cord.aux["max_sim"], sim)
             cord.aux["sims"].append({"dir": images[i][2], "sim": sim, "index": i})
     panos.coords.sort(key=lambda x: x.aux["max_sim"], reverse=True)
     return panos
@@ -163,9 +158,10 @@ def main():
     print(f"sampled {len(sampled_views)} streetviews")
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()
-    proced_views: Coords = streetview_locate.remote(sampled_views, im, download_only=True)
-    print(f"fetched {len(proced_views)} streetviews")
-    pickle.dump(proced_views, open("tmp/proced_views.pkl", "wb"))
+    proced_views: Coords = streetview_locate.remote(sampled_views, im)
+    print("I'mmmmmm FINISHHHHHHHHED")
+    # print(f"fetched {len(proced_views)} streetviews")
+    pickle.dump(proced_views, open("tmp/proced_views_ml.pkl", "wb"))
     # print(proced_views[:30])
     # sampled_views.plot("tmp/sampled.html")
     # proced_views[:30].plot("tmp/processed.html")

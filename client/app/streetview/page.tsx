@@ -15,7 +15,7 @@ import {
   PickingInfo,
   ScatterplotLayer,
 } from "deck.gl";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import LatLngDisplay from "@/components/widgets/InfoBar";
@@ -51,6 +51,7 @@ export default function StreetView() {
   });
   const [sampled, setSampled] = useState<Coords | null>(null);
   const [located, setLocated] = useState<Coords | null>(null);
+  const [topN, setTopN] = useState(20);
   const mapRef = useRef<MapRef>(null);
   const viewMode = useMemo(() => {
     let vm = selecting ? DrawRectangleMode : ViewMode;
@@ -63,6 +64,9 @@ export default function StreetView() {
     };
     return vm;
   }, [selecting]);
+  const viewedLocated = useMemo(() => {
+    return located ? located.coords.slice(0, topN) : null;
+  }, [located, topN]);
 
   const layer = new EditableGeoJsonLayer({
     id: "geojson-layer",
@@ -87,13 +91,27 @@ export default function StreetView() {
     radiusScale: 1,
     radiusMinPixels: 2,
     radiusMaxPixels: 100,
+    visible: !!sampled && !located,
+  });
+
+  const locateResultsLayer = new ScatterplotLayer<Point>({
+    id: "locate-results-layer",
+    data: viewedLocated,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d) => 1,
+    getFillColor: (d) =>
+      [Math.floor(255 * Math.sqrt(d.aux.max_sim)), 140, 0] as Color,
+    pickable: true,
+    radiusMinPixels: 2,
+    radiusMaxPixels: 100,
   });
 
   const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
     if (!object?.lat) return null;
     return object
       ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
-      Click to copy full coordinates`
+      Click to copy full coordinates
+      ${object.aux.max_sim ? `Similarity: ${object.aux.max_sim}` : ""}`
       : null;
   }, []);
 
@@ -133,17 +151,6 @@ export default function StreetView() {
       });
   };
 
-  const locateResultsLayer = new ScatterplotLayer<Point>({
-    id: "locate-results-layer",
-    data: located?.coords,
-    getPosition: (d) => [d.lon, d.lat],
-    getRadius: (d) => 1,
-    getFillColor: (d) => [255 * d.aux.max_sim, 140, 0],
-    pickable: true,
-    radiusMinPixels: 2,
-    radiusMaxPixels: 100,
-  });
-
   const onLocate = () => {
     setLocating(true);
     ky.post(`${API_URL}/streetview/locate`, {
@@ -165,6 +172,14 @@ export default function StreetView() {
       });
   };
 
+  const activeLayers = useMemo(() => {
+    if (located) {
+      return [layer, locateResultsLayer];
+    } else {
+      return [layer, sampledLayer];
+    }
+  }, [located, sampled, layer, locateResultsLayer, sampledLayer]);
+
   return (
     <div>
       <div
@@ -175,7 +190,7 @@ export default function StreetView() {
         <DeckGL
           initialViewState={viewState}
           controller
-          layers={[layer, sampledLayer]}
+          layers={activeLayers}
           getTooltip={getTooltip}
           ref={deckRef}
           getCursor={(st) => {
@@ -244,6 +259,15 @@ export default function StreetView() {
           <Button onClick={onLocate} disabled={!sampled || locating}>
             {locating ? "Locating..." : "Run Geolocalizaion"}
           </Button>
+          <Label htmlFor="topn-slider">Top {topN} Results</Label>
+          <Slider
+            id="topn-slider"
+            value={[topN]}
+            onValueChange={(v) => setTopN(v[0])}
+            min={1}
+            max={sampled?.coords.length || 50}
+            step={1}
+          />
         </div>
       </OperationContainer>
       <ESearchBox setViewState={setViewState} dglref={deckRef} />
