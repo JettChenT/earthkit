@@ -1,5 +1,5 @@
 from modal import App, asgi_app
-from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException, status
+from fastapi import FastAPI, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, create_model, ValidationError
@@ -49,6 +49,14 @@ def streetview_locate(request: SVLocateRequest):
     res: geo.Coords = f.remote(request.coords.to_geo(), img)
     return schema.Coords.from_geo(res)
 
+@web_app.websocket("/streetview/locate")
+async def streetview_locate_ws(websocket: WebSocket):
+    params = await websocket.receive_json()
+    f = modal.Function.lookup("streetview-locate", "streetview_locate")
+    img = proc_im_url(params["image_url"])
+    for res in f.remote_gen(params["coords"].to_geo(), img):
+        await websocket.send_json(res)
+
 class GeoclipRequest(BaseModel):
     image_url: str
     top_k: int = 100
@@ -81,6 +89,7 @@ def satellite_locate(request: SatelliteLocateRequest):
     img = proc_im_url(request.image_url)
     res: geo.Coords = f.remote(img, request.bounds.to_geo())
     return schema.Coords.from_geo(res)
+
 
 @app.function(image=image)
 @asgi_app()

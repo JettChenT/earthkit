@@ -1,17 +1,19 @@
 import modal
-from modal import Secret, Stub
-from typing import List, Tuple
-from .streetview import search_panoramas, get_streetview, get_panorama
+from modal import Stub
+from typing import List
+from .streetview import search_panoramas, get_panorama_async
 from .geo import Coords, Point, Bounds, Distance
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
+from aiostream import stream, pipe
+import time
 
 import modal
 
 stub = Stub("streetview-locate")
 
 sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1"
+    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0"
 )
 
 
@@ -71,7 +73,9 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
 
 M_TOP = 100
 M_BOTTOM = 180
-def crop_pano(pano: Image.Image, n_img=6) -> List[Image.Image]:
+NUM_DIR = 6
+
+def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
     panorama = pano.crop((0, M_TOP, pano.width, pano.height - M_BOTTOM))
     wid, hei = panorama.size
     num_crops = n_img
@@ -88,56 +92,54 @@ def crop_pano(pano: Image.Image, n_img=6) -> List[Image.Image]:
 
 
 @stub.function(image=sv_image)
-def streetview_locate(panos: Coords, image: bytes, batch_size=400, download_only=False):
+async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
     images = []
+    t_0 = time.time()
 
-    def fetch_image(args):
-        i, pano = args
-        pano = get_panorama(pano.aux["pano_id"], zoom=2, multi_threaded=True)
-        crops = crop_pano(pano)
-        return (i, [{
+    async def fetch_image(pano: Point):
+        pid = pano.aux["pano_id"]
+        pano_im = await get_panorama_async(pid, zoom=2)
+        crops = crop_pano(pano_im)
+        return (pid, [{
             "image": cropped, 
             "dir": dir
         } for dir, cropped in enumerate(crops)])
 
+    pid_map = {p.aux['pano_id']: p for p in panos.coords}
+
     print("fetching streetviews...")
-    with ThreadPoolExecutor() as executor:
-        images = list(
-            executor.map(
-                fetch_image,
-                [
-                    (i, pano)
-                    for i, pano in enumerate(panos)
-                ],
-            )
-        )
-        images = [(i, im['image'], im['dir']) for i, ims in images for im in ims]
-    print(f"fetched {len(images)} streetviews, running VPR...")
-    if download_only:
-        return images
     VPRModel = modal.Cls.lookup("vpr", "VPRModel")
-    batched_images = [im[1] for im in images]
-    similarity_batches = VPRModel().inference.starmap(
-        [
-            (image, batched_images[i : i + batch_size])
-            for i in range(0, len(batched_images), batch_size)
-        ]
+    inference = VPRModel().inference
+
+    async def inference_batch(batch):
+        flattened = [im['image'] for record in batch for im in record[1]]
+        res = inference.remote(image, flattened)
+        updated_pnts = []
+        for i in range(0, len(batch), NUM_DIR):
+            chunk = res[i:i+NUM_DIR]
+            batch_i = i//NUM_DIR
+            pid = batch[batch_i][0]
+            pnt = pid_map[pid]
+            pnt.aux.update({
+                "sims": chunk,
+                "max_sim": max(chunk),
+                "max_sim_ind": chunk.index(max(chunk))
+            })
+            updated_pnts.append(pnt)
+        return Coords(updated_pnts)
+            
+
+    coords_iter = stream.iterate(panos.coords)
+    results = (coords_iter 
+              | pipe.map(fetch_image, ordered=False) 
+              | pipe.chunks(inference_batch_size // NUM_DIR)
+              | pipe.map(inference_batch, ordered=False)
     )
-    similarity = [sim for batch in similarity_batches for sim in batch]
-    for i, sim in enumerate(similarity):
-        cord_i = images[i][0]
-        cord = panos[cord_i]
-        if "max_sim" not in cord.aux:
-            cord.aux["max_sim"] = sim
-            cord.aux["max_sim_ind"] = 0
-            cord.aux["sims"] = [{"dir": images[i][2], "sim": sim, "index": i}]
-        else:
-            if sim > cord.aux["max_sim"]:
-                cord.aux["max_sim_ind"] = len(cord.aux["sims"])
-            cord.aux["max_sim"] = max(cord.aux["max_sim"], sim)
-            cord.aux["sims"].append({"dir": images[i][2], "sim": sim, "index": i})
-    panos.coords.sort(key=lambda x: x.aux["max_sim"], reverse=True)
-    return panos
+
+    async with results.stream() as streamer:
+        async for res in streamer:
+            yield res
+
 
 
 @stub.local_entrypoint()
@@ -158,10 +160,12 @@ def main():
     print(f"sampled {len(sampled_views)} streetviews")
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()
-    proced_views: Coords = streetview_locate.remote(sampled_views, im)
-    print("I'mmmmmm FINISHHHHHHHHED")
+    for res in streetview_locate.remote_gen(sampled_views, im):
+        print(res)
+    # proced_views: Coords = streetview_locate.remote(sampled_views, im)
+    # print("I'mmmmmm FINISHHHHHHHHED")
     # print(f"fetched {len(proced_views)} streetviews")
-    pickle.dump(proced_views, open("tmp/proced_views_ml.pkl", "wb"))
+    # pickle.dump(proced_views, open("tmp/proced_views_ml.pkl", "wb"))
     # print(proced_views[:30])
     # sampled_views.plot("tmp/sampled.html")
     # proced_views[:30].plot("tmp/processed.html")
