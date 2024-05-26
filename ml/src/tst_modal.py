@@ -1,24 +1,35 @@
 import modal
-import urllib.request
-from .geo import Point, Coords
+from .otel import tracer_provider
+from .cfig import ENVS
+from .modal_otel import ModalInstrumentor, OTEL_DEPS
+import time
 
-stub = modal.Stub("tst")
 
-image = modal.Image.debian_slim(python_version="3.11")
+app = modal.App("tst")
+
+ModalInstrumentor().instrument_app(app, tracer_provider=tracer_provider)
+
+image = (modal.Image
+         .debian_slim(python_version="3.11")
+         .pip_install(*OTEL_DEPS)
+         .env(ENVS)
+)
 
 
 def sq(n: int):
     return n * n
 
-
-@stub.function(image=image)
+@app.function(image=image)
 def tst_fnc():
-    pnt = Point(1.1, 2.2)
-    coords = Coords()
-    coords.append(pnt)
-    return coords
+    print('executing...')
+    x = 12
+    time.sleep(2.5)
+    print("done")
+    return sq(x)
 
 
-@stub.local_entrypoint()
-def main():
-    print(tst_fnc.remote())
+@app.local_entrypoint()
+async def main():
+    res = tst_fnc.remote()
+    print(res)
+

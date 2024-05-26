@@ -22,6 +22,8 @@ anyio==4.3.0
     # via watchfiles
 appnope==0.1.4
     # via ipykernel
+asgiref==3.8.1
+    # via opentelemetry-instrumentation-asgi
 asttokens==2.4.1
     # via stack-data
 attrs==23.2.0
@@ -45,6 +47,10 @@ debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
     # via ipython
+deprecated==1.2.14
+    # via opentelemetry-api
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
 executing==2.0.1
     # via stack-data
 fastapi==0.110.3
@@ -72,6 +78,11 @@ geojson==3.1.0
 geopy==2.4.1
     # via geoclip
     # via ml
+googleapis-common-protos==1.63.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+grpcio==1.64.0
+    # via opentelemetry-exporter-otlp-proto-grpc
 grpclib==0.4.7
     # via modal
 h2==4.1.0
@@ -88,6 +99,8 @@ idna==3.4
     # via anyio
     # via requests
     # via yarl
+importlib-metadata==7.0.0
+    # via opentelemetry-api
 ipykernel==6.29.4
     # via ml
 ipython==8.23.0
@@ -145,6 +158,48 @@ numpy==1.26.3
     # via torchmetrics
     # via torchvision
     # via transformers
+opentelemetry-api==1.24.0
+    # via opentelemetry-distro
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-instrumentation
+    # via opentelemetry-instrumentation-asgi
+    # via opentelemetry-instrumentation-fastapi
+    # via opentelemetry-sdk
+opentelemetry-distro==0.45b0
+    # via ml
+opentelemetry-exporter-otlp==1.24.0
+    # via ml
+opentelemetry-exporter-otlp-proto-common==1.24.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-grpc==1.24.0
+    # via opentelemetry-exporter-otlp
+opentelemetry-exporter-otlp-proto-http==1.24.0
+    # via opentelemetry-exporter-otlp
+opentelemetry-instrumentation==0.45b0
+    # via opentelemetry-distro
+    # via opentelemetry-instrumentation-asgi
+    # via opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-asgi==0.45b0
+    # via opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-fastapi==0.45b0
+    # via ml
+opentelemetry-proto==1.24.0
+    # via opentelemetry-exporter-otlp-proto-common
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-sdk==1.24.0
+    # via opentelemetry-distro
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions==0.45b0
+    # via opentelemetry-instrumentation-asgi
+    # via opentelemetry-instrumentation-fastapi
+    # via opentelemetry-sdk
+opentelemetry-util-http==0.45b0
+    # via opentelemetry-instrumentation-asgi
+    # via opentelemetry-instrumentation-fastapi
 packaging==22.0
     # via huggingface-hub
     # via ipykernel
@@ -168,8 +223,10 @@ platformdirs==4.2.0
     # via jupyter-core
 prompt-toolkit==3.0.43
     # via ipython
-protobuf==5.26.1
+protobuf==4.25.3
+    # via googleapis-common-protos
     # via modal
+    # via opentelemetry-proto
 psutil==5.9.8
     # via ipykernel
 ptyprocess==0.7.0
@@ -217,6 +274,7 @@ regex==2024.4.16
 requests==2.28.1
     # via fsspec
     # via huggingface-hub
+    # via opentelemetry-exporter-otlp-proto-http
     # via transformers
 rich==13.7.1
     # via modal
@@ -231,6 +289,7 @@ scipy==1.13.0
     # via scikit-learn
 setuptools==69.5.1
     # via lightning-utilities
+    # via opentelemetry-instrumentation
 shapely==2.0.4
     # via ml
 sigtools==4.0.1
@@ -301,6 +360,7 @@ typing-extensions==4.8.0
     # via ipython
     # via lightning-utilities
     # via modal
+    # via opentelemetry-sdk
     # via pydantic
     # via pydantic-core
     # via pytorch-lightning
@@ -315,5 +375,10 @@ watchfiles==0.21.0
     # via modal
 wcwidth==0.2.13
     # via prompt-toolkit
+wrapt==1.16.0
+    # via deprecated
+    # via opentelemetry-instrumentation
 yarl==1.9.4
     # via aiohttp
+zipp==3.18.2
+    # via importlib-metadata
