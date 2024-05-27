@@ -24,21 +24,27 @@ def sq(n: int):
 @app.function(image=image)
 async def tst_fnc(x):
     print('executing...')
-    await asyncio.sleep(2.5)
+    time.sleep(1)
     print("done")
     return sq(x)
 
 @app.function(image=image)
-def tst_fnc2():
+def sq_iter(n):
+    for x in range(n):
+        yield tst_fnc.remote(x)
+
+@app.function(image=image)
+def sq_sum():
     print('executing...')
-    time.sleep(2.5)
-    res = tst_fnc.map([1,2,3,4,5,6,7])
-    print("done")
-    return res
+    time.sleep(1)
+    s = 0
+    for res in sq_iter.remote_gen(10):
+        s += res
+    return s
 
 
 @app.local_entrypoint()
 async def main():
-    res = tst_fnc2.remote()
+    res = sq_sum.remote()
     print(res)
 

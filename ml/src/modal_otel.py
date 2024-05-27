@@ -2,7 +2,6 @@ from typing import Collection, Dict, Optional
 import modal
 from modal.app import FunctionInfo
 import modal.client
-import modal_proto.api_grpc
 from opentelemetry import context
 from opentelemetry.context import attach, detach
 from opentelemetry.propagate import inject, extract
@@ -12,7 +11,7 @@ from opentelemetry.trace import SpanKind, TracerProvider, get_tracer
 from opentelemetry.propagate import inject
 import inspect
 from modal import App, Function
-from modal.functions import _Invocation
+from modal.functions import _Invocation, _create_input
 import logging
 from functools import wraps
 
@@ -43,17 +42,17 @@ class ModalInstrumentor(BaseInstrumentor):
     def _instrument(self, **kwargs):
         self.original_app_cls = modal.App
         self.original_stub_cls = modal.Stub
-        self.original_invocation = modal.functions._Invocation
+        self.original_create_input = modal.functions._create_input
         _InstrumentedApp._tracer_provider = kwargs.get("tracer_provider")
         modal.App = _InstrumentedApp
         modal.Stub = _InstrumentedApp
-        modal.functions._Invocation = InstrumentedInvocation
+        modal.functions._create_input = _create_input_otel
         return super()._instrument(**kwargs)
     
     def _uninstrument(self, **kwargs):
         modal.App = self.original_app_cls
         modal.Stub = self.original_stub_cls
-        modal.functions._Invocation = self.original_invocation
+        modal.functions._create_input = self.original_create_input
         _InstrumentedApp._tracer_provider = None
 
 class _InstrumentedApp(App):
@@ -85,7 +84,18 @@ class _InstrumentedApp(App):
                 f, serialized=serialized, name_override=name_override, cls=_cls
             )
             span_name = f"{self.name}.{f_info.get_tag()}"
-            if inspect.iscoroutinefunction(f):
+            if inspect.isasyncgenfunction(f):
+                @wraps(f)
+                async def wrapped_f(*args, **kwargs):
+                    ctx = extract_ctx(kwargs)
+                    with tracer.start_as_current_span(
+                        span_name,
+                        kind=SpanKind.SERVER,
+                        context=ctx,
+                    ) as span:
+                        async for result in f(*args, **kwargs):
+                            yield result
+            elif inspect.iscoroutinefunction(f):
                 @wraps(f)
                 async def wrapped_f(*args, **kwargs):
                     ctx = extract_ctx(kwargs)
@@ -95,7 +105,19 @@ class _InstrumentedApp(App):
                         context=ctx,
                     ) as span:
                         return await f(*args, **kwargs)
-            else:
+
+            elif inspect.isgeneratorfunction(f):
+                @wraps(f)
+                def wrapped_f(*args, **kwargs):
+                    ctx = extract_ctx(kwargs)
+                    with tracer.start_as_current_span(
+                        span_name,
+                        kind=SpanKind.SERVER,
+                        context=ctx,
+                    ) as span:
+                        for result in f(*args, **kwargs):
+                            yield result
+            elif inspect.isfunction(f):
                 @wraps(f)
                 def wrapped_f(*args, **kwargs):
                     ctx = extract_ctx(kwargs)
@@ -105,16 +127,18 @@ class _InstrumentedApp(App):
                         context=ctx,
                     ) as span:
                         return f(*args, **kwargs)
+            else:
+                raise ValueError(f"Unsupported function type: {type(f)}")
             return in_wrapped(wrapped_f, _cls)
         return wr_wrapped
 
-class InstrumentedInvocation(_Invocation):
-    @staticmethod
-    async def create(function_id: str, args, kwargs, client) -> _Invocation:
-        carrier = {}
-        inject(carrier)
-        kwargs["_otel_context"] = carrier
-        return await _Invocation.create(function_id, args, kwargs, client)
+
+@wraps(_create_input)
+async def _create_input_otel(args, kwargs, client, idx: Optional[int] = None):
+    carrier = {}
+    inject(carrier)
+    kwargs["_otel_context"] = carrier
+    return await _create_input(args, kwargs, client, idx)
 
 def extract_ctx(kwargs):
     if "_otel_context" in kwargs:
