@@ -1,19 +1,21 @@
 from typing import Collection, Dict, Optional
+from functools import wraps
+import inspect
 import modal
 from modal.app import FunctionInfo
 import modal.client
-from opentelemetry import context
-from opentelemetry.context import attach, detach
+import modal_proto.api_pb2
 from opentelemetry.propagate import inject, extract
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
-from opentelemetry.instrumentation.propagators import get_global_response_propagator
 from opentelemetry.trace import SpanKind, TracerProvider, get_tracer
 from opentelemetry.propagate import inject
-import inspect
-from modal import App, Function
-from modal.functions import _Invocation, _create_input
+from modal import App
+from modal.functions import _create_input, _Function, _Invocation
+from modal.partial_function import _PartialFunction, _PartialFunctionFlags, _method, synchronize_api
 import logging
-from functools import wraps
+
+
+# TODO: Invoke for remote calls instead
 
 _logger = logging.getLogger(__name__)
 
@@ -42,17 +44,25 @@ class ModalInstrumentor(BaseInstrumentor):
     def _instrument(self, **kwargs):
         self.original_app_cls = modal.App
         self.original_stub_cls = modal.Stub
+        self.original_function = modal.functions._Function
         self.original_create_input = modal.functions._create_input
+        self.original_method = modal.partial_function._method
         _InstrumentedApp._tracer_provider = kwargs.get("tracer_provider")
         modal.App = _InstrumentedApp
         modal.Stub = _InstrumentedApp
+        modal.functions._Function = _InstrumentedFunction
+        modal.Function = modal.functions.Function = synchronize_api(_InstrumentedFunction)
         modal.functions._create_input = _create_input_otel
+        modal.partial_function._method = patched_method
+        modal.method = modal.partial_function.method = synchronize_api(patched_method)
         return super()._instrument(**kwargs)
     
     def _uninstrument(self, **kwargs):
         modal.App = self.original_app_cls
         modal.Stub = self.original_stub_cls
         modal.functions._create_input = self.original_create_input
+        modal.partial_function._method = self.original_method
+        modal.functions._Function = self.original_function
         _InstrumentedApp._tracer_provider = None
 
 class _InstrumentedApp(App):
@@ -84,53 +94,91 @@ class _InstrumentedApp(App):
                 f, serialized=serialized, name_override=name_override, cls=_cls
             )
             span_name = f"{self.name}.{f_info.get_tag()}"
-            if inspect.isasyncgenfunction(f):
-                @wraps(f)
-                async def wrapped_f(*args, **kwargs):
-                    ctx = extract_ctx(kwargs)
-                    with tracer.start_as_current_span(
-                        span_name,
-                        kind=SpanKind.SERVER,
-                        context=ctx,
-                    ) as span:
-                        async for result in f(*args, **kwargs):
-                            yield result
-            elif inspect.iscoroutinefunction(f):
-                @wraps(f)
-                async def wrapped_f(*args, **kwargs):
-                    ctx = extract_ctx(kwargs)
-                    with tracer.start_as_current_span(
-                        span_name,
-                        kind=SpanKind.SERVER,
-                        context=ctx,
-                    ) as span:
-                        return await f(*args, **kwargs)
-
-            elif inspect.isgeneratorfunction(f):
-                @wraps(f)
-                def wrapped_f(*args, **kwargs):
-                    ctx = extract_ctx(kwargs)
-                    with tracer.start_as_current_span(
-                        span_name,
-                        kind=SpanKind.SERVER,
-                        context=ctx,
-                    ) as span:
-                        for result in f(*args, **kwargs):
-                            yield result
-            elif inspect.isfunction(f):
-                @wraps(f)
-                def wrapped_f(*args, **kwargs):
-                    ctx = extract_ctx(kwargs)
-                    with tracer.start_as_current_span(
-                        span_name,
-                        kind=SpanKind.SERVER,
-                        context=ctx,
-                    ) as span:
-                        return f(*args, **kwargs)
-            else:
-                raise ValueError(f"Unsupported function type: {type(f)}")
+            wrapped_f = wrap_function_span(f, tracer, span_name)
             return in_wrapped(wrapped_f, _cls)
         return wr_wrapped
+
+def patched_method(*args, **kwargs):
+    in_wrapper = _method(*args, **kwargs)
+    @wraps(in_wrapper)
+    def wr_wrapped(f):
+        tracer = get_tracer(
+            __name__,
+            tracer_provider=_InstrumentedApp._tracer_provider,
+            schema_url="https://opentelemetry.io/schemas/1.11.0",
+        )
+        span_name = f.__name__
+        wrapped_f = wrap_function_span(f, tracer, span_name, is_method=True)
+        print(f"wrapped {wrapped_f.__name__}")
+        return in_wrapper(wrapped_f)
+    return wr_wrapped
+
+def wrap_function_span(f, tracer, span_name, is_method=False):
+    def get_span_name(args):
+        if not is_method:
+            return span_name
+        return f"{args[0].__class__.__name__}.{span_name}"
+    if inspect.isasyncgenfunction(f):
+        @wraps(f)
+        async def wrapped_f(*args, **kwargs):
+            ctx = extract_ctx(kwargs)
+            with tracer.start_as_current_span(
+                get_span_name(args),
+                kind=SpanKind.SERVER,
+                context=ctx,
+            ) as span:
+                async for result in f(*args, **kwargs):
+                    yield result
+    elif inspect.iscoroutinefunction(f):
+        @wraps(f)
+        async def wrapped_f(*args, **kwargs):
+            ctx = extract_ctx(kwargs)
+            with tracer.start_as_current_span(
+                get_span_name(args),
+                kind=SpanKind.SERVER,
+                context=ctx,
+            ) as span:
+                return await f(*args, **kwargs)
+    elif inspect.isgeneratorfunction(f):
+        @wraps(f)
+        def wrapped_f(*args, **kwargs):
+            ctx = extract_ctx(kwargs)
+            with tracer.start_as_current_span(
+                get_span_name(args),
+                kind=SpanKind.SERVER,
+                context=ctx,
+            ) as span:
+                for result in f(*args, **kwargs):
+                    yield result
+    elif inspect.isfunction(f):
+        @wraps(f)
+        def wrapped_f(*args, **kwargs):
+            ctx = extract_ctx(kwargs)
+            with tracer.start_as_current_span(
+                get_span_name(args),
+                kind=SpanKind.SERVER,
+                context=ctx,
+            ) as span:
+                return f(*args, **kwargs)
+    else:
+        raise ValueError(f"Unsupported function type: {type(f)}")
+    return wrapped_f
+
+def g_tracer():
+    return get_tracer(
+        __name__,
+        tracer_provider=_InstrumentedApp._tracer_provider,
+        schema_url="https://opentelemetry.io/schemas/1.11.0",
+    )
+
+class _InstrumentedFunction(_Function):
+    async def _call_function(self, args, kwargs):
+        tracer = g_tracer()
+        with tracer.start_as_current_span(
+            f"invocation_function.{self.info.module_name}.{self.info.function_name}",
+            kind=SpanKind.CLIENT,
+        ) as span:
+            return await super()._call_function(args, kwargs)
 
 
 @wraps(_create_input)

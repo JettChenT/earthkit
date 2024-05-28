@@ -1,3 +1,7 @@
+import asyncio
+from .otel import instrument, OTEL_DEPS, get_tracer, ENVS
+instrument()
+
 import modal
 from modal import Stub
 from typing import List
@@ -5,16 +9,15 @@ from .streetview import search_panoramas, get_panorama_async
 from .geo import Coords, Point, Bounds, Distance
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
-from aiostream import stream, pipe
+from aiostream import stream, pipe, streamcontext
+from .stream_utils import eager_chunks
 import time
-
-import modal
 
 stub = Stub("streetview-locate")
 
 sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0"
-)
+    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0", *OTEL_DEPS
+).env(ENVS)
 
 
 def fetch_panoramas(coord: Point):
@@ -95,7 +98,9 @@ def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
 async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
     images = []
     t_0 = time.time()
+    tracer = get_tracer()
 
+    @tracer.start_as_current_span("fetch_image")
     async def fetch_image(pano: Point):
         pid = pano.aux["pano_id"]
         pano_im = await get_panorama_async(pid, zoom=2)
@@ -113,7 +118,7 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
 
     async def inference_batch(batch):
         flattened = [im['image'] for record in batch for im in record[1]]
-        res = inference.remote(image, flattened)
+        res = await inference.remote.aio(image, flattened)
         updated_pnts = []
         for i in range(0, len(batch), NUM_DIR):
             chunk = res[i:i+NUM_DIR]
@@ -130,16 +135,34 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
             
 
     coords_iter = stream.iterate(panos.coords)
-    results = (coords_iter 
-              | pipe.map(fetch_image, ordered=False) 
-              | pipe.chunks(inference_batch_size // NUM_DIR)
-              | pipe.map(inference_batch, ordered=False)
-    )
+    xs = coords_iter | pipe.map(fetch_image, ordered=False)
+    batch_cnt = inference_batch_size // NUM_DIR
+    inference_queue = asyncio.Queue()
 
-    async with results.stream() as streamer:
-        async for res in streamer:
-            yield res
+    async def task_download_panos():
+        async with streamcontext(xs) as streamer:
+            cur_batch = []
+            async for result in streamer:
+                cur_batch.append(result)
+                if len(cur_batch) == batch_cnt:
+                    await inference_queue.put(asyncio.create_task(inference_batch(cur_batch)))
+                    cur_batch = []
+            if cur_batch:
+                await inference_queue.put(asyncio.create_task(inference_batch(cur_batch)))
+            await inference_queue.put(None)
+        print("all panoramas fetched")
+    
+    pano_download_task = asyncio.create_task(task_download_panos())
+    
+    while True:
+        task = await inference_queue.get()
+        if task is None:
+            break
+        res = await task
+        yield res
+        inference_queue.task_done()
 
+    await pano_download_task
 
 
 @stub.local_entrypoint()

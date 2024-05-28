@@ -1,12 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
 import modal
-from modal import Secret, Stub, gpu, build, enter, method
 from typing import List, Tuple, Any
+from .otel import instrument, OTEL_DEPS, ENVS
+instrument()
 import numpy as np
 from .common import cosine_similarity
 import os
-
-import modal
+from modal import Secret, Stub, gpu, build, enter, method
 
 stub = Stub("vpr")
 
@@ -14,7 +14,8 @@ inference_image = modal.Image.debian_slim(python_version="3.10").pip_install(
     "torch==2.2.2",
     "pillow==10.3.0",
     "torchvision==0.17.2",
-)
+    *OTEL_DEPS
+).env(ENVS)
 
 with inference_image.imports():
     import torch
