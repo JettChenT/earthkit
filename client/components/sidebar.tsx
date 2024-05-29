@@ -1,7 +1,7 @@
 "use client";
 
 import { Tool, useStore } from "@/lib/store";
-import { Earth, Satellite, CarTaxiFront } from "lucide-react";
+import { Earth, Satellite, CarTaxiFront, SearchCode } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -30,6 +30,12 @@ const sideBarData: SideBarItem[] = [
     display: "Street View",
     tooltip: "Locate a ground-level image based on street view imagery",
     icon: <CarTaxiFront className="size-4" />,
+  },
+  {
+    tool: "osm",
+    display: "OSM",
+    tooltip: "OpenStreetMap",
+    icon: <SearchCode className="size-4" />,
   },
 ];
 

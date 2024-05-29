@@ -18,6 +18,8 @@ aiostream==0.5.2
 annotated-types==0.6.0
     # via pydantic
 anyio==4.3.0
+    # via httpx
+    # via openai
     # via starlette
     # via watchfiles
 appnope==0.1.4
@@ -30,7 +32,10 @@ attrs==23.2.0
     # via aiohttp
     # via sigtools
 certifi==2022.12.7
+    # via httpcore
+    # via httpx
     # via modal
+    # via pinecone-client
     # via requests
 charset-normalizer==2.1.1
     # via requests
@@ -51,6 +56,8 @@ deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-grpc
     # via opentelemetry-exporter-otlp-proto-http
+distro==1.9.0
+    # via openai
 executing==2.0.1
     # via stack-data
 fastapi==0.110.3
@@ -85,10 +92,16 @@ grpcio==1.64.0
     # via opentelemetry-exporter-otlp-proto-grpc
 grpclib==0.4.7
     # via modal
+h11==0.14.0
+    # via httpcore
 h2==4.1.0
     # via grpclib
 hpack==4.0.0
     # via h2
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.0
+    # via openai
 huggingface-hub==0.17.3
     # via timm
     # via tokenizers
@@ -97,6 +110,7 @@ hyperframe==6.0.1
     # via h2
 idna==3.4
     # via anyio
+    # via httpx
     # via requests
     # via yarl
 importlib-metadata==7.0.0
@@ -158,6 +172,8 @@ numpy==1.26.3
     # via torchmetrics
     # via torchvision
     # via transformers
+openai==1.30.4
+    # via ml
 opentelemetry-api==1.24.0
     # via opentelemetry-distro
     # via opentelemetry-exporter-otlp-proto-grpc
@@ -219,6 +235,8 @@ pillow==10.2.0
     # via geoclip
     # via matplotlib
     # via torchvision
+pinecone-client==4.1.0
+    # via ml
 platformdirs==4.2.0
     # via jupyter-core
 prompt-toolkit==3.0.43
@@ -236,6 +254,7 @@ pure-eval==0.2.2
 pydantic==2.7.1
     # via fastapi
     # via ml
+    # via openai
 pydantic-core==2.18.2
     # via pydantic
 pyequilib==0.5.8
@@ -299,6 +318,8 @@ six==1.16.0
     # via python-dateutil
 sniffio==1.3.1
     # via anyio
+    # via httpx
+    # via openai
 stack-data==0.6.3
     # via ipython
 starlette==0.37.2
@@ -335,6 +356,8 @@ tornado==6.4
     # via jupyter-client
 tqdm==4.64.1
     # via huggingface-hub
+    # via openai
+    # via pinecone-client
     # via pytorch-lightning
     # via pytorch-metric-learning
     # via transformers
@@ -360,7 +383,9 @@ typing-extensions==4.8.0
     # via ipython
     # via lightning-utilities
     # via modal
+    # via openai
     # via opentelemetry-sdk
+    # via pinecone-client
     # via pydantic
     # via pydantic-core
     # via pytorch-lightning
@@ -370,6 +395,7 @@ typing-extensions==4.8.0
 tzdata==2024.1
     # via pandas
 urllib3==1.26.13
+    # via pinecone-client
     # via requests
 watchfiles==0.21.0
     # via modal

@@ -9,16 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.17",
     "@deck.gl-community/editable-layers": "^9.0.0-alpha.1",
     "@deck.gl/google-maps": "^9.0.14",
     "@deck.gl/react": "^9.0.12",
     "@mapbox/search-js-react": "^1.0.0-beta.21",
+    "@pinecone-database/pinecone": "^2.2.1",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-slot": "^1.0.2",
     "@uploadthing/react": "^6.5.4",
     "@vis.gl/react-google-maps": "^1.0.0",
+    "ai": "^3.1.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -36,6 +39,7 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^6.10.4",
+    "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
