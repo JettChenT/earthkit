@@ -1,8 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Chatbox } from "@/components/chatbox";
 import { useChat } from "ai/react";
+
+import { ChatMessages } from "@/components/chat-messages";
 
 export default function OSM() {
   const { messages, input, handleInputChange, handleSubmit } = useChat({
@@ -11,20 +12,12 @@ export default function OSM() {
   return (
     <div className="w-full h-full">
       <div className="w-1/2">
-        {messages.map((message) => (
-          <div key={message.id}>
-            {message.role}: {message.content}
-            {message.toolInvocations?.map((tool) => (
-              <div key={tool.toolCallId}>
-                {tool.toolName}: {JSON.stringify(tool.args)}
-              </div>
-            ))}
-          </div>
-        ))}
-        <form onSubmit={handleSubmit}>
-          <Input type="text" value={input} onChange={handleInputChange} />
-          <Button type="submit">Submit</Button>
-        </form>
+        <ChatMessages messages={messages} />
+        <Chatbox
+          handleSubmit={handleSubmit}
+          handleInputChange={handleInputChange}
+          input={input}
+        />
       </div>
     </div>
   );

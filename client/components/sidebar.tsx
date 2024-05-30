@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: add collapse, hover highlights, etc
+
 import { Tool, useStore } from "@/lib/store";
 import { Earth, Satellite, CarTaxiFront, SearchCode } from "lucide-react";
 import Link from "next/link";
@@ -42,7 +44,7 @@ const sideBarData: SideBarItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   return (
-    <div className="flex-initial w-44 py-5">
+    <div className="flex-initial w-56 py-5">
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
         <h1 className="text-2xl font-bold mb-3 ml-2">EarthKit</h1>
         {sideBarData.map((item) => (
