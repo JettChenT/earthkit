@@ -2,6 +2,7 @@ import { type CoreMessage, streamText, embed, tool } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { z } from "zod";
+import { SYSTEM_PROMPT } from "./prompting";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -40,10 +41,7 @@ export async function POST(req: Request) {
   console.log("streaming...");
   const result = await streamText({
     model: openai("gpt-4o"),
-    system:
-      "You are a helpful bot that composes Overpass Turbo queries based on a natural language query from user. In your response, include the Overpass Turbo query in a code block with language set to `overpassql`. e.g. ```overpassql\n[out:json]\n(area[name=" +
-      '"Dublin, Ireland"];\n->.a;\narea.a[' +
-      'name="Dublin, Ireland"];\nout;\n```. Generally, structure your response by beginning with a brief description of what you are going to query, followed by a codeblock. DO NOT include anything after that.',
+    system: SYSTEM_PROMPT,
     messages,
   });
 
