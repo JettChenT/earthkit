@@ -25,11 +25,21 @@ interface ChatMessagesProps {
   messages: Message[];
 }
 
+import { useEffect, useRef } from "react";
+
 export function ChatMessages({ messages }: ChatMessagesProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div
       key="1"
-      className="flex flex-col items-start gap-4 p-4 md:p-8 lg:max-w-3xl lg:mx-auto overflow-y-scroll h-full"
+      className="grow flex flex-col items-start gap-4 p-4 md:p-8 w-full lg:mx-auto overflow-y-auto"
     >
       {messages.map((message, index) => (
         <div key={index} className="flex items-start gap-4 w-full">
@@ -55,6 +65,7 @@ export function ChatMessages({ messages }: ChatMessagesProps) {
           </div>
         </div>
       ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 }

@@ -18,10 +18,17 @@ export function Chatbox({
   handleInputChange,
   input,
 }: ChatboxProps) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit(event as unknown as React.FormEvent<HTMLFormElement>);
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-2 bg-white border rounded-md w-full"
+      className="flex-none p-2 bg-white border rounded-md w-full mb-3"
     >
       <div className="flex-1">
         <Textarea
@@ -29,6 +36,7 @@ export function Chatbox({
           placeholder="Type a message... (@to mention)"
           value={input}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
         />
       </div>
       <div className="flex items-center justify-between">

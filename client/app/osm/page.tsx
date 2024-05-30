@@ -10,8 +10,8 @@ export default function OSM() {
     api: "api/osmnl",
   });
   return (
-    <div className="w-full h-full">
-      <div className="w-1/2">
+    <div className="w-full h-screen">
+      <div className="w-1/2 h-screen flex flex-col">
         <ChatMessages messages={messages} />
         <Chatbox
           handleSubmit={handleSubmit}
