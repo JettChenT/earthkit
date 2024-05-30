@@ -25,6 +25,7 @@ import dynamic from "next/dynamic";
 const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const selectedFeatureIndexes: number[] = [];
 

@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const selectedFeatureIndexes: number[] = [];
 

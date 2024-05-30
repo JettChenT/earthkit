@@ -16,6 +16,7 @@ import { Map } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
