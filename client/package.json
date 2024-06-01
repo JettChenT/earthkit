@@ -19,6 +19,8 @@
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@supabase/ssr": "^0.3.0",
+    "@supabase/supabase-js": "^2.43.4",
     "@turf/bbox": "7.0.0-alpha.116",
     "@types/highlightjs": "^9.12.6",
     "@types/react-syntax-highlighter": "^15.5.13",
