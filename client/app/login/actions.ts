@@ -10,10 +10,9 @@ export async function login(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo:
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:3000/auth/callback"
-          : "https://earthkit.app/auth/callback",
+      redirectTo: process.env.IS_LOCAL
+        ? "http://localhost:3000/auth/callback"
+        : "https://earthkit.app/auth/callback",
     },
   });
   if (data.url) {
