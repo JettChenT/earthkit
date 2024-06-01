@@ -2,7 +2,7 @@ import { type CoreMessage, streamText, embed, tool } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { z } from "zod";
-import { SYSTEM_PROMPT } from "./prompting";
+import { SYSTEM_PROMPT } from "../../../lib/prompting";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import Sidebar from "@/components/sidebar";
 import ResourceBar from "@/components/resource_bar";
+import { AI } from "./actions";
 
 export const metadata: Metadata = {
   title: "EarthKit",
@@ -22,20 +23,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
-      >
-        <main className="h-screen w-screen flex overflow-hidden">
-          <Sidebar />
-          <div className="h-full flex-1 relative"> {children}</div>
-          <ResourceBar />
-        </main>
-        <Toaster />
-      </body>
-    </html>
+    <AI>
+      <html lang="en">
+        <body
+          className={cn(
+            "min-h-screen bg-background font-sans antialiased",
+            fontSans.variable
+          )}
+        >
+          <main className="h-screen w-screen flex overflow-hidden">
+            <Sidebar />
+            <div className="h-full flex-1 relative"> {children}</div>
+            <ResourceBar />
+          </main>
+          <Toaster />
+        </body>
+      </html>
+    </AI>
   );
 }
