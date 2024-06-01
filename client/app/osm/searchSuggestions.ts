@@ -20,6 +20,7 @@ const t_keys = keys as KeyRecord[];
 const t_tags = tags as TagRecord[];
 
 type Document = TypedDocument<Orama<typeof schema>>;
+export type OSMOrama = Orama<typeof schema>;
 
 export const schema = {
   name: "string",
@@ -69,6 +70,10 @@ export async function searchDb(
   const searchParams: SearchParams<Orama<typeof schema>> = {
     term: query,
     limit: 15,
+    sortBy: {
+      property: "meta.osm_frac",
+      order: "DESC",
+    },
   };
   return search(db, searchParams);
 }

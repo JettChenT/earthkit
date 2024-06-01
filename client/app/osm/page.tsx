@@ -52,7 +52,7 @@ export default function OSM() {
   const [conversation, setConversation] = useUIState<typeof AI>();
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const [db, setDb] = useState<Orama<typeof schema>>();
+  const [db, setDb] = useState<Orama<typeof schema> | null>(null);
 
   useEffect(() => {
     initializeDb().then((db) => setDb(db));
@@ -139,13 +139,9 @@ export default function OSM() {
           handleSubmit={handleSubmit}
           handleInputChange={(e) => {
             setInput(e.target.value);
-            if (db) {
-              searchDb(db, e.target.value).then((suggestions) => {
-                console.log(suggestions);
-              });
-            }
           }}
           input={input}
+          db={db}
         />
       </div>
       <div className="flex-1 p-3">
