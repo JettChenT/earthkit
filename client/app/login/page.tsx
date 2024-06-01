@@ -19,7 +19,7 @@ export default function LoginForm() {
           <CardTitle className="text-2xl">Login or Sign Up</CardTitle>
           <CardDescription>
             Log in with any of the supporting providers, an account will be
-            created for you if you don't have one.
+            created for you if you don&apos;t have one.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
