@@ -14,17 +14,12 @@ export function ChatMessages() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    const disp = messages[messages.length - 1]?.display;
-    console.log(disp, typeof disp);
-  }, [messages, messages[messages.length - 1]?.display]);
-
   return (
     <div
       key="1"
       className="grow flex flex-col items-start gap-4 p-4 md:p-8 w-full lg:mx-auto overflow-y-auto"
     >
-      {messages.map(({ id, role, display }: ClientMessage) => (
+      {messages.map(({ id, role, content, upperIndicator }: ClientMessage) => (
         <div key={id} className="flex items-start gap-4 w-full">
           <div
             className={`${
@@ -40,8 +35,9 @@ export function ChatMessages() {
             >
               {role === "user" ? "You" : "Assistant"}
             </div>
+            {upperIndicator}
             <div className="prose prose-stone text-sm pl-0">
-              <MarkdownRenderer content={display?.toString() ?? ""} />
+              <MarkdownRenderer content={content} />
             </div>
           </div>
         </div>

@@ -47,14 +47,36 @@ export default function OSM() {
   const handleSubmit = async () => {
     setConversation((prev: ClientMessage[]) => [
       ...prev,
-      { role: "user", display: input, id: nanoid() },
+      { role: "user", content: input, id: nanoid() },
     ]);
     setInput("");
-    const [message, statusStream] = await sendMessage(input);
-    setConversation((prev: ClientMessage[]) => [...prev, message]);
-    for await (const value of readStreamableValue(statusStream)) {
-      if (value?.kind == "done") {
-        await queryOsm(value.value);
+    const { textStream, upperIndicator, progressStream } = await sendMessage(
+      input
+    );
+    const generation_id = nanoid();
+    setConversation((prev: ClientMessage[]) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: "",
+        upperIndicator: upperIndicator,
+        id: generation_id,
+      },
+    ]);
+    for await (const value of readStreamableValue(textStream)) {
+      setConversation((prevConversation) =>
+        prevConversation.map((msg) => {
+          if (msg.id === generation_id) {
+            return { ...msg, content: msg.content + value };
+          }
+          return msg;
+        })
+      );
+    }
+    for await (const progress of readStreamableValue(progressStream)) {
+      console.log(progress);
+      if (progress?.kind === "done") {
+        queryOsm(progress.value);
       }
     }
   };
