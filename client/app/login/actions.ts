@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { Provider } from "@supabase/supabase-js";
 
-export async function login(formData: FormData) {
+export async function login(provider: Provider) {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "github",
+    provider,
     options: {
       redirectTo: process.env.IS_LOCAL
         ? "http://localhost:3000/auth/callback"
