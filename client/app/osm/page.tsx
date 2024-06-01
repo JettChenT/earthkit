@@ -11,12 +11,14 @@ import DeckGL, {
 import { Map } from "react-map-gl";
 import { INITIAL_VIEW_STATE, MAPBOX_TOKEN } from "@/lib/constants";
 import osmtogeojson from "osmtogeojson";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import { AI, ClientMessage } from "../actions";
 import { nanoid } from "ai";
 import { bbox } from "@turf/bbox";
+import { Orama } from "@orama/orama";
+import { initializeDb, schema, searchDb } from "./searchSuggestions";
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
@@ -50,6 +52,11 @@ export default function OSM() {
   const [conversation, setConversation] = useUIState<typeof AI>();
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  const [db, setDb] = useState<Orama<typeof schema>>();
+
+  useEffect(() => {
+    initializeDb().then((db) => setDb(db));
+  }, []);
 
   const handleSubmit = async () => {
     setConversation((prev: ClientMessage[]) => [
@@ -130,7 +137,14 @@ export default function OSM() {
         <ChatMessages />
         <Chatbox
           handleSubmit={handleSubmit}
-          handleInputChange={(e) => setInput(e.target.value)}
+          handleInputChange={(e) => {
+            setInput(e.target.value);
+            if (db) {
+              searchDb(db, e.target.value).then((suggestions) => {
+                console.log(suggestions);
+              });
+            }
+          }}
           input={input}
         />
       </div>
