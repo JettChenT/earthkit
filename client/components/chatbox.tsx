@@ -50,7 +50,7 @@ function OSMSuggestionPill({
   const tpName = type == "key" ? "key" : "feat";
   return (
     <div
-      className={`inline-flex items-baseline px-1 rounded-sm shadow-sm  ${
+      className={`inline-flex items-baseline px-1 mt-1 rounded-sm shadow-sm  ${
         type == "key"
           ? "bg-blue-100 text-blue-800"
           : type == "location"
@@ -120,7 +120,7 @@ const locationSuggestionMatcher = new MatchDecorator({
     }),
 });
 
-const placeholders = ViewPlugin.fromClass(
+export const osm_placeholders = ViewPlugin.fromClass(
   class {
     placeholders: DecorationSet;
     constructor(view: EditorView) {
@@ -142,7 +142,7 @@ const placeholders = ViewPlugin.fromClass(
   }
 );
 
-const location_placeholders = ViewPlugin.fromClass(
+export const location_placeholders = ViewPlugin.fromClass(
   class {
     placeholders: DecorationSet;
     constructor(view: EditorView) {
@@ -197,12 +197,18 @@ const locationCompletion = async (
         label: `(Entity osm_id=${suggestion.osm_id};area_id=${suggestion.area_id};${suggestion.class}: \`${suggestion.name}\`)`,
         displayLabel: `${suggestion.display_name}`,
         type: suggestion.class == "administrative" ? "keyword" : "variable",
-        detail: suggestion.type,
         info: (cmpl) => {
           return renderReactNode(
             <div className="text-sm">
-              <div className="font-bold">{suggestion.display_name}</div>
+              <div className="font-bold">{suggestion.name}</div>
+              <div className="text-xs text-gray-500">
+                {suggestion.display_name}
+              </div>
               <div className="text-xs text-gray-500">{suggestion.type}</div>
+              <div className="text-xs text-gray-500">{suggestion.osm_type}</div>
+              <div className="text-xs text-gray-500">
+                {suggestion.address_type}
+              </div>
             </div>
           );
         },
@@ -292,18 +298,19 @@ export function Chatbox({
             handleInputChange(value);
           }}
           height="50px"
-          placeholder="Type a message..."
+          placeholder="Describe a query... Use `#` to search for OSM tags/features, and use `@` to reference locations and areas."
           extensions={[
             EditorView.theme({
               "&.cm-focused": {
                 outline: "none",
               },
             }),
+            EditorView.lineWrapping,
             autocompletion({
               aboveCursor: true,
               override: [osmCompletion, locationCompletion],
             }),
-            placeholders,
+            osm_placeholders,
             location_placeholders,
           ]}
           basicSetup={{
@@ -314,7 +321,10 @@ export function Chatbox({
         />
       </div>
       <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500 ml-2">@ Mention</div>
+        <div className="text-xs text-gray-500 ml-4">
+          <span className="font-bold">#</span>Tags/Features{" "}
+          <span className="font-bold">@</span>Locations
+        </div>
         <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />
         </Button>

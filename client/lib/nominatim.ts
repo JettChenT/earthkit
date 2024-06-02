@@ -6,6 +6,7 @@ export type OSMResultT = {
   osm_id: number;
   name: string;
   display_name: string;
+  address_type: string;
   area_id: number;
 };
 
