@@ -19,7 +19,7 @@ export interface TagRecord {
 const t_keys = keys as KeyRecord[];
 const t_tags = tags as TagRecord[];
 
-type Document = TypedDocument<Orama<typeof schema>>;
+export type Document = TypedDocument<Orama<typeof schema>>;
 export type OSMOrama = Orama<typeof schema>;
 
 export const schema = {
