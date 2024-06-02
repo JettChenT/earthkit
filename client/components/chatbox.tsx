@@ -291,7 +291,7 @@ export function Chatbox({
         <CodeMirror
           value={input}
           onChange={(value) => {
-            if (value[value.length - 1] == "\n") {
+            if (value.includes("\n")) {
               handleSubmit();
               return;
             }
