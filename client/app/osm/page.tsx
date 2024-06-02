@@ -48,7 +48,6 @@ export default function OSM() {
     type: "FeatureCollection",
     features: [],
   });
-  const [input, setInput] = useState("");
   const [conversation, setConversation] = useUIState<typeof AI>();
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
@@ -58,14 +57,14 @@ export default function OSM() {
     initializeDb().then((db) => setDb(db));
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (msg: string) => {
+    console.log(msg);
     setConversation((prev: ClientMessage[]) => [
       ...prev,
-      { role: "user", content: input, id: nanoid() },
+      { role: "user", content: msg, id: nanoid() },
     ]);
-    setInput("");
     const { textStream, upperIndicator, progressStream } = await sendMessage(
-      input
+      msg
     );
     const generation_id = nanoid();
     setConversation((prev: ClientMessage[]) => [
@@ -135,15 +134,7 @@ export default function OSM() {
     <div className="w-full h-screen flex flex-row gap-3">
       <div className="flex-1 flex flex-col overflow-hidden justify-start">
         <ChatMessages />
-        <Chatbox
-          handleSubmit={handleSubmit}
-          handleInputChange={(e) => {
-            console.log(e.target.value);
-            setInput(e.target.value);
-          }}
-          input={input}
-          db={db}
-        />
+        <Chatbox handleSubmit={handleSubmit} db={db} />
       </div>
       <div className="flex-1 p-3">
         <div className="h-full relative">

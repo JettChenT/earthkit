@@ -1,7 +1,5 @@
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CornerDownLeft, Tag } from "lucide-react";
-import { MentionsInput, Mention, OnChangeHandlerFunc } from "react-mentions";
 import { OSMOrama, searchDb, Document } from "@/app/osm/searchSuggestions";
 import keyIcon from "@/public/icons/osm_element_key.svg";
 import tagIcon from "@/public/icons/osm_element_tag.svg";
@@ -11,11 +9,21 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  useEditor,
+  EditorContent,
+  EditorProvider,
+  Extension,
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Mention from "@tiptap/extension-mention";
+import "./styles/tiptap.css";
+import { cn } from "@/lib/utils";
+import { ReactRenderer } from "@tiptap/react";
 
 interface ChatboxProps {
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-  handleInputChange: OnChangeHandlerFunc;
-  input: string;
+  handleSubmit: (msg: string) => void;
   db: OSMOrama | null;
 }
 
@@ -58,30 +66,48 @@ function DisplayItemInline({ data }: { data: Document }) {
   return <div>{data.name}</div>;
 }
 
-export function Chatbox({
-  handleSubmit,
-  handleInputChange,
-  input,
-  db,
-}: ChatboxProps) {
-  const handleKeyDown = (
-    event:
-      | React.KeyboardEvent<HTMLTextAreaElement>
-      | React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSubmit(event as unknown as React.FormEvent<HTMLFormElement>);
-    }
-  };
+export function Chatbox({ handleSubmit, db }: ChatboxProps) {
+  const PreventEnter = Extension.create({
+    addKeyboardShortcuts(this) {
+      return {
+        Enter: () => {
+          handleSubmit(this.editor.getText());
+          this.editor.commands.setContent("");
+          return true;
+        },
+      };
+    },
+  });
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      PreventEnter,
+      Placeholder.configure({ placeholder: "Type a message..." }),
+      Mention.configure({
+        suggestion: {
+          items: async ({ query }) => {
+            if (db) {
+              const results = await searchDb(db, query);
+              return results.hits;
+            }
+            return [];
+          },
+        },
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class: "outline-0 text-sm h-10",
+      },
+    },
+  });
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex-none p-2 bg-white border rounded-md w-full mb-3"
-    >
+    <div className="flex-none p-2 bg-white border rounded-md w-full mb-3">
       <div className="flex-1 pl-2">
-        <MentionsInput
+        <EditorContent editor={editor} />
+        {/* <MentionsInput
           className="w-full h-10 resize-none border-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           placeholder="Type a message... (@to mention)"
           value={input}
@@ -139,14 +165,22 @@ export function Chatbox({
               }
             }}
           />
-        </MentionsInput>
+          </MentionsInput> */}
       </div>
       <div className="flex items-center justify-between">
         <div className="text-xs text-gray-500 ml-2">@ Mention</div>
-        <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
+        <Button
+          onMouseDown={() => {
+            handleSubmit(editor?.getText() || "");
+            editor?.commands.setContent("");
+          }}
+          variant="secondary"
+          className="py-0"
+          size={"sm"}
+        >
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
