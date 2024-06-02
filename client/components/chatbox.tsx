@@ -1,62 +1,215 @@
+"use client";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Tag } from "lucide-react";
+import { CornerDownLeft, Key, Pin, Tag } from "lucide-react";
 import { MentionsInput, Mention, OnChangeHandlerFunc } from "react-mentions";
 import { OSMOrama, searchDb, Document } from "@/app/osm/searchSuggestions";
-import keyIcon from "@/public/icons/osm_element_key.svg";
-import tagIcon from "@/public/icons/osm_element_tag.svg";
-import Image from "next/image";
+import CodeMirror from "@uiw/react-codemirror";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+  CompletionContext,
+  autocompletion,
+  CompletionResult,
+} from "@codemirror/autocomplete";
+import {
+  MatchDecorator,
+  WidgetType,
+  Decoration,
+  DecorationSet,
+  EditorView,
+  ViewPlugin,
+  keymap,
+  ViewUpdate,
+} from "@codemirror/view";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+import React, { createRef, useRef } from "react";
+import { createRoot } from "react-dom/client";
+import { geoSearch } from "@/lib/nominatim";
+
+function renderReactNode(
+  node: React.ReactNode,
+  parent: string = "div",
+  className?: string
+): HTMLElement {
+  const div = document.createElement(parent);
+  if (className) {
+    div.className = className;
+  }
+  const root = createRoot(div);
+  root.render(node);
+  return div;
+}
+
+function OSMSuggestionPill({
+  type,
+  name,
+}: {
+  type: "key" | "tag" | "location";
+  name: string;
+}) {
+  const tpName = type == "key" ? "key" : "feat";
+  return (
+    <div
+      className={`inline-flex items-baseline px-1 rounded-sm shadow-sm  ${
+        type == "key"
+          ? "bg-blue-100 text-blue-800"
+          : type == "location"
+          ? "bg-red-100 text-red-800"
+          : "bg-green-100 text-green-800"
+      }`}
+    >
+      <span className="font-bold mr-1">
+        {type == "key" ? (
+          <Key className="size-3 inline-block" />
+        ) : type == "location" ? (
+          <Pin className="size-3 inline-block" />
+        ) : (
+          <Tag strokeWidth={3} className="size-3 inline-block" />
+        )}
+      </span>
+      <span>{name}</span>
+    </div>
+  );
+}
+
+class OSMSuggestionWidget extends WidgetType {
+  type: string;
+  name: string;
+  constructor(type: string, name: string) {
+    super();
+    this.type = type;
+    this.name = name;
+  }
+  toDOM(view: EditorView): HTMLElement {
+    return renderReactNode(
+      <OSMSuggestionPill type={this.type as any} name={this.name} />,
+      "span",
+      "font-bold"
+    );
+  }
+}
+
+class LocationSuggestionWidget extends WidgetType {
+  name: string;
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
+  toDOM(view: EditorView): HTMLElement {
+    return renderReactNode(
+      <OSMSuggestionPill type="location" name={this.name} />,
+      "span",
+      "font-bold"
+    );
+  }
+}
+
+const osmSuggestionMatcher = new MatchDecorator({
+  regexp: /\(OSM (\w+): `([^\`]+)`\)/g,
+  decoration: (match) =>
+    Decoration.replace({
+      widget: new OSMSuggestionWidget(match[1], match[2]),
+    }),
+});
+
+const locationSuggestionMatcher = new MatchDecorator({
+  regexp: /\(Entity osm_id=(\d+);area_id=(\d+);(\w+): `([^\`]+)`\)/g,
+  decoration: (match) =>
+    Decoration.replace({
+      widget: new LocationSuggestionWidget(match[4]),
+    }),
+});
+
+const placeholders = ViewPlugin.fromClass(
+  class {
+    placeholders: DecorationSet;
+    constructor(view: EditorView) {
+      this.placeholders = osmSuggestionMatcher.createDeco(view);
+    }
+    update(update: ViewUpdate) {
+      this.placeholders = osmSuggestionMatcher.updateDeco(
+        update,
+        this.placeholders
+      );
+    }
+  },
+  {
+    decorations: (instance) => instance.placeholders,
+    provide: (plugin) =>
+      EditorView.atomicRanges.of((view) => {
+        return view.plugin(plugin)?.placeholders || Decoration.none;
+      }),
+  }
+);
+
+const location_placeholders = ViewPlugin.fromClass(
+  class {
+    placeholders: DecorationSet;
+    constructor(view: EditorView) {
+      this.placeholders = locationSuggestionMatcher.createDeco(view);
+    }
+    update(update: ViewUpdate) {
+      this.placeholders = locationSuggestionMatcher.updateDeco(
+        update,
+        this.placeholders
+      );
+    }
+  },
+  {
+    decorations: (instance) => instance.placeholders,
+    provide: (plugin) =>
+      EditorView.atomicRanges.of((view) => {
+        return view.plugin(plugin)?.placeholders || Decoration.none;
+      }),
+  }
+);
 
 interface ChatboxProps {
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-  handleInputChange: OnChangeHandlerFunc;
+  handleSubmit: () => void;
+  handleInputChange: (newInput: string) => void;
   input: string;
   db: OSMOrama | null;
 }
 
-function SuggestionItem({
-  data,
-  focused,
-}: {
-  data: Document;
-  focused: boolean;
-}) {
-  return (
-    <HoverCard open={focused} openDelay={0} closeDelay={0}>
-      <HoverCardTrigger
-        className={`px-1 flex items-center gap-2 rounded-sm ${
-          focused ? "bg-gray-300" : ""
-        }`}
-        data-state={focused ? "open" : "closed"}
-      >
-        <Image
-          src={data.type === "key" ? keyIcon : tagIcon}
-          className="fill-orange-700"
-          alt="key"
-          width={16}
-          height={16}
-        />
-        {data.name}
-      </HoverCardTrigger>
-      <HoverCardContent side="right" className="animate-none ml-0.5">
-        <article className="flex flex-col gap-1">
-          <div className="text-sm font-bold">{data.name}</div>
-          <div className="text-xs text-gray-500">type: {data.type}</div>
-          <div className="text-xs text-gray-500">{data.description}</div>
-        </article>
-      </HoverCardContent>
-    </HoverCard>
-  );
-}
-
-function DisplayItemInline({ data }: { data: Document }) {
-  return <div>{data.name}</div>;
-}
+const locationCompletion = async (
+  context: CompletionContext
+): Promise<CompletionResult | null> => {
+  let word = context.matchBefore(/\@[\w ]*/);
+  if (!word) return null;
+  if (word.text.length == 1) {
+    return {
+      from: word.from,
+      filter: false,
+      options: [
+        {
+          label: "Enter query to search for location...",
+        },
+      ],
+    };
+  }
+  if (word.from == word.to && !context.explicit) return null;
+  const suggestions = await geoSearch(word.text.slice(1));
+  return {
+    from: word.from,
+    filter: false,
+    options: suggestions.map((suggestion) => {
+      return {
+        label: `(Entity osm_id=${suggestion.osm_id};area_id=${suggestion.area_id};${suggestion.class}: \`${suggestion.name}\`)`,
+        displayLabel: `${suggestion.display_name}`,
+        type: suggestion.class == "administrative" ? "keyword" : "variable",
+        detail: suggestion.type,
+        info: (cmpl) => {
+          return renderReactNode(
+            <div className="text-sm">
+              <div className="font-bold">{suggestion.display_name}</div>
+              <div className="text-xs text-gray-500">{suggestion.type}</div>
+            </div>
+          );
+        },
+      };
+    }),
+  };
+};
 
 export function Chatbox({
   handleSubmit,
@@ -68,11 +221,59 @@ export function Chatbox({
     event:
       | React.KeyboardEvent<HTMLTextAreaElement>
       | React.KeyboardEvent<HTMLInputElement>
+      | React.KeyboardEvent<HTMLDivElement>
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      handleSubmit(event as unknown as React.FormEvent<HTMLFormElement>);
+      handleSubmit();
     }
+  };
+
+  const osmCompletion = async (
+    context: CompletionContext
+  ): Promise<CompletionResult | null> => {
+    let word = context.matchBefore(/\#\w*/);
+    if (!word) return null;
+    if (word.from == word.to && !context.explicit) return null;
+    if (!db) return null;
+    const suggestions = await searchDb(db, word.text.slice(1));
+    return {
+      from: word.from,
+      filter: false,
+      options: suggestions.hits.map((suggestion) => {
+        return {
+          label: `(OSM ${suggestion.document.type}: \`${suggestion.document.name}\`)`,
+          displayLabel: `${suggestion.document.name}`,
+          type: suggestion.document.type == "key" ? "keyword" : "variable",
+          info: (cmpl) => {
+            const description = document.createElement("div");
+            const rt = createRoot(description);
+            rt.render(
+              <div className="text-sm">
+                <div className="font-bold">{suggestion.document.name}</div>
+                <div className="text-xs text-gray-500">
+                  OSM{" "}
+                  <a
+                    href={
+                      suggestion.document.type == "key"
+                        ? "https://taginfo.openstreetmap.org/keys"
+                        : "https://taginfo.openstreetmap.org/features"
+                    }
+                    className="text-blue-600 underline"
+                  >
+                    {suggestion.document.type == "key" ? "Key" : "Feature"}
+                  </a>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {suggestion.document.description}
+                </div>
+              </div>
+            );
+            return description;
+          },
+        };
+      }),
+    };
   };
 
   return (
@@ -81,65 +282,36 @@ export function Chatbox({
       className="flex-none p-2 bg-white border rounded-md w-full mb-3"
     >
       <div className="flex-1 pl-2">
-        <MentionsInput
-          className="w-full h-10 resize-none border-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-          placeholder="Type a message... (@to mention)"
+        <CodeMirror
           value={input}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          allowSuggestionsAboveCursor={true}
-          forceSuggestionsAboveCursor={true}
-          style={{
-            control: {
-              fontSize: 14,
-              fontWeight: "normal",
-            },
-            input: {
-              outline: "none",
-              boxShadow: "none",
-            },
-            suggestions: {
-              list: {
-                borderRadius: "5px",
-                border: "1px solid rgba(0,0,0,0.1)",
-                padding: "2px",
-              },
-            },
+          onChange={(value) => {
+            if (value[value.length - 1] == "\n") {
+              handleSubmit();
+              return;
+            }
+            handleInputChange(value);
           }}
-        >
-          <Mention
-            trigger="@"
-            className="inline-block rounded-sm font-mono font-bold px-1 -mx-0.5 bg-yellow-200"
-            displayTransform={(id, display) => {
-              const data: Document = JSON.parse(display);
-              const symbol = data.type === "key" ? "🔑" : "🏷️";
-              return `${symbol} ${data.name}`;
-            }}
-            renderSuggestion={(
-              entry,
-              search,
-              highlightedDisplay,
-              idx,
-              focused
-            ) => {
-              if (!entry.display) return;
-              const data: Document = JSON.parse(entry.display);
-              return <SuggestionItem data={data} focused={focused} />;
-            }}
-            data={(query, callback) => {
-              if (db) {
-                searchDb(db, query).then((results) => {
-                  callback(
-                    results.hits.map((hit) => ({
-                      id: hit.id,
-                      display: JSON.stringify(hit.document),
-                    }))
-                  );
-                });
-              }
-            }}
-          />
-        </MentionsInput>
+          height="50px"
+          placeholder="Type a message..."
+          extensions={[
+            EditorView.theme({
+              "&.cm-focused": {
+                outline: "none",
+              },
+            }),
+            autocompletion({
+              aboveCursor: true,
+              override: [osmCompletion, locationCompletion],
+            }),
+            placeholders,
+            location_placeholders,
+          ]}
+          basicSetup={{
+            lineNumbers: false,
+            foldGutter: false,
+            highlightActiveLine: false,
+          }}
+        />
       </div>
       <div className="flex items-center justify-between">
         <div className="text-xs text-gray-500 ml-2">@ Mention</div>

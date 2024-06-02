@@ -19,6 +19,9 @@ way["name"~"Monroe.*St.*NW"](area) -> .mainway;
 out center;
 \`\`\`
 
+Users might insert special syntax to indicate specific openstreetmap features or entities. The follwing markups should be respected:
+- (Entity osm_id=<osm_id>;area_id=<area_id>;<entity_class>: <name>): This indicates a specific openstreetmap entity/location. When querying, make use of the data provided. When querying for area, use the area_id, e.g. (area id:<area_id>)
+- (OSM <doc_type>: <name>): The doc_type could be either tag or key, the name includes the specific tag or key value. When querying, make sure to use the provided overpass query tag or key.
 
 Remember to always output to json.
 The timeout should always be 60 seconds.

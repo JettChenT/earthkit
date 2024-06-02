@@ -137,9 +137,9 @@ export default function OSM() {
         <ChatMessages />
         <Chatbox
           handleSubmit={handleSubmit}
-          handleInputChange={(e) => {
-            console.log(e.target.value);
-            setInput(e.target.value);
+          handleInputChange={(newInput) => {
+            console.log(newInput);
+            setInput(newInput);
           }}
           input={input}
           db={db}
