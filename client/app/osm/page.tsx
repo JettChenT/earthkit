@@ -20,6 +20,9 @@ import { bbox } from "@turf/bbox";
 import { Orama } from "@orama/orama";
 import { initializeDb, schema, searchDb } from "./searchSuggestions";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
 const queryOsm = async (content: string) => {
