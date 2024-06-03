@@ -14,7 +14,8 @@ import osmtogeojson from "osmtogeojson";
 import { useEffect, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStreamableValue, useActions, useUIState } from "ai/rsc";
-import { AI, ClientMessage } from "../actions";
+import { AI, ClientMessage } from "./actions";
+import { unstable_noStore as noStore } from "next/cache";
 import { nanoid } from "ai";
 import { bbox } from "@turf/bbox";
 import { Orama } from "@orama/orama";
@@ -47,6 +48,7 @@ const queryOsm = async (content: string) => {
 };
 
 export default function OSM() {
+  noStore();
   const [geojsonData, setGeojsonData] = useState<GeoJSON.FeatureCollection>({
     type: "FeatureCollection",
     features: [],

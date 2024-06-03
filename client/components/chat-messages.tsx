@@ -1,4 +1,4 @@
-import { ClientMessage } from "@/app/actions";
+import { ClientMessage } from "@/app/osm/actions";
 import { useUIState } from "ai/rsc";
 
 import { useEffect, useRef } from "react";
