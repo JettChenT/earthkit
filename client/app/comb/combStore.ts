@@ -7,6 +7,7 @@ export type TableItem = {
 };
 
 export type ViewPanelType = "streetview" | "map" | "satellite";
+export type LabelType = "Match" | "Keep" | "Not Match" | "Not Labeled";
 
 export type CombState = {
   target_image: string | null;

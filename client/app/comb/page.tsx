@@ -1,5 +1,5 @@
 "use client";
-import StreetViewPano from "@/components/streetview-pano";
+import EmbedMap from "@/components/embed-map";
 import {
   ResizableHandle,
   ResizablePanel,

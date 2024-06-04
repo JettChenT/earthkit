@@ -3,7 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { ViewPanelType, useComb } from "./combStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StreetViewPano from "@/components/streetview-pano";
+import EmbedMap from "@/components/embed-map";
 
 export default function ViewPanel() {
   const { viewPanelState, setViewPanelState } = useComb();
@@ -23,18 +23,11 @@ export default function ViewPanel() {
         </TabsList>
       </div>
       <div className="grow">
-        <TabsContent value="map" className="h-full" asChild>
-          <Skeleton />
-        </TabsContent>
-        <TabsContent value="streetview" className="h-full" asChild>
-          <StreetViewPano
-            panoId={currentItem.panoId}
-            coord={currentItem.coord}
-          />
-        </TabsContent>
-        <TabsContent value="satellite" className="h-full" asChild>
-          <Skeleton />
-        </TabsContent>
+        <EmbedMap
+          panoId={currentItem.panoId}
+          coord={currentItem.coord}
+          viewType={viewPanelState}
+        />
       </div>
     </Tabs>
   );
