@@ -3,7 +3,13 @@
 // TODO: add collapse, hover highlights, etc
 
 import { Tool, useStore } from "@/lib/store";
-import { Earth, Satellite, CarTaxiFront, SearchCode } from "lucide-react";
+import {
+  Earth,
+  Satellite,
+  CarTaxiFront,
+  SearchCode,
+  Glasses,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Profile from "./profile";
@@ -16,6 +22,12 @@ export type SideBarItem = {
 };
 
 const sideBarData: SideBarItem[] = [
+  {
+    tool: "osm",
+    display: "OSM",
+    tooltip: "OpenStreetMap",
+    icon: <SearchCode className="size-4" />,
+  },
   {
     tool: "geoclip",
     display: "GeoCLIP",
@@ -35,10 +47,10 @@ const sideBarData: SideBarItem[] = [
     icon: <CarTaxiFront className="size-4" />,
   },
   {
-    tool: "osm",
-    display: "OSM",
-    tooltip: "OpenStreetMap",
-    icon: <SearchCode className="size-4" />,
+    tool: "comb",
+    display: "Comb",
+    tooltip: "Comb",
+    icon: <Glasses className="size-4" />,
   },
 ];
 
