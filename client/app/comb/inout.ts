@@ -69,7 +69,7 @@ const parseGeoJsonExport = (items: TableItem[]): string => {
   return JSON.stringify(geoJson);
 };
 
-type FormatType = "json" | "geojson" | "csv";
+export type FormatType = "json" | "geojson" | "csv";
 
 export const importData = (input: string, format: FormatType): TableItem[] => {
   switch (format) {

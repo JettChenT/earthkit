@@ -31,9 +31,25 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import {
+  FileDown,
+  FileInput,
+  FileJson2,
+  Filter,
+  Globe,
+  Table as TableIcn,
+} from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { GeoImport } from "./geo-import";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FormatType, exportData } from "./inout";
 
 const columnHelper = createColumnHelper<TableItem>();
 
@@ -147,6 +163,7 @@ export default function CombTable() {
         <span className="text-md">{items.length} items</span>
         <div className="flex gap-2">
           <ImportBtn />
+          <ExportBtn />
           <StatusFilterSelect />
         </div>
       </div>
@@ -211,13 +228,74 @@ export default function CombTable() {
 }
 
 function ImportBtn() {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Import</Button>
+        <Button variant="outline">
+          <FileInput className="h-4 w-4 mr-1" />
+          Import
+        </Button>
       </DialogTrigger>
-      <GeoImport />
+      <GeoImport setOpen={setOpen} />
     </Dialog>
+  );
+}
+
+// TODO: perhaps look into https://www.npmjs.com/package/react-file-icon
+const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
+  {
+    name: "CSV",
+    ext: "csv",
+    icon: <TableIcn className="size-4 mr-3" />,
+  },
+  {
+    name: "GeoJSON",
+    ext: "geojson",
+    icon: <Globe className="size-4 mr-3" />,
+  },
+  {
+    name: "JSON",
+    ext: "json",
+    icon: <FileJson2 className="size-4 mr-3" />,
+  },
+];
+
+function ExportBtn() {
+  const downloadContent = (content: string, ext: string) => {
+    const a = document.createElement("a");
+    const file = new Blob([content], { type: `text/${ext}` });
+    a.href = URL.createObjectURL(file);
+    a.download = `export.${ext}`;
+    a.click();
+  };
+  const doExport = (format: FormatType) => {
+    const curitems = useComb.getState().items;
+    const content = exportData(curitems, format);
+    downloadContent(content, format);
+  };
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <FileDown className="h-4 w-4 mr-1" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-32">
+        <DropdownMenuLabel>Export format</DropdownMenuLabel>
+        {ExportFormats.map((format, idx) => (
+          <div key={idx}>
+            <DropdownMenuItem
+              key={format.name}
+              onMouseDown={() => doExport(format.ext)}
+            >
+              {format.icon} {format.name}
+            </DropdownMenuItem>
+          </div>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

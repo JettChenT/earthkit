@@ -16,6 +16,7 @@ import { FileUploader } from "react-drag-drop-files";
 import { importData } from "./inout";
 import { TableItem, useComb } from "./combStore";
 import { MiniDisplayTable } from "./table";
+import { FileInput } from "lucide-react";
 
 function tryParse(content: string, fileName: string) {
   if (fileName.endsWith(".csv")) {
@@ -28,7 +29,7 @@ function tryParse(content: string, fileName: string) {
   return importData(content, "json");
 }
 
-export function GeoImport() {
+export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
   const [results, setResults] = useState<TableItem[] | null>(null);
   const { addItems } = useComb();
 
@@ -50,6 +51,8 @@ export function GeoImport() {
 
   const doImport = () => {
     addItems(results!);
+    setResults(null);
+    setOpen(false);
   };
 
   // TODO: make wider
@@ -90,8 +93,7 @@ export function GeoImport() {
       )}
       {results && (
         <p>
-          Successfully imported{" "}
-          <span className="font-bold">{results.length}</span> records
+          Loaded <span className="font-bold">{results.length}</span> Records
         </p>
       )}
       {results !== null && (
@@ -104,11 +106,9 @@ export function GeoImport() {
           Cancel
         </Button>
       )}
-      <DialogClose asChild>
-        <Button onMouseDown={doImport} disabled={results === null}>
-          Import
-        </Button>
-      </DialogClose>
+      <Button disabled={results === null} onMouseDown={doImport}>
+        Import
+      </Button>
     </DialogContent>
   );
 }
