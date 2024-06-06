@@ -1,5 +1,5 @@
 "use client";
-import { LabelType, TableItem, useComb } from "./combStore";
+import { FiltPresets, LabelType, TableItem, useComb } from "./combStore";
 import {
   ColumnDef,
   flexRender,
@@ -7,6 +7,7 @@ import {
   useReactTable,
   createColumnHelper,
   getSortedRowModel,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -21,6 +22,15 @@ import Pill, { PillColor } from "@/components/pill";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { Filter } from "lucide-react";
 
 const columnHelper = createColumnHelper<TableItem>();
 
@@ -46,6 +56,9 @@ const columnsBase = [
       return (
         StatusNumberMap[a.original.status] - StatusNumberMap[b.original.status]
       );
+    },
+    filterFn: (row, columnFilter, filterValue) => {
+      return filterValue.includes(row.getValue(columnFilter));
     },
   }),
   columnHelper.accessor("panoId", {
@@ -73,28 +86,44 @@ const StatusNumberMap: Record<LabelType, number> = {
   "Not Match": 3,
 };
 
+// Note: order matters here
+const sttDescriptionsj = {
+  All: "All",
+  Labeled: "Labeled",
+  NotLabeled: "Not Labeled",
+  Match: "Match",
+  Keep: "Keep",
+  NotMatch: "Not Match",
+};
+
 function StatusCell({ status }: { status: LabelType }) {
   const col: PillColor = StatusToPillColor(status);
   return <Pill color={col}>{status}</Pill>;
 }
 
 export default function CombTable() {
-  let { items, idx, setIdx, sorting, setSorting } = useComb();
+  let { items, idx, setIdx, sorting, setSorting, filtering, setFiltering } =
+    useComb();
   let [selectedIdx, setSelectedIdx] = useState(0);
+  let [filtGroupSel, setFiltGroupSel] =
+    useState<keyof typeof FiltPresets>("All");
 
   const table = useReactTable({
     data: items,
     columns: columnsBase,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
+    onColumnFiltersChange: setFiltering,
     state: {
       sorting,
+      columnFilters: filtering,
     },
   });
 
   useEffect(() => {
-    const actualIdx = table.getRowModel().rows.at(selectedIdx)!.index;
+    const actualIdx = table.getRowModel().rows.at(selectedIdx)?.index ?? 0;
     setIdx(actualIdx);
   }, [items, selectedIdx]);
 
@@ -112,58 +141,89 @@ export default function CombTable() {
   });
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, dispIdx) => (
-              <TableRow
-                key={row.id}
-                data-state={
-                  (row.getIsSelected() || row.index === idx) && "selected"
-                }
-                onMouseDown={() => {
-                  setSelectedIdx(dispIdx);
-                }}
-                className="cursor-pointer"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+    <div className="flex flex-col gap-4 p-2">
+      <div className="flex justify-between">
+        <span className="text-md">{items.length} items</span>
+        <div>
+          <Select
+            value={filtGroupSel}
+            onValueChange={(val) => {
+              setFiltGroupSel(val as keyof typeof FiltPresets);
+              setFiltering([
+                {
+                  id: "status",
+                  value: FiltPresets[val as keyof typeof FiltPresets],
+                },
+              ]);
+            }}
+          >
+            <SelectTrigger className="inline-flex items-center gap-2 ">
+              <Filter className="size-4" /> {sttDescriptionsj[filtGroupSel]}
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(sttDescriptionsj).map(([key, value]) => (
+                <SelectItem value={key}>{value}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columnsBase.length}
-                className="h-24 text-center"
-              >
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row, dispIdx) => (
+                <TableRow
+                  key={row.id}
+                  data-state={
+                    (row.getIsSelected() || row.index === idx) && "selected"
+                  }
+                  onMouseDown={() => {
+                    setSelectedIdx(dispIdx);
+                  }}
+                  className="cursor-pointer"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columnsBase.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

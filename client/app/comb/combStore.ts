@@ -1,5 +1,9 @@
 import { Point } from "@/lib/geo";
-import { OnChangeFn, SortingState, Updater } from "@tanstack/react-table";
+import {
+  ColumnFiltersState,
+  OnChangeFn,
+  SortingState,
+} from "@tanstack/react-table";
 import { create } from "zustand";
 
 export type TableItem = {
@@ -17,6 +21,7 @@ export type CombState = {
   idx: number;
   viewPanelState: ViewPanelType;
   sorting: SortingState;
+  filtering: ColumnFiltersState;
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
   setViewPanelState: (state: ViewPanelType) => void;
@@ -25,6 +30,16 @@ export type CombState = {
   setIdx: (index: number) => void;
   setIdxData: (newItem: Partial<TableItem>) => void;
   setSorting: OnChangeFn<SortingState>;
+  setFiltering: OnChangeFn<ColumnFiltersState>;
+};
+
+export const FiltPresets = {
+  Match: ["Match"],
+  Keep: ["Keep"],
+  NotMatch: ["Not Match"],
+  NotLabeled: ["Not Labeled"],
+  Labeled: ["Match", "Keep", "Not Match"],
+  All: ["Match", "Keep", "Not Match", "Not Labeled"],
 };
 
 export const useComb = create<CombState>((set, get) => ({
@@ -57,6 +72,12 @@ export const useComb = create<CombState>((set, get) => ({
       desc: false,
     },
   ],
+  filtering: [
+    {
+      id: "status",
+      value: FiltPresets.All,
+    },
+  ],
   setTargetImage: (img: string) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
   setViewPanelState: (state: ViewPanelType) =>
@@ -79,5 +100,9 @@ export const useComb = create<CombState>((set, get) => ({
   setSorting: (fn) =>
     set((state) => ({
       sorting: fn instanceof Function ? fn(state.sorting) : fn,
+    })),
+  setFiltering: (fn) =>
+    set((state) => ({
+      filtering: fn instanceof Function ? fn(state.filtering) : fn,
     })),
 }));
