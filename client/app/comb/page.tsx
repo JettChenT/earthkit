@@ -11,17 +11,9 @@ import Table from "./table";
 import { useComb } from "./combStore";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
+import LablView from "./lablView";
 
 export default function Comb() {
-  const { idxDelta } = useComb();
-  useHotkeys(["j", Key.ArrowDown], () => {
-    idxDelta(1);
-  });
-
-  useHotkeys(["k", Key.ArrowUp], () => {
-    idxDelta(-1);
-  });
-
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel defaultSize={60}>
@@ -31,7 +23,7 @@ export default function Comb() {
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize={40}>
-            This is the labeling view
+            <LablView />
           </ResizablePanel>
         </ResizablePanelGroup>
       </ResizablePanel>
