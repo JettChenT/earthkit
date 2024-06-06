@@ -9,11 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewPanel from "./viewPanel";
 import Table from "./table";
 import { useComb } from "./combStore";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Key } from "ts-key-enum";
 import LablView from "./lablView";
+import { GeoImport } from "./geo-import";
 
-export default function Comb() {
+function Panels() {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel defaultSize={60}>
@@ -33,4 +32,8 @@ export default function Comb() {
       </ResizablePanel>
     </ResizablePanelGroup>
   );
+}
+
+export default function Comb() {
+  return <Panels />;
 }

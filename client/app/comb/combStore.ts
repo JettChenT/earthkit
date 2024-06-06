@@ -1,19 +1,28 @@
-import { Point } from "@/lib/geo";
+import { Point, PurePoint } from "@/lib/geo";
 import {
   ColumnFiltersState,
   OnChangeFn,
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
+import { MOCK, mockItems } from "./mock";
 
 export type TableItem = {
-  coord: Point;
+  coord: PurePoint;
   panoId?: string;
   status: LabelType;
 };
 
 export type ViewPanelType = "streetview" | "map" | "satellite";
 export type LabelType = "Match" | "Keep" | "Not Match" | "Not Labeled";
+export const FiltPresets = {
+  Match: ["Match"],
+  Keep: ["Keep"],
+  NotMatch: ["Not Match"],
+  NotLabeled: ["Not Labeled"],
+  Labeled: ["Match", "Keep", "Not Match"],
+  All: ["Match", "Keep", "Not Match", "Not Labeled"],
+};
 
 export type CombState = {
   target_image: string | null;
@@ -24,6 +33,7 @@ export type CombState = {
   filtering: ColumnFiltersState;
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
+  addItems: (items: TableItem[]) => void;
   setViewPanelState: (state: ViewPanelType) => void;
   getSelected: () => TableItem | null;
   idxDelta: (delta: number) => void;
@@ -33,37 +43,9 @@ export type CombState = {
   setFiltering: OnChangeFn<ColumnFiltersState>;
 };
 
-export const FiltPresets = {
-  Match: ["Match"],
-  Keep: ["Keep"],
-  NotMatch: ["Not Match"],
-  NotLabeled: ["Not Labeled"],
-  Labeled: ["Match", "Keep", "Not Match"],
-  All: ["Match", "Keep", "Not Match", "Not Labeled"],
-};
-
 export const useComb = create<CombState>((set, get) => ({
   target_image: null,
-  items: [
-    {
-      coord: {
-        lat: 35.6587,
-        lon: 139.4089,
-        aux: {},
-      },
-      panoId: "VcX0mBaFgJXXzvsZ8uu9rA",
-      status: "Not Labeled",
-    },
-    {
-      coord: {
-        lat: 35.6588,
-        lon: 139.4098,
-        aux: {},
-      },
-      panoId: "hVQGOqoZekuaidl-60eDfA",
-      status: "Not Labeled",
-    },
-  ],
+  items: MOCK ? mockItems : [],
   idx: 0,
   viewPanelState: "streetview",
   sorting: [
@@ -80,6 +62,8 @@ export const useComb = create<CombState>((set, get) => ({
   ],
   setTargetImage: (img: string) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
+  addItems: (newItems: TableItem[]) =>
+    set((state) => ({ items: [...state.items, ...newItems] })),
   setViewPanelState: (state: ViewPanelType) =>
     set(() => ({ viewPanelState: state })),
   getSelected: () => get().items[get().idx],

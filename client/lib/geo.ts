@@ -1,8 +1,27 @@
-export type Point = {
+export interface Point {
   lon: number;
   lat: number;
   aux: any;
-};
+}
+
+export interface PurePoint {
+  lon: number;
+  lat: number;
+}
+
+export const PurePointFromPoint = ({ lon, lat }: Point): PurePoint => ({
+  lon,
+  lat,
+});
+
+export const PointFromPurePoint = (
+  { lon, lat }: PurePoint,
+  aux: any
+): Point => ({
+  lon,
+  lat,
+  aux: aux === undefined ? {} : aux,
+});
 
 export type Coords = {
   coords: Point[];

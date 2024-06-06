@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
 import { GOOGLE_MAPS_API_KEY } from "@/lib/constants";
-import { Point } from "@/lib/geo";
+import { PurePoint } from "@/lib/geo";
 import { ViewPanelType } from "@/app/comb/combStore";
 
 type EmbedMapProps = {
-  coord: Point;
+  coord: PurePoint;
   viewType: ViewPanelType;
   panoId?: string;
 };
