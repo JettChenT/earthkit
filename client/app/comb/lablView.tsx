@@ -50,7 +50,7 @@ const LabelButton = ({
         <TooltipContent side="top">
           Shortcuts:{" "}
           {hotkey?.map((key, index) => (
-            <span>
+            <span key={index}>
               <Kbd key={index}>{key}</Kbd>
               {index < hotkey.length - 1 && ", "}
             </span>
