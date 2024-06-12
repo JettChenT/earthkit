@@ -53,7 +53,7 @@ import { FormatType, exportData } from "./inout";
 
 const columnHelper = createColumnHelper<TableItem>();
 
-const columnsBase = [
+export const columnsBase = [
   columnHelper.accessor("coord", {
     header: "Coordinate",
     cell: (props) => {
@@ -121,13 +121,21 @@ function StatusCell({ status }: { status: LabelType }) {
 }
 
 export default function CombTable() {
-  let { items, idx, setIdx, sorting, setSorting, filtering, setFiltering } =
-    useComb();
+  let {
+    items,
+    idx,
+    setIdx,
+    sorting,
+    setSorting,
+    filtering,
+    setFiltering,
+    colDefs,
+  } = useComb();
   let [selectedIdx, setSelectedIdx] = useState(0);
 
   const table = useReactTable({
     data: items,
-    columns: columnsBase,
+    columns: colDefs,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -171,7 +179,7 @@ export default function CombTable() {
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>

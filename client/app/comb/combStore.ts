@@ -1,11 +1,13 @@
 import { Point, PurePoint } from "@/lib/geo";
 import {
+  ColumnDef,
   ColumnFiltersState,
   OnChangeFn,
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
 import { MOCK, mockItems } from "./mock";
+import { columnsBase } from "./table";
 
 export type TableItem = {
   coord: PurePoint;
@@ -31,6 +33,7 @@ export type CombState = {
   viewPanelState: ViewPanelType;
   sorting: SortingState;
   filtering: ColumnFiltersState;
+  colDefs: ColumnDef<TableItem, any>[];
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
   addItems: (items: TableItem[]) => void;
@@ -60,6 +63,7 @@ export const useComb = create<CombState>((set, get) => ({
       value: FiltPresets.All,
     },
   ],
+  colDefs: columnsBase,
   setTargetImage: (img: string) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
   addItems: (newItems: TableItem[]) =>
