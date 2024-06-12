@@ -43,13 +43,12 @@ class SVLocateRequest(BaseModel):
     image_url: str
 
 @web_app.post("/streetview/locate")
-def streetview_locate(request: SVLocateRequest):
-    f = modal.Function.lookup("streetview-locate", "streetview_locate")
-    img = proc_im_url(request.image_url)
-    res: geo.Coords = f.remote(request.coords.to_geo(), img)
+async def streetview_locate(request: SVLocateRequest):
+    results = []
+    res: geo.Coords = results[0]
     return schema.Coords.from_geo(res)
 
-@web_app.websocket("/streetview/locate")
+@web_app.websocket("/streetview/locate/ws")
 async def streetview_locate_ws(websocket: WebSocket):
     params = await websocket.receive_json()
     f = modal.Function.lookup("streetview-locate", "streetview_locate")
