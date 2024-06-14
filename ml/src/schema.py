@@ -46,10 +46,9 @@ if __name__ == "__main__":
             "heading": 0.0,
             "altitude": 0.0,
             "accuracy": 100.0,
-            "activity": "still"
+            "activity": "still",
         }
     }
-    pnt = Point[Dict[str, float|str]](**sample_dat)
-    print(pnt)
-    print(pnt.to_geo())
-    print(pnt.model_dump_json())
+    pnt = geo.Point(**sample_dat)
+    coords = geo.Coords(coords=[pnt])
+    print(Coords.from_geo(coords).model_dump_json())

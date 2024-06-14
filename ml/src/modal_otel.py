@@ -174,8 +174,14 @@ def g_tracer():
 class _InstrumentedFunction(_Function):
     async def _call_function(self, args, kwargs):
         tracer = g_tracer()
+        if self._info:
+            fname = f"{self.info.module_name}.{self.info.function_name}"
+        elif self._function_name:
+            fname = self._function_name
+        else:
+            fname = "unknown"
         with tracer.start_as_current_span(
-            f"invocation_function.{self.info.module_name}.{self.info.function_name}",
+            f"invocation_function.{fname}",
             kind=SpanKind.CLIENT,
         ) as span:
             return await super()._call_function(args, kwargs)

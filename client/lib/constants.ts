@@ -1,6 +1,7 @@
 import { MapViewState } from "deck.gl";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const RAW_API_URL = process.env.NEXT_PUBLIC_RAW_API_URL!;
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GMAPS_API!;
 
@@ -10,4 +11,4 @@ export const INITIAL_VIEW_STATE: MapViewState = {
   zoom: 1,
 };
 
-export { API_URL, MAPBOX_TOKEN, GOOGLE_MAPS_API_KEY };
+export { API_URL, RAW_API_URL, MAPBOX_TOKEN, GOOGLE_MAPS_API_KEY };

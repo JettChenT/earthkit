@@ -7,9 +7,11 @@ import modal
 from typing import List, Type, TypeVar
 from . import schema, geo
 from .utils import proc_im_url
+from fastapi.responses import StreamingResponse
+from fastapi.encoders import jsonable_encoder
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geopy==2.4.1", "requests==2.28.1"
+    "geopy==2.4.1", "requests==2.28.1", "websockets==12.0"
 )
 
 web_app = FastAPI()
@@ -48,13 +50,18 @@ async def streetview_locate(request: SVLocateRequest):
     res: geo.Coords = results[0]
     return schema.Coords.from_geo(res)
 
-@web_app.websocket("/streetview/locate/ws")
-async def streetview_locate_ws(websocket: WebSocket):
-    params = await websocket.receive_json()
-    f = modal.Function.lookup("streetview-locate", "streetview_locate")
-    img = proc_im_url(params["image_url"])
-    for res in f.remote_gen(params["coords"].to_geo(), img):
-        await websocket.send_json(res)
+@web_app.post("/streetview/locate/streaming")
+async def streetview_locate_sse(request: SVLocateRequest):
+    async def event_generator():
+        f = modal.Function.lookup("streetview-locate", "streetview_locate")
+        img = proc_im_url(request.image_url)
+        cords_geo = request.coords.to_geo()
+        async for res in f.remote_gen.aio(cords_geo, img):
+            conv_cords = schema.Coords.from_geo(res)
+            print("conv cords", conv_cords, type(conv_cords))
+            yield f"data: {jsonable_encoder(conv_cords)}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 class GeoclipRequest(BaseModel):
     image_url: str

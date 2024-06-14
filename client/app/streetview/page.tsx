@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
+import { API_URL, MAPBOX_TOKEN, RAW_API_URL } from "@/lib/constants";
 import { Bounds, Coords, Point } from "@/lib/geo";
 import {
   DrawRectangleMode,
@@ -9,6 +9,7 @@ import {
   ViewMode,
 } from "@deck.gl-community/editable-layers";
 import {
+  Color,
   DeckGL,
   DeckGLRef,
   MapViewState,
@@ -152,25 +153,48 @@ export default function StreetView() {
       });
   };
 
-  const onLocate = () => {
-    setLocating(true);
-    ky.post(`${API_URL}/streetview/locate`, {
+  const onLocate = async () => {
+    const payload = {
+      image_url: image,
+      coords: { coords: sampled!.coords },
+    };
+
+    const response = await ky.post(`${API_URL}/streetview/locate/streaming`, {
       timeout: false,
-      json: {
-        image_url: image,
-        coords: { coords: sampled!.coords },
+      json: payload,
+      headers: {
+        "Content-Type": "application/json",
       },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setLocated(data as Coords);
-        setLocating(false);
-      })
-      .catch((e) => {
-        console.log(e);
-        setLocating(false);
-      });
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to start locate: ${response.statusText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("Failed to start locate: No reader");
+    }
+    const decoder = new TextDecoder();
+    var { value, done } = await reader.read();
+    while (!done) {
+      const eventString = decoder.decode(value);
+      console.log("event string: ", eventString);
+      const event = JSON.parse(eventString);
+      console.log("parsed json:", event);
+      ({ value, done } = await reader.read());
+    }
+  };
+
+  const locateWrapper = async () => {
+    setLocating(true);
+    try {
+      await onLocate();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLocating(false);
+    }
   };
 
   const activeLayers = useMemo(() => {
@@ -257,7 +281,7 @@ export default function StreetView() {
               Select Search Range
             </Button>
           )}
-          <Button onClick={onLocate} disabled={!sampled || locating}>
+          <Button onClick={locateWrapper} disabled={!sampled || locating}>
             {locating ? "Locating..." : "Run Geolocalizaion"}
           </Button>
           <Label htmlFor="topn-slider">Top {topN} Results</Label>
