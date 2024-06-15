@@ -119,7 +119,7 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
         flattened = [im['image'] for record in batch for im in record[1]]
         res = await inference.remote.aio(image, flattened)
         updated_pnts = []
-        for i in range(0, len(batch), NUM_DIR):
+        for i in range(0, len(flattened), NUM_DIR):
             chunk = res[i:i+NUM_DIR]
             batch_i = i//NUM_DIR
             pid = batch[batch_i][0]
@@ -201,8 +201,14 @@ async def main():
     print(f"sampled {len(sampled_views)} streetviews")
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()
+    tot_len = 0
     async for res in streetview_locate.remote_gen.aio(sampled_views, im):
-        print(res)
+        if type(res) == Coords:
+            print(f"got {len(res.coords)} new coords")
+            tot_len += len(res.coords)
+        else:
+            print(res)
+    print(f"total length: {tot_len}")
     # proced_views: Coords = streetview_locate.remote(sampled_views, im)
     # print("I'mmmmmm FINISHHHHHHHHED")
     # print(f"fetched {len(proced_views)} streetviews")
