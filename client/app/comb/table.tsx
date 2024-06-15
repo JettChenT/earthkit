@@ -27,7 +27,7 @@ import {
 import Pill, { PillColor } from "@/components/pill";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -135,6 +135,7 @@ export default function CombTable() {
     colDefs,
   } = useComb();
   let [selectedIdx, setSelectedIdx] = useState(0);
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
 
   const table = useReactTable({
     data: items,
@@ -153,6 +154,30 @@ export default function CombTable() {
   useEffect(() => {
     const actualIdx = table.getRowModel().rows.at(selectedIdx)?.index ?? 0;
     setIdx(actualIdx);
+
+    // Ensure the selected item is in view
+    setTimeout(() => {
+      const tableContainer = tableContainerRef.current;
+      const selectedRow = tableContainer?.querySelector(
+        `[data-state="selected"]`
+      );
+      if (selectedRow) {
+        if (selectedRow.getBoundingClientRect().top < 0) {
+          selectedRow.scrollIntoView({
+            behavior: "auto",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+        if (selectedRow.getBoundingClientRect().bottom > window.innerHeight) {
+          selectedRow.scrollIntoView({
+            behavior: "auto",
+            block: "end",
+            inline: "nearest",
+          });
+        }
+      }
+    }, 10);
   }, [items, selectedIdx]);
 
   const idxDelta = (delta: number) => {
@@ -178,7 +203,10 @@ export default function CombTable() {
           <StatusFilterSelect />
         </div>
       </div>
-      <div className="rounded-md border h-full">
+      <div
+        className="rounded-md border h-full overflow-y-auto"
+        ref={tableContainerRef}
+      >
         <Table className="h-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -198,7 +226,7 @@ export default function CombTable() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="h-full overflow-y-scroll">
+          <TableBody className="h-full">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, dispIdx) => (
                 <TableRow
