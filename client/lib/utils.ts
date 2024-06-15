@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { TableItem } from "./combStore";
+import { TableItem } from "./siftStore";
 import { Coords, Point, PurePointFromPoint } from "./geo";
 
 export function cn(...inputs: ClassValue[]) {

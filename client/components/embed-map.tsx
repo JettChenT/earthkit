@@ -2,7 +2,7 @@
 import React from "react";
 import { GOOGLE_MAPS_API_KEY } from "@/lib/constants";
 import { PurePoint } from "@/lib/geo";
-import { ViewPanelType } from "@/lib/combStore";
+import { ViewPanelType } from "@/lib/siftStore";
 
 type EmbedMapProps = {
   coord: PurePoint;

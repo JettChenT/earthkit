@@ -31,10 +31,9 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
 });
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Msg, ingestStream } from "@/lib/rpc";
-import { pushToComb } from "./data";
 import { useRouter } from "next/navigation";
-import { useComb } from "@/lib/combStore";
-import { columnHelper } from "../comb/table";
+import { useSift } from "@/lib/siftStore";
+import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
 
@@ -60,7 +59,7 @@ export default function StreetView() {
   });
   const [sampled, setSampled] = useState<Coords | null>(null);
   const [located, setLocated] = useState<Coords | null>(null);
-  const { setColDef, addItems, setTargetImage } = useComb();
+  const { setColDef, addItems, setTargetImage } = useSift();
   const [topN, setTopN] = useState(20);
   const router = useRouter();
   const mapRef = useRef<MapRef>(null);
@@ -340,7 +339,7 @@ export default function StreetView() {
                 }),
               ]);
               addItems(TableItemsFromCoord(located!));
-              router.push("/comb");
+              router.push("/sift");
             }}
             disabled={!located || !image}
           >

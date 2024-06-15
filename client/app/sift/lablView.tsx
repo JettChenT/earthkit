@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LabelType, useComb } from "../../lib/combStore";
+import { LabelType, useSift } from "../../lib/siftStore";
 import { useHotkeys, Keys } from "react-hotkeys-hook";
 import { useRef } from "react";
 import {
@@ -28,7 +28,7 @@ const LabelButton = ({
   hotkey?: string[];
   explainer?: string;
 }) => {
-  const { setIdxData } = useComb();
+  const { setIdxData } = useSift();
   const btnRef = useRef<HTMLButtonElement>(null);
   useHotkeys(hotkey ?? "", () => {
     btnRef.current?.click();
@@ -63,8 +63,8 @@ const LabelButton = ({
 };
 
 export default function LablView() {
-  const { setIdxData } = useComb();
-  const cur = useComb((state) => state.getSelected());
+  const { setIdxData } = useSift();
+  const cur = useSift((state) => state.getSelected());
   return (
     <div className="w-full h-full">
       <TooltipProvider>

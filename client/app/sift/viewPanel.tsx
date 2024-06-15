@@ -1,13 +1,13 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewPanelType, useComb } from "../../lib/combStore";
+import { ViewPanelType, useSift } from "../../lib/siftStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmbedMap from "@/components/embed-map";
 
 export default function ViewPanel() {
-  const { viewPanelState, setViewPanelState } = useComb();
-  const currentItem = useComb((state) => state.getSelected());
+  const { viewPanelState, setViewPanelState } = useSift();
+  const currentItem = useSift((state) => state.getSelected());
   if (!currentItem) return null;
   return (
     <Tabs

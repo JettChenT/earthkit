@@ -6,8 +6,8 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
-import { MOCK, mockItems } from "../app/comb/mock";
-import { columnsBase } from "../app/comb/table";
+import { MOCK, mockItems } from "../app/sift/mock";
+import { columnsBase } from "../app/sift/table";
 
 export type TableItem = {
   coord: PurePoint;
@@ -26,7 +26,7 @@ export const FiltPresets = {
   All: ["Match", "Keep", "Not Match", "Not Labeled"],
 };
 
-export type CombState = {
+export type SiftState = {
   target_image: string | null;
   items: TableItem[];
   idx: number;
@@ -47,7 +47,7 @@ export type CombState = {
   setColDef: OnChangeFn<ColumnDef<TableItem, any>[]>;
 };
 
-export const useComb = create<CombState>((set, get) => ({
+export const useSift = create<SiftState>((set, get) => ({
   target_image: null,
   items: MOCK ? mockItems : [],
   idx: 0,

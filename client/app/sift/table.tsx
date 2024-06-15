@@ -3,8 +3,8 @@ import {
   FiltPresets,
   LabelType,
   TableItem,
-  useComb,
-} from "../../lib/combStore";
+  useSift,
+} from "../../lib/siftStore";
 import {
   ColumnDef,
   flexRender,
@@ -123,7 +123,7 @@ function StatusCell({ status }: { status: LabelType }) {
   return <Pill color={col}>{status}</Pill>;
 }
 
-export default function CombTable() {
+export default function SiftTable() {
   let {
     items,
     idx,
@@ -133,7 +133,7 @@ export default function CombTable() {
     filtering,
     setFiltering,
     colDefs,
-  } = useComb();
+  } = useSift();
   let [selectedIdx, setSelectedIdx] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -309,7 +309,7 @@ function ExportBtn() {
     a.click();
   };
   const doExport = (format: FormatType) => {
-    const curitems = useComb.getState().items;
+    const curitems = useSift.getState().items;
     const content = exportData(curitems, format);
     downloadContent(content, format);
   };
@@ -339,7 +339,7 @@ function ExportBtn() {
 }
 
 function StatusFilterSelect() {
-  const { setFiltering } = useComb();
+  const { setFiltering } = useSift();
   const [filtGroupSel, setFiltGroupSel] =
     useState<keyof typeof FiltPresets>("All");
 

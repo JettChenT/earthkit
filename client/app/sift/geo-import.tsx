@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileUploader } from "react-drag-drop-files";
 import { importData } from "./inout";
-import { TableItem, useComb } from "../../lib/combStore";
+import { TableItem, useSift } from "../../lib/siftStore";
 import { MiniDisplayTable } from "./table";
 import { FileInput } from "lucide-react";
 
@@ -31,7 +31,7 @@ function tryParse(content: string, fileName: string) {
 
 export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
   const [results, setResults] = useState<TableItem[] | null>(null);
-  const { addItems } = useComb();
+  const { addItems } = useSift();
 
   const handleFileUpload = (file: File) => {
     if (file) {

@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewPanel from "./viewPanel";
 import Table from "./table";
-import { useComb } from "../../lib/combStore";
+import { useSift } from "../../lib/siftStore";
 import LablView from "./lablView";
 import { GeoImport } from "./geo-import";
 
@@ -34,6 +34,6 @@ function Panels() {
   );
 }
 
-export default function Comb() {
+export default function Sift() {
   return <Panels />;
 }

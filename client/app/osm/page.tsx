@@ -108,7 +108,7 @@ export default function OSM() {
         if (!osm_codeblock) break;
         updateConversation(generation_id, {
           lowerIndicators: [
-            <DummyProgressIndicator>
+            <DummyProgressIndicator key={nanoid()}>
               Querying Overpass Turbo...
             </DummyProgressIndicator>,
           ],
@@ -116,7 +116,9 @@ export default function OSM() {
         const geojson = await queryOsm(osm_codeblock);
         if (geojson) {
           updateConversation(generation_id, {
-            lowerIndicators: [<ResultsDisplay feats={geojson} />],
+            lowerIndicators: [
+              <ResultsDisplay feats={geojson} key={nanoid()} />,
+            ],
           });
           setGeojsonData(geojson);
           const [minLng, minLat, maxLng, maxLat] = bbox(geojson);

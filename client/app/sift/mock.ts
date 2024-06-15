@@ -1,4 +1,4 @@
-import { TableItem } from "../../lib/combStore";
+import { TableItem } from "../../lib/siftStore";
 
 export const MOCK = false;
 export const mockItems: TableItem[] = [

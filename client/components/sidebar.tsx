@@ -23,9 +23,9 @@ export type SideBarItem = {
 
 const sideBarData: SideBarItem[] = [
   {
-    tool: "comb",
-    display: "Comb",
-    tooltip: "Comb",
+    tool: "sift",
+    display: "Sift",
+    tooltip: "Sift",
     icon: <Glasses className="size-4" />,
   },
   {
