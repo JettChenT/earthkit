@@ -30,7 +30,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Msg } from "@/lib/rpc";
+import { Msg, ingestStream } from "@/lib/rpc";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -171,37 +171,29 @@ export default function StreetView() {
     if (!response.ok) {
       throw new Error(`Failed to start locate: ${response.statusText}`);
     }
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("Failed to start locate: No reader");
+    if (!response.body) {
+      throw new Error("Failed to start locate: API returned no response body");
     }
-    const decoder = new TextDecoder();
-    var { value, done } = await reader.read();
-    while (!done) {
-      const eventString = decoder.decode(value);
-      console.log("event string: ", eventString);
-      const events = eventString.split("\n\n");
-      console.log("events: ", events);
-      for (const event of events) {
-        if (event == "") continue;
-        console.log("parsing, ", event);
-        const res: Msg = JSON.parse(event.slice(6));
-        console.log("parsed json:", res);
-        if (res.type === "Coords") {
+
+    for await (const msg of ingestStream(response.body)) {
+      // console.log("got message! ", msg);
+      switch (msg.type) {
+        case "Coords":
           setLocated((loc) => {
             if (loc) {
               return {
-                coords: [...loc.coords, ...res.coords],
+                coords: [...loc.coords, ...msg.coords],
               };
             }
-            return res;
+            return msg;
           });
-        } else if (res.type === "Progress") {
-          console.log(res);
-        }
+          break;
+        case "ProgressUpdate":
+          console.log(msg);
+          break;
+        default:
+          break;
       }
-      ({ value, done } = await reader.read());
     }
   };
 
