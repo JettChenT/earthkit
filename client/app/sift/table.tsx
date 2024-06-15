@@ -55,7 +55,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormatType, exportData } from "./inout";
-import { formatValue } from "@/lib/utils";
+import { downloadContent, formatValue } from "@/lib/utils";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -301,13 +301,6 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
 ];
 
 function ExportBtn() {
-  const downloadContent = (content: string, ext: string) => {
-    const a = document.createElement("a");
-    const file = new Blob([content], { type: `text/${ext}` });
-    a.href = URL.createObjectURL(file);
-    a.download = `export.${ext}`;
-    a.click();
-  };
   const doExport = (format: FormatType) => {
     const curitems = useSift.getState().items;
     const content = exportData(curitems, format);

@@ -20,6 +20,12 @@ import { nanoid } from "ai";
 import { bbox } from "@turf/bbox";
 import { Orama } from "@orama/orama";
 import { initializeDb, schema, searchDb } from "./searchSuggestions";
+import { Button } from "@/components/ui/button";
+import { importData, parseGeoJsonImport } from "../sift/inout";
+import { downloadContent } from "@/lib/utils";
+import { center } from "@turf/center";
+import { useSift } from "@/lib/siftStore";
+import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -114,6 +120,7 @@ export default function OSM() {
           ],
         });
         const geojson = await queryOsm(osm_codeblock);
+        console.log("parsed geojson", geojson);
         if (geojson) {
           updateConversation(generation_id, {
             lowerIndicators: [
@@ -188,16 +195,35 @@ export default function OSM() {
 
 function DummyProgressIndicator({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-3 w-3 bg-gray-300 rounded-full animate-pulse">
+    <div className="bg-secondary rounded-md p-2 flex flex-row justify-between">
       {children}
     </div>
   );
 }
 
 function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
+  const { addItems } = useSift();
+  const router = useRouter();
   return (
-    <div className="h-3 w-3 bg-gray-300 rounded-full animate-pulse">
-      I gotcha some results
+    <div className="p-2 bg-secondary rounded-md">
+      Fetched {feats.features.length} features
+      <Button
+        onClick={() => {
+          const items = parseGeoJsonImport(feats);
+          console.log(items);
+          addItems(items);
+          router.push("/sift");
+        }}
+      >
+        Sift
+      </Button>
+      <Button
+        onClick={() => {
+          downloadContent(JSON.stringify(feats), "geojson");
+        }}
+      >
+        Export
+      </Button>
     </div>
   );
 }

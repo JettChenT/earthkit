@@ -47,3 +47,11 @@ export function getStats(values: number[]): Stats {
 export function zVal(value: number, stats: Stats) {
   return (value - stats.mean) / stats.stdev;
 }
+
+export const downloadContent = (content: string, ext: string) => {
+  const a = document.createElement("a");
+  const file = new Blob([content], { type: `text/${ext}` });
+  a.href = URL.createObjectURL(file);
+  a.download = `export.${ext}`;
+  a.click();
+};

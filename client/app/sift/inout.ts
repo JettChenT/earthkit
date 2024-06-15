@@ -1,3 +1,4 @@
+import center from "@turf/center";
 import { LabelType, TableItem } from "../../lib/siftStore";
 import { parse as csvParse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
@@ -13,6 +14,7 @@ const parseCsvImport = (input: string): TableItem[] => {
         lon: record.lon || record.longitude || record.lng,
       },
       status: record.status,
+      aux: {},
     };
   });
   return records;
@@ -39,15 +41,44 @@ const parseJsonExport = (items: TableItem[]): string => {
   return JSON.stringify(items);
 };
 
-const parseGeoJsonImport = (input: string): TableItem[] => {
-  const geoJson = JSON.parse(input) as FeatureCollection<GeoJSONPoint>;
-  return geoJson.features.map((feature) => ({
+const pointCoersion = (
+  feats: GeoJSON.FeatureCollection
+): GeoJSON.FeatureCollection<GeoJSON.Point> => {
+  return {
+    ...feats,
+    features: feats.features.map((f) => {
+      switch (f.geometry.type) {
+        case "Point":
+          return f;
+        default:
+          return {
+            ...f,
+            geometry: {
+              type: "Point",
+              coordinates: center(f.geometry),
+            },
+          };
+      }
+    }) as GeoJSON.Feature<GeoJSON.Point>[],
+  };
+};
+
+export const parseGeoJsonImport = (
+  input: string | FeatureCollection
+): TableItem[] => {
+  const geoJson =
+    typeof input === "string"
+      ? (JSON.parse(input) as FeatureCollection)
+      : input;
+  const pointGeoJson = pointCoersion(geoJson);
+  return pointGeoJson.features.map((feature) => ({
     coord: {
       lat: feature.geometry.coordinates[1],
       lon: feature.geometry.coordinates[0],
     },
     panoId: feature.properties?.panoId,
-    status: feature.properties?.status as LabelType,
+    status: feature.properties?.status || ("Not Labeled" as LabelType),
+    aux: {},
   }));
 };
 
