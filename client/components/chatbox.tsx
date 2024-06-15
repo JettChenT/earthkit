@@ -298,7 +298,7 @@ export function Chatbox({
             handleInputChange(value);
           }}
           height="50px"
-          placeholder="Describe a query... Use `#` to search for OSM tags/features, and use `@` to reference locations and areas."
+          placeholder="Describe a query... Use `#` for OSM tags/features, `@` for locations/areas."
           extensions={[
             EditorView.theme({
               "&.cm-focused": {

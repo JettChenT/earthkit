@@ -26,13 +26,11 @@ export const maxDuration = 30;
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
-const queryOsm = async (content: string) => {
-  const osm_codeblock = content
-    .split("```overpassql\n")
-    .at(-1)
-    ?.split("\n```")
-    .at(0);
-  if (!osm_codeblock) return;
+const getOsmPart = (content: string) => {
+  return content.split("```overpassql\n").at(-1)?.split("\n```").at(0);
+};
+
+const queryOsm = async (osm_codeblock: string) => {
   console.log(osm_codeblock);
   const result = await ky
     .post(OVERPASS_URL, {
@@ -58,6 +56,17 @@ export default function OSM() {
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
+
+  const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
+    setConversation((prevConversation) =>
+      prevConversation.map((msg) => {
+        if (msg.id === id) {
+          return { ...msg, ...newData };
+        }
+        return msg;
+      })
+    );
+  };
 
   useEffect(() => {
     initializeDb().then((db) => setDb(db));
@@ -95,8 +104,20 @@ export default function OSM() {
     for await (const progress of readStreamableValue(progressStream)) {
       console.log(progress);
       if (progress?.kind === "done") {
-        const geojson = await queryOsm(progress.value);
+        const osm_codeblock = getOsmPart(progress.value);
+        if (!osm_codeblock) break;
+        updateConversation(generation_id, {
+          lowerIndicators: [
+            <DummyProgressIndicator>
+              Querying Overpass Turbo...
+            </DummyProgressIndicator>,
+          ],
+        });
+        const geojson = await queryOsm(osm_codeblock);
         if (geojson) {
+          updateConversation(generation_id, {
+            lowerIndicators: [<ResultsDisplay feats={geojson} />],
+          });
           setGeojsonData(geojson);
           const [minLng, minLat, maxLng, maxLat] = bbox(geojson);
           const vp = layer.context.viewport as WebMercatorViewport;
@@ -143,7 +164,6 @@ export default function OSM() {
         <Chatbox
           handleSubmit={handleSubmit}
           handleInputChange={(newInput) => {
-            console.log(newInput);
             setInput(newInput);
           }}
           input={input}
@@ -160,6 +180,22 @@ export default function OSM() {
           </DeckGL>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DummyProgressIndicator({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="h-3 w-3 bg-gray-300 rounded-full animate-pulse">
+      {children}
+    </div>
+  );
+}
+
+function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
+  return (
+    <div className="h-3 w-3 bg-gray-300 rounded-full animate-pulse">
+      I gotcha some results
     </div>
   );
 }

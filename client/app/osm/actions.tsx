@@ -4,15 +4,12 @@ import {
   createAI,
   createStreamableUI,
   createStreamableValue,
-  getAIState,
   getMutableAIState,
-  streamUI,
 } from "ai/rsc";
 import { embed, streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { SYSTEM_PROMPT } from "@/lib/prompting";
-import { nanoid } from "nanoid";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -31,7 +28,8 @@ export interface ClientMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  upperIndicator?: ReactNode;
+  upperIndicator?: ReactNode; // used to display server progress
+  lowerIndicators?: ReactNode[]; // used to display execution results
 }
 
 export interface ProgressUpdate {
