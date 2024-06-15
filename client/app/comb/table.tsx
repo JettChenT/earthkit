@@ -372,6 +372,8 @@ function StatusFilterSelect() {
   );
 }
 
+const ROWS_PER_PAGE = 5;
+
 export function MiniDisplayTable({
   data,
   columns = columnsBase,
@@ -379,23 +381,22 @@ export function MiniDisplayTable({
   data: TableItem[];
   columns?: ColumnDef<TableItem, any>[];
 }) {
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0, //initial page index
+    pageSize: 5, //default page size
+  });
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: {
-      pagination: {
-        pageIndex,
-        pageSize: 5,
-      },
-    },
+    onPaginationChange: setPagination,
+    state: { pagination },
   });
 
   return (
     <div className="rounded-md border mt-4">
-      <Table>
+      <Table className="h-36">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -438,7 +439,7 @@ export function MiniDisplayTable({
           disabled={!table.getCanPreviousPage()}
           size={"sm"}
         >
-          Previous
+          {"<"}
         </Button>
         <span>
           Page {table.getState().pagination.pageIndex + 1} of{" "}
@@ -449,7 +450,7 @@ export function MiniDisplayTable({
           disabled={!table.getCanNextPage()}
           size={"sm"}
         >
-          Next
+          {">"}
         </Button>
       </div>
     </div>
