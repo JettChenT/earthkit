@@ -50,7 +50,10 @@ def extract_panoramas(text: str) -> List[Panorama]:
 
     # The response is actually javascript code. It's a function with a single
     # input which is a huge deeply nested array of items.
-    blob = re.findall(r"callbackfunc\( (.*) \)$", text)[0]
+    fncs = re.findall(r"callbackfunc\( (.*) \)$", text)
+    if len(fncs) == 0:
+        return []
+    blob = fncs[0]
     data = json.loads(blob)
 
     if data == [[5, "generic", "Search returned no images."]]:

@@ -1,7 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewPanelType, useComb } from "./combStore";
+import { ViewPanelType, useComb } from "../../lib/combStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmbedMap from "@/components/embed-map";
 

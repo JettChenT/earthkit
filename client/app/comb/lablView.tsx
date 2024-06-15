@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LabelType, useComb } from "./combStore";
+import { LabelType, useComb } from "../../lib/combStore";
 import { useHotkeys, Keys } from "react-hotkeys-hook";
 import { useRef } from "react";
 import {

@@ -31,6 +31,11 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
 });
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Msg, ingestStream } from "@/lib/rpc";
+import { pushToComb } from "./data";
+import { useRouter } from "next/navigation";
+import { useComb } from "@/lib/combStore";
+import { columnHelper } from "../comb/table";
+import { TableItemsFromCoord } from "@/lib/utils";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -54,7 +59,9 @@ export default function StreetView() {
   });
   const [sampled, setSampled] = useState<Coords | null>(null);
   const [located, setLocated] = useState<Coords | null>(null);
+  const { setColDef, addItems, setTargetImage } = useComb();
   const [topN, setTopN] = useState(20);
+  const router = useRouter();
   const mapRef = useRef<MapRef>(null);
   const viewMode = useMemo(() => {
     let vm = selecting ? DrawRectangleMode : ViewMode;
@@ -68,8 +75,12 @@ export default function StreetView() {
     return vm;
   }, [selecting]);
   const viewedLocated = useMemo(() => {
-    return located ? located.coords.slice(0, topN) : null;
-  }, [located, topN]);
+    return located
+      ? locating
+        ? located.coords
+        : located.coords.slice(0, topN)
+      : null;
+  }, [located, topN, locating]);
 
   const layer = new EditableGeoJsonLayer({
     id: "geojson-layer",
@@ -310,6 +321,23 @@ export default function StreetView() {
             max={sampled?.coords.length || 50}
             step={1}
           />
+          <Button
+            onClick={() => {
+              setTargetImage(image!);
+              setColDef((colDefs) => [
+                ...colDefs,
+                columnHelper.accessor("aux.max_sim", {
+                  header: "StreetView Similarity",
+                  cell: ({ row }) => <div>{row.original.aux?.max_sim}</div>,
+                }),
+              ]);
+              addItems(TableItemsFromCoord(located!));
+              router.push("/comb");
+            }}
+            disabled={!located || !image}
+          >
+            Sift Through Results
+          </Button>
         </div>
       </OperationContainer>
       <ESearchBox setViewState={setViewState} dglref={deckRef} />

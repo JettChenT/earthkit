@@ -23,22 +23,10 @@ export type SideBarItem = {
 
 const sideBarData: SideBarItem[] = [
   {
-    tool: "osm",
-    display: "OSM",
-    tooltip: "OpenStreetMap",
-    icon: <SearchCode className="size-4" />,
-  },
-  {
-    tool: "geoclip",
-    display: "GeoCLIP",
-    tooltip: "Global Location-Estimation Tool",
-    icon: <Earth className="size-4" />,
-  },
-  {
-    tool: "satellite",
-    display: "Satellite",
-    tooltip: "Locate a ground-level image based on satellite imagery",
-    icon: <Satellite className="size-4" />,
+    tool: "comb",
+    display: "Comb",
+    tooltip: "Comb",
+    icon: <Glasses className="size-4" />,
   },
   {
     tool: "streetview",
@@ -47,10 +35,22 @@ const sideBarData: SideBarItem[] = [
     icon: <CarTaxiFront className="size-4" />,
   },
   {
-    tool: "comb",
-    display: "Comb",
-    tooltip: "Comb",
-    icon: <Glasses className="size-4" />,
+    tool: "osm",
+    display: "OSM",
+    tooltip: "OpenStreetMap",
+    icon: <SearchCode className="size-4" />,
+  },
+  {
+    tool: "geoclip",
+    display: "Geoestimation",
+    tooltip: "Global Location-Estimation Tool",
+    icon: <Earth className="size-4" />,
+  },
+  {
+    tool: "satellite",
+    display: "Satellite",
+    tooltip: "Locate a ground-level image based on satellite imagery",
+    icon: <Satellite className="size-4" />,
   },
 ];
 

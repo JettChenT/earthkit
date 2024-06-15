@@ -6,13 +6,13 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
-import { MOCK, mockItems } from "./mock";
-import { columnsBase } from "./table";
+import { MOCK, mockItems } from "../app/comb/mock";
+import { columnsBase } from "../app/comb/table";
 
 export type TableItem = {
   coord: PurePoint;
-  panoId?: string;
   status: LabelType;
+  aux: any;
 };
 
 export type ViewPanelType = "streetview" | "map" | "satellite";
@@ -44,6 +44,7 @@ export type CombState = {
   setIdxData: (newItem: Partial<TableItem>) => void;
   setSorting: OnChangeFn<SortingState>;
   setFiltering: OnChangeFn<ColumnFiltersState>;
+  setColDef: OnChangeFn<ColumnDef<TableItem, any>[]>;
 };
 
 export const useComb = create<CombState>((set, get) => ({
@@ -92,5 +93,9 @@ export const useComb = create<CombState>((set, get) => ({
   setFiltering: (fn) =>
     set((state) => ({
       filtering: fn instanceof Function ? fn(state.filtering) : fn,
+    })),
+  setColDef: (fn) =>
+    set((state) => ({
+      colDefs: fn instanceof Function ? fn(state.colDefs) : fn,
     })),
 }));

@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewPanel from "./viewPanel";
 import Table from "./table";
-import { useComb } from "./combStore";
+import { useComb } from "../../lib/combStore";
 import LablView from "./lablView";
 import { GeoImport } from "./geo-import";
 

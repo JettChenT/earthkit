@@ -1,4 +1,4 @@
-import { LabelType, TableItem } from "./combStore";
+import { LabelType, TableItem } from "../../lib/combStore";
 import { parse as csvParse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { FeatureCollection, Point as GeoJSONPoint } from "geojson";

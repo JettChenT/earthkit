@@ -19,7 +19,7 @@ def satellite_locate(target: bytes, bounds: Bounds, zoom = 20):
     for (i, r) in enumerate(prediction_res):
         res[i].aux['sim'] = r
         res[i].aux.pop('image', None)
-    res.coords.sort(key=lambda x: x.aux['sim'])
+    res.coords.sort(key=lambda x: x.aux['sim'], reverse=True)
     return res
 
 @stub.local_entrypoint()

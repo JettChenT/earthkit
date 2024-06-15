@@ -1,5 +1,10 @@
 "use client";
-import { FiltPresets, LabelType, TableItem, useComb } from "./combStore";
+import {
+  FiltPresets,
+  LabelType,
+  TableItem,
+  useComb,
+} from "../../lib/combStore";
 import {
   ColumnDef,
   flexRender,
@@ -51,7 +56,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FormatType, exportData } from "./inout";
 
-const columnHelper = createColumnHelper<TableItem>();
+export const columnHelper = createColumnHelper<TableItem>();
 
 export const columnsBase = [
   columnHelper.accessor("coord", {
@@ -80,7 +85,7 @@ export const columnsBase = [
       return filterValue.includes(row.getValue(columnFilter));
     },
   }),
-  columnHelper.accessor("panoId", {
+  columnHelper.accessor("aux.panoId", {
     header: "Pano ID",
   }),
 ];
