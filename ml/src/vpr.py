@@ -26,7 +26,7 @@ with inference_image.imports():
 
 ImgType = bytes | np.ndarray | Image.Image
 
-@stub.cls(gpu=gpu.A10G(), image=inference_image, enable_memory_snapshot=True)
+@stub.cls(gpu=gpu.A10G(), image=inference_image, enable_memory_snapshot=True, allow_concurrent_inputs=3)
 class VPRModel:
     @build()
     def build(self):

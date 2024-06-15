@@ -39,6 +39,7 @@ async-lru==2.0.4
     # via jupyterlab
 attrs==23.2.0
     # via aiohttp
+    # via cattrs
     # via jsonschema
     # via referencing
     # via sigtools
@@ -48,6 +49,8 @@ beautifulsoup4==4.12.3
     # via nbconvert
 bleach==6.1.0
     # via nbconvert
+cattrs==23.2.3
+    # via ml
 certifi==2022.12.7
     # via httpcore
     # via httpx

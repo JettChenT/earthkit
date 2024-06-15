@@ -30,6 +30,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
 import "mapbox-gl/dist/mapbox-gl.css";
+import { Msg } from "@/lib/rpc";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -180,8 +181,26 @@ export default function StreetView() {
     while (!done) {
       const eventString = decoder.decode(value);
       console.log("event string: ", eventString);
-      const event = JSON.parse(eventString);
-      console.log("parsed json:", event);
+      const events = eventString.split("\n\n");
+      console.log("events: ", events);
+      for (const event of events) {
+        if (event == "") continue;
+        console.log("parsing, ", event);
+        const res: Msg = JSON.parse(event.slice(6));
+        console.log("parsed json:", res);
+        if (res.type === "Coords") {
+          setLocated((loc) => {
+            if (loc) {
+              return {
+                coords: [...loc.coords, ...res.coords],
+              };
+            }
+            return res;
+          });
+        } else if (res.type === "Progress") {
+          console.log(res);
+        }
+      }
       ({ value, done } = await reader.read());
     }
   };

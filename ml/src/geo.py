@@ -1,11 +1,10 @@
-import attr
-from attr import field
+from attr import field, define
 from typing import Any, Tuple, Self, Optional
 import geopy.distance
 from geopy.distance import Distance
 
 
-@attr.s
+@define
 class Point:
     lon: float = field()
     lat: float = field()
@@ -35,7 +34,7 @@ class Point:
         self.aux.update(kwargs)
 
 
-@attr.s
+@define
 class Coords:
     coords: list[Point] = field(factory=list)
 
@@ -113,7 +112,7 @@ class Coords:
         return len(self.coords)
 
 
-@attr.s
+@define
 class Bounds:
     lo: Point = field()
     hi: Point = field()

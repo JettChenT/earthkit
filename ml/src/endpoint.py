@@ -6,12 +6,13 @@ from pydantic import BaseModel, create_model, ValidationError
 import modal
 from typing import List, Type, TypeVar
 from . import schema, geo
-from .utils import proc_im_url
+from .utils import json_encode, proc_im_url
+from .rpc import encode_msg
 from fastapi.responses import StreamingResponse
 from fastapi.encoders import jsonable_encoder
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geopy==2.4.1", "requests==2.28.1", "websockets==12.0"
+    "geopy==2.4.1", "requests==2.28.1", "websockets==12.0", "cattrs==23.2.3"
 )
 
 web_app = FastAPI()
@@ -57,9 +58,7 @@ async def streetview_locate_sse(request: SVLocateRequest):
         img = proc_im_url(request.image_url)
         cords_geo = request.coords.to_geo()
         async for res in f.remote_gen.aio(cords_geo, img):
-            conv_cords = schema.Coords.from_geo(res)
-            print("conv cords", conv_cords, type(conv_cords))
-            yield f"data: {jsonable_encoder(conv_cords)}\n\n"
+            yield f"data: {json_encode(encode_msg(res))}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

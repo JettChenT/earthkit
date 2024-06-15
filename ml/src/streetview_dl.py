@@ -11,12 +11,13 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from aiostream import stream, pipe, streamcontext
 from .stream_utils import eager_chunks
+from .rpc import ProgressUpdate
 import time
 
 stub = Stub("streetview-locate")
 
 sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0", *OTEL_DEPS
+    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0", "cattrs==23.2.3", *OTEL_DEPS
 ).env(ENVS)
 
 
@@ -96,8 +97,6 @@ def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
 
 @stub.function(image=sv_image)
 async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
-    images = []
-    t_0 = time.time()
     tracer = get_tracer()
 
     @tracer.start_as_current_span("fetch_image")
@@ -133,16 +132,22 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
             updated_pnts.append(pnt)
         return Coords(updated_pnts)
             
-
+    num_cords = len(panos.coords)
     coords_iter = stream.iterate(panos.coords)
     xs = coords_iter | pipe.map(fetch_image, ordered=False)
     batch_cnt = inference_batch_size // NUM_DIR
     inference_queue = asyncio.Queue()
+    response_queue = asyncio.Queue()
 
     async def task_download_panos():
         async with streamcontext(xs) as streamer:
             cur_batch = []
             async for result in streamer:
+                await response_queue.put(ProgressUpdate(
+                    "Streetview Panorama Fetched",
+                    total=num_cords,
+                    current=[result[0]]
+                ))
                 cur_batch.append(result)
                 if len(cur_batch) == batch_cnt:
                     await inference_queue.put(asyncio.create_task(inference_batch(cur_batch)))
@@ -154,15 +159,25 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
     
     pano_download_task = asyncio.create_task(task_download_panos())
     
-    while True:
-        task = await inference_queue.get()
-        if task is None:
-            break
-        res = await task
-        yield res
-        inference_queue.task_done()
 
-    await pano_download_task
+    async def run_inference_q():
+        while True:
+            task = await inference_queue.get()
+            if task is None:
+                break
+            res = await task
+            await response_queue.put(res)
+            inference_queue.task_done()
+        await response_queue.put(None)
+    
+    inference_task = asyncio.create_task(run_inference_q())
+
+    while True:
+        res = await response_queue.get()
+        if res is None:
+            break
+        yield res
+    
 
 
 @stub.local_entrypoint()
@@ -170,6 +185,7 @@ async def main():
     import dotenv
     import pickle
     USE_SMP_CACHED = True
+    LIMIT_CNT = 100
     dotenv.load_dotenv()
     if USE_SMP_CACHED:
         sampled_views = pickle.load(open("tmp/sampled_views.pkl", "rb"))
@@ -180,6 +196,8 @@ async def main():
         interval = Distance(kilometers=0.03)
         sampled_views: Coords = sample_streetviews.remote(bounds, interval)
         pickle.dump(sampled_views, open("tmp/sampled_views.pkl", "wb"))
+    if LIMIT_CNT is not None:
+        sampled_views = Coords(sampled_views.coords[:LIMIT_CNT])
     print(f"sampled {len(sampled_views)} streetviews")
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()

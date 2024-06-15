@@ -30,7 +30,10 @@ asttokens==2.4.1
     # via stack-data
 attrs==23.2.0
     # via aiohttp
+    # via cattrs
     # via sigtools
+cattrs==23.2.3
+    # via ml
 certifi==2022.12.7
     # via httpcore
     # via httpx

@@ -1,5 +1,7 @@
 import base64
 import requests
+from fastapi.encoders import jsonable_encoder
+import json
 
 def proc_im_url(image_url: str) -> bytes:
     if image_url.startswith('data:'):
@@ -10,3 +12,6 @@ def proc_im_url(image_url: str) -> bytes:
         response = requests.get(image_url)
         response.raise_for_status() 
         return response.content
+
+def json_encode(obj) -> str:
+    return json.dumps(jsonable_encoder(obj))
