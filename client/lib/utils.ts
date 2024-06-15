@@ -28,3 +28,22 @@ export function formatValue(value: any) {
   }
   return value;
 }
+
+export type Stats = {
+  mean: number;
+  stdev: number;
+};
+
+export function getStats(values: number[]): Stats {
+  const mean = values.reduce((acc, value) => acc + value, 0) / values.length;
+  const variance =
+    values.reduce((acc, value) => acc + (value - mean) ** 2, 0) / values.length;
+  return {
+    mean,
+    stdev: Math.sqrt(variance),
+  };
+}
+
+export function zVal(value: number, stats: Stats) {
+  return (value - stats.mean) / stats.stdev;
+}

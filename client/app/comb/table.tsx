@@ -169,7 +169,7 @@ export default function CombTable() {
   });
 
   return (
-    <div className="flex flex-col gap-4 p-2">
+    <div className="flex flex-col gap-4 p-2 h-full">
       <div className="flex justify-between">
         <span className="text-md">{items.length} items</span>
         <div className="flex gap-2">
@@ -178,8 +178,8 @@ export default function CombTable() {
           <StatusFilterSelect />
         </div>
       </div>
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border h-full">
+        <Table className="h-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="">
@@ -198,7 +198,7 @@ export default function CombTable() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className="h-full overflow-y-scroll">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, dispIdx) => (
                 <TableRow

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, formatValue } from "@/lib/utils";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey";
 
@@ -15,6 +15,15 @@ function getCn(color: PillColor) {
     case "grey":
       return "bg-slate-200 text-slate-500";
   }
+}
+
+function colorFromZVal(z: number) {
+  const clampedZ = Math.max(-1, Math.min(2, z));
+  const normalizedZ = (clampedZ + 1) / 3;
+  const r = Math.round(255 * normalizedZ);
+  const g = 0;
+  const b = Math.round(255 * (1 - normalizedZ));
+  return `rgb(${r},${g},${b})`;
 }
 
 export default function Pill({
@@ -34,5 +43,22 @@ export default function Pill({
       {children}
       {icon && iconPosition === "end" && <span className="ml-2">{icon}</span>}
     </div>
+  );
+}
+
+export function NumberPill({
+  value,
+  zval,
+  baseColor,
+}: {
+  value: number;
+  zval: number;
+  baseColor: PillColor;
+}) {
+  const color = colorFromZVal(zval);
+  return (
+    <Pill color={baseColor}>
+      <span style={{ color }}>{formatValue(value)}</span>
+    </Pill>
   );
 }

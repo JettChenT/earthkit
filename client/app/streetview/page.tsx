@@ -35,7 +35,8 @@ import { pushToComb } from "./data";
 import { useRouter } from "next/navigation";
 import { useComb } from "@/lib/combStore";
 import { columnHelper } from "../comb/table";
-import { TableItemsFromCoord, formatValue } from "@/lib/utils";
+import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
+import { NumberPill } from "@/components/pill";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -323,13 +324,18 @@ export default function StreetView() {
           />
           <Button
             onClick={() => {
+              const stats = getStats(located!.coords.map((c) => c.aux.max_sim));
               setTargetImage(image!);
               setColDef((colDefs) => [
                 ...colDefs,
                 columnHelper.accessor("aux.max_sim", {
                   header: "StreetView Similarity",
                   cell: ({ row }) => (
-                    <div>{formatValue(row.original.aux?.max_sim)}</div>
+                    <NumberPill
+                      value={row.original.aux?.max_sim}
+                      zval={zVal(row.original.aux?.max_sim, stats)}
+                      baseColor="grey"
+                    />
                   ),
                 }),
               ]);
