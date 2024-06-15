@@ -175,16 +175,22 @@ export default function StreetView() {
       throw new Error("Failed to start locate: API returned no response body");
     }
 
-    for await (const msg of ingestStream(response.body)) {
-      // console.log("got message! ", msg);
+    for await (const msg of ingestStream(response)) {
+      console.log("got message! ", msg);
       switch (msg.type) {
         case "Coords":
           setLocated((loc) => {
-            if (loc) {
+            if (loc?.coords?.length) {
+              console.log("Old coords:", loc.coords);
+              let new_cords = [...loc.coords, ...msg.coords].sort(
+                (a, b) => b.aux.max_sim - a.aux.max_sim
+              );
+              console.log("New coords (extension):", new_cords);
               return {
-                coords: [...loc.coords, ...msg.coords],
+                coords: new_cords,
               };
             }
+            console.log("New coords:", msg.coords);
             return msg;
           });
           break;
