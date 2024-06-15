@@ -55,6 +55,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormatType, exportData } from "./inout";
+import { formatValue } from "@/lib/utils";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -65,7 +66,7 @@ export const columnsBase = [
       const coord = props.getValue();
       return (
         <Pill color="blue">
-          {coord.lat}, {coord.lon}
+          {formatValue(coord.lat)}, {formatValue(coord.lon)}
         </Pill>
       );
     },
@@ -84,9 +85,6 @@ export const columnsBase = [
     filterFn: (row, columnFilter, filterValue) => {
       return filterValue.includes(row.getValue(columnFilter));
     },
-  }),
-  columnHelper.accessor("aux.panoId", {
-    header: "Pano ID",
   }),
 ];
 

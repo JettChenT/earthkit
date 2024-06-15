@@ -15,7 +15,7 @@ import { GeoImport } from "./geo-import";
 function Panels() {
   return (
     <ResizablePanelGroup direction="horizontal">
-      <ResizablePanel defaultSize={60}>
+      <ResizablePanel defaultSize={70}>
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel defaultSize={60}>
             <ViewPanel />
@@ -27,7 +27,7 @@ function Panels() {
         </ResizablePanelGroup>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize={50}>
+      <ResizablePanel defaultSize={30}>
         <Table />
       </ResizablePanel>
     </ResizablePanelGroup>

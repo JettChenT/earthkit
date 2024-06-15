@@ -24,7 +24,7 @@ export default function ViewPanel() {
       </div>
       <div className="grow">
         <EmbedMap
-          panoId={currentItem.panoId}
+          panoId={currentItem.aux?.panoId}
           coord={currentItem.coord}
           viewType={viewPanelState}
         />

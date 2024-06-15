@@ -18,3 +18,13 @@ export function TableItemFromPoint(pnt: Point): TableItem {
 export function TableItemsFromCoord(coord: Coords): TableItem[] {
   return coord.coords.map(TableItemFromPoint);
 }
+
+export function formatValue(value: any) {
+  if (value === null) {
+    return "N/A";
+  }
+  if (typeof value === "number" && !Number.isInteger(value)) {
+    return value.toFixed(3);
+  }
+  return value;
+}
