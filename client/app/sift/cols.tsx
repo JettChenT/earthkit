@@ -1,5 +1,14 @@
 import { TableItem } from "@/app/sift/siftStore";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, StringOrTemplateHeader } from "@tanstack/react-table";
+import {
+  ArrowDown01,
+  ArrowDown10,
+  ArrowDownAZ,
+  ArrowDownZA,
+  ArrowUp01,
+  ArrowUpAZ,
+  ArrowUpDown,
+} from "lucide-react";
 import { columnHelper } from "./table";
 import Pill, {
   NumberPill,
@@ -8,6 +17,7 @@ import Pill, {
   StatusNumberMap,
 } from "@/components/pill";
 import { formatValue } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 // hard-coded columns
 export type CoordCol = {
@@ -40,6 +50,38 @@ export type TextCol = ColBase & {
   baseColor?: PillColor;
 };
 
+const sortableHeader: (
+  headerName: string,
+  typ: "text" | "num"
+) => StringOrTemplateHeader<TableItem, any> = (headerName, typ) => {
+  return ({ column }) => {
+    const icn = (() => {
+      const cname = "ml-2 h-4 w-4";
+      switch (column.getIsSorted()) {
+        case false:
+          return <ArrowUpDown className={cname + " text-gray-400"} />;
+        case "asc":
+          return typ == "text" ? (
+            <ArrowUpAZ className={cname} />
+          ) : (
+            <ArrowUp01 className={cname} />
+          );
+        case "desc":
+          return typ == "text" ? (
+            <ArrowDownZA className={cname} />
+          ) : (
+            <ArrowDown10 className={cname} />
+          );
+      }
+    })();
+    return (
+      <Button variant="ghost" onClick={() => column.toggleSorting()}>
+        {headerName} {icn}
+      </Button>
+    );
+  };
+};
+
 export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
   return cols.map((col) => {
     switch (col.type) {
@@ -57,7 +99,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
         });
       case "StatusCol":
         return columnHelper.accessor("status", {
-          header: "Status",
+          header: sortableHeader("Status", "text"),
           cell: (props) => {
             const status = props.getValue();
             return <StatusCell status={status} />;
@@ -74,7 +116,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
         });
       case "NumericalCol":
         return columnHelper.accessor(`aux.${col.accessor}`, {
-          header: col.header,
+          header: sortableHeader(col.header, "num"),
           cell: (props) => {
             const val = props.getValue();
             return (
@@ -88,7 +130,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
         });
       case "TextCol":
         return columnHelper.accessor(`aux.${col.accessor}`, {
-          header: col.header,
+          header: sortableHeader(col.header, "text"),
           cell: (props) => {
             const val = props.getValue();
             if (col.usePill) {
