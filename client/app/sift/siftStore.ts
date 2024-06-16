@@ -7,7 +7,8 @@ import {
 } from "@tanstack/react-table";
 import { create } from "zustand";
 import { MOCK, mockItems } from "./mock";
-import { Col, defaultCols } from "@/app/sift/cols";
+import { Col, defaultCols, mergeCols } from "@/app/sift/cols";
+import { TableEncapsulation } from "./inout";
 
 export type TableItem = {
   coord: PurePoint;
@@ -37,6 +38,7 @@ export type SiftState = {
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
   addItems: (items: TableItem[]) => void;
+  tableImport: (tabl: TableEncapsulation) => void;
   setViewPanelState: (state: ViewPanelType) => void;
   getSelected: () => TableItem | null;
   idxDelta: (delta: number) => void;
@@ -97,5 +99,10 @@ export const useSift = create<SiftState>((set, get) => ({
   setCols: (fn) =>
     set((state) => ({
       cols: fn instanceof Function ? fn(state.cols) : fn,
+    })),
+  tableImport: (table: TableEncapsulation) =>
+    set((state) => ({
+      items: [...state.items, ...table.items],
+      cols: mergeCols(state.cols, table.cols),
     })),
 }));

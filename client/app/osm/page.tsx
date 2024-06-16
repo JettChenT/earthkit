@@ -209,9 +209,9 @@ function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
       Fetched {feats.features.length} features
       <Button
         onClick={() => {
-          const items = parseGeoJsonImport(feats);
-          console.log(items);
-          addItems(items);
+          const res = parseGeoJsonImport(feats);
+          console.log(res.items);
+          addItems(res.items);
           router.push("/sift");
         }}
       >

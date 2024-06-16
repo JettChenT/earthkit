@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   CollapsibleTrigger,
@@ -13,10 +13,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { FileUploader } from "react-drag-drop-files";
-import { importData } from "./inout";
+import { TableEncapsulation, importData } from "./inout";
 import { TableItem, useSift } from "./siftStore";
 import { MiniDisplayTable } from "./table";
 import { FileInput } from "lucide-react";
+import { compileColDefs, defaultColDefs, defaultCols, mergeCols } from "./cols";
 
 function tryParse(content: string, fileName: string) {
   if (fileName.endsWith(".csv")) {
@@ -30,8 +31,14 @@ function tryParse(content: string, fileName: string) {
 }
 
 export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
-  const [results, setResults] = useState<TableItem[] | null>(null);
-  const { addItems } = useSift();
+  const [results, setResults] = useState<TableEncapsulation | null>(null);
+  const { tableImport } = useSift();
+  let miniColDef = useMemo(() => {
+    if (results) {
+      return compileColDefs(mergeCols(defaultCols, results.cols));
+    }
+    return defaultColDefs;
+  }, [results]);
 
   const handleFileUpload = (file: File) => {
     if (file) {
@@ -50,7 +57,7 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
   };
 
   const doImport = () => {
-    addItems(results!);
+    tableImport(results!);
     setResults(null);
     setOpen(false);
   };
@@ -89,11 +96,12 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
           </FileUploader>
         </div>
       ) : (
-        <MiniDisplayTable data={results} />
+        <MiniDisplayTable data={results.items} columns={miniColDef} />
       )}
       {results && (
         <p>
-          Loaded <span className="font-bold">{results.length}</span> Records
+          Loaded <span className="font-bold">{results.items.length}</span>{" "}
+          Records
         </p>
       )}
       {results !== null && (

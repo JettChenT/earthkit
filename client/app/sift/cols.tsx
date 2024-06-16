@@ -9,12 +9,15 @@ import Pill, {
 } from "@/components/pill";
 import { formatValue } from "@/lib/utils";
 
+// hard-coded columns
 export type CoordCol = {
   type: "CoordCol";
+  accessor: "coord";
 };
 
 export type StatusCol = {
   type: "StatusCol";
+  accessor: "status";
 };
 
 // For custom-defined columns
@@ -47,7 +50,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
             const coord = props.getValue();
             return (
               <Pill color="blue">
-                {formatValue(coord.lat)},{formatValue(coord.lon)}
+                {formatValue(coord.lat)}, {formatValue(coord.lon)}
               </Pill>
             );
           },
@@ -99,8 +102,21 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
   });
 }
 
-export const defaultCols: Col[] = [{ type: "CoordCol" }, { type: "StatusCol" }];
+export const defaultCols: Col[] = [
+  { type: "CoordCol", accessor: "coord" },
+  { type: "StatusCol", accessor: "status" },
+];
 export const defaultColDefs: ColumnDef<TableItem, any>[] =
   compileColDefs(defaultCols);
+
+export function mergeCols(colA: Col[], colB: Col[]) {
+  const cbfilt = colB.filter(
+    (col) =>
+      colA.find(
+        (acol) => acol.accessor === col.accessor && acol.type === col.type
+      ) === undefined
+  );
+  return [...colA, ...cbfilt];
+}
 
 export type Col = CoordCol | StatusCol | NumericalCol | TextCol;
