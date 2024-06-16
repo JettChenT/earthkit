@@ -54,7 +54,7 @@ const sortableHeader: (
   headerName: string,
   typ: "text" | "num"
 ) => StringOrTemplateHeader<TableItem, any> = (headerName, typ) => {
-  return ({ column }) => {
+  return function SortableHeader({ column }) {
     const icn = (() => {
       const cname = "ml-2 h-4 w-4";
       switch (column.getIsSorted()) {
