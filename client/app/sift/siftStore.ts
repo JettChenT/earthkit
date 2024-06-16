@@ -55,12 +55,7 @@ export const useSift = create<SiftState>((set, get) => ({
   idx: 0,
   viewPanelState: "streetview",
   cols: defaultCols,
-  sorting: [
-    {
-      id: "status",
-      desc: false,
-    },
-  ],
+  sorting: [],
   filtering: [
     {
       id: "status",
