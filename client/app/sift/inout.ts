@@ -123,7 +123,7 @@ export const parseGeoJsonImport = (
   const pointGeoJson = pointCoersion(geoJson);
   const auxLst: any[] = [];
   const items = pointGeoJson.features.map((feature) => {
-    let { status, ...aux } = feature.properties as any;
+    let { status, aux } = feature.properties as any;
     auxLst.push(aux);
     return {
       coord: {

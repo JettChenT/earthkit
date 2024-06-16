@@ -244,7 +244,10 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
 function ExportBtn() {
   const doExport = (format: FormatType) => {
     const curitems = useSift.getState().items;
-    const content = exportData(curitems, format);
+    const content = exportData(
+      { items: curitems, cols: useSift.getState().cols },
+      format
+    );
     downloadContent(content, format);
   };
   return (
