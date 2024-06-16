@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileUploader } from "react-drag-drop-files";
 import { importData } from "./inout";
-import { TableItem, useSift } from "../../lib/siftStore";
+import { TableItem, useSift } from "./siftStore";
 import { MiniDisplayTable } from "./table";
 import { FileInput } from "lucide-react";
 

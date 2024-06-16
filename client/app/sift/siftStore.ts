@@ -1,4 +1,4 @@
-import { Point, PurePoint } from "@/lib/geo";
+import { PurePoint } from "@/lib/geo";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -6,8 +6,8 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
-import { MOCK, mockItems } from "../app/sift/mock";
-import { columnsBase } from "../app/sift/table";
+import { MOCK, mockItems } from "./mock";
+import { Col, defaultCols } from "@/app/sift/cols";
 
 export type TableItem = {
   coord: PurePoint;
@@ -33,7 +33,7 @@ export type SiftState = {
   viewPanelState: ViewPanelType;
   sorting: SortingState;
   filtering: ColumnFiltersState;
-  colDefs: ColumnDef<TableItem, any>[];
+  cols: Col[];
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
   addItems: (items: TableItem[]) => void;
@@ -44,7 +44,7 @@ export type SiftState = {
   setIdxData: (newItem: Partial<TableItem>) => void;
   setSorting: OnChangeFn<SortingState>;
   setFiltering: OnChangeFn<ColumnFiltersState>;
-  setColDef: OnChangeFn<ColumnDef<TableItem, any>[]>;
+  setCols: OnChangeFn<Col[]>;
 };
 
 export const useSift = create<SiftState>((set, get) => ({
@@ -52,6 +52,7 @@ export const useSift = create<SiftState>((set, get) => ({
   items: MOCK ? mockItems : [],
   idx: 0,
   viewPanelState: "streetview",
+  cols: defaultCols,
   sorting: [
     {
       id: "status",
@@ -64,7 +65,6 @@ export const useSift = create<SiftState>((set, get) => ({
       value: FiltPresets.All,
     },
   ],
-  colDefs: columnsBase,
   setTargetImage: (img: string) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
   addItems: (newItems: TableItem[]) =>
@@ -94,8 +94,8 @@ export const useSift = create<SiftState>((set, get) => ({
     set((state) => ({
       filtering: fn instanceof Function ? fn(state.filtering) : fn,
     })),
-  setColDef: (fn) =>
+  setCols: (fn) =>
     set((state) => ({
-      colDefs: fn instanceof Function ? fn(state.colDefs) : fn,
+      cols: fn instanceof Function ? fn(state.cols) : fn,
     })),
 }));

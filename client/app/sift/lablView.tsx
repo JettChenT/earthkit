@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LabelType, useSift } from "../../lib/siftStore";
+import { LabelType, useSift } from "./siftStore";
 import { useHotkeys, Keys } from "react-hotkeys-hook";
 import { useRef } from "react";
 import {

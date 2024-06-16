@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { importData, parseGeoJsonImport } from "../sift/inout";
 import { downloadContent } from "@/lib/utils";
 import { center } from "@turf/center";
-import { useSift } from "@/lib/siftStore";
+import { useSift } from "@/app/sift/siftStore";
 import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";

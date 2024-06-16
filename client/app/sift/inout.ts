@@ -1,5 +1,5 @@
 import center from "@turf/center";
-import { LabelType, TableItem } from "../../lib/siftStore";
+import { LabelType, TableItem } from "./siftStore";
 import { parse as csvParse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { FeatureCollection, Point as GeoJSONPoint } from "geojson";

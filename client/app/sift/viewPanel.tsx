@@ -1,7 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewPanelType, useSift } from "../../lib/siftStore";
+import { ViewPanelType, useSift } from "./siftStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmbedMap from "@/components/embed-map";
 

@@ -1,3 +1,4 @@
+import { LabelType } from "@/app/sift/siftStore";
 import { cn, formatValue } from "@/lib/utils";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey";
@@ -61,4 +62,29 @@ export function NumberPill({
       <span style={{ color }}>{formatValue(value)}</span>
     </Pill>
   );
+}
+
+const StatusToPillColor = (status: LabelType): PillColor => {
+  switch (status) {
+    case "Not Labeled":
+      return "grey";
+    case "Match":
+      return "green";
+    case "Keep":
+      return "blue";
+    case "Not Match":
+      return "red";
+  }
+};
+
+export const StatusNumberMap: Record<LabelType, number> = {
+  "Not Labeled": 0,
+  Match: 1,
+  Keep: 2,
+  "Not Match": 3,
+};
+
+export function StatusCell({ status }: { status: LabelType }) {
+  const col: PillColor = StatusToPillColor(status);
+  return <Pill color={col}>{status}</Pill>;
 }

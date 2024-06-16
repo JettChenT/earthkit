@@ -1,5 +1,5 @@
 "use client";
-import { FiltPresets, LabelType, TableItem, useSift } from "./siftStore";
+import { FiltPresets, LabelType, TableItem, useSift } from "../sift/siftStore";
 import {
   ColumnDef,
   flexRender,
@@ -22,7 +22,7 @@ import {
 import Pill, { PillColor } from "@/components/pill";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -50,11 +50,60 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormatType, exportData } from "./inout";
-import { downloadContent, formatValue } from "@/lib/utils";
-import { compileColDefs, defaultColDefs } from "./cols";
+import { formatValue } from "@/lib/utils";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
+export const columnsBase = [
+  columnHelper.accessor("coord", {
+    header: "Coordinate",
+    cell: (props) => {
+      const coord = props.getValue();
+      return (
+        <Pill color="blue">
+          {formatValue(coord.lat)}, {formatValue(coord.lon)}
+        </Pill>
+      );
+    },
+  }),
+  columnHelper.accessor("status", {
+    header: "Status",
+    cell: (props) => {
+      const status = props.getValue();
+      return <StatusCell status={status} />;
+    },
+    sortingFn: (a, b, cid) => {
+      return (
+        StatusNumberMap[a.original.status] - StatusNumberMap[b.original.status]
+      );
+    },
+    filterFn: (row, columnFilter, filterValue) => {
+      return filterValue.includes(row.getValue(columnFilter));
+    },
+  }),
+];
+
+const StatusToPillColor = (status: LabelType): PillColor => {
+  switch (status) {
+    case "Not Labeled":
+      return "grey";
+    case "Match":
+      return "green";
+    case "Keep":
+      return "blue";
+    case "Not Match":
+      return "red";
+  }
+};
+
+const StatusNumberMap: Record<LabelType, number> = {
+  "Not Labeled": 0,
+  Match: 1,
+  Keep: 2,
+  "Not Match": 3,
+};
+
+// Note: order matters here
 const sttDescriptionsj = {
   All: "All",
   Labeled: "Labeled",
@@ -64,7 +113,12 @@ const sttDescriptionsj = {
   NotMatch: "Not Match",
 };
 
-export default function SiftTable() {
+function StatusCell({ status }: { status: LabelType }) {
+  const col: PillColor = StatusToPillColor(status);
+  return <Pill color={col}>{status}</Pill>;
+}
+
+export default function CombTable() {
   let {
     items,
     idx,
@@ -73,13 +127,10 @@ export default function SiftTable() {
     setSorting,
     filtering,
     setFiltering,
-    cols,
+    colDefs,
   } = useSift();
   let [selectedIdx, setSelectedIdx] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
-  let colDefs = useMemo(() => {
-    return compileColDefs(cols);
-  }, [cols]);
 
   const table = useReactTable({
     data: items,
@@ -195,7 +246,10 @@ export default function SiftTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={cols.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columnsBase.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -242,6 +296,13 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
 ];
 
 function ExportBtn() {
+  const downloadContent = (content: string, ext: string) => {
+    const a = document.createElement("a");
+    const file = new Blob([content], { type: `text/${ext}` });
+    a.href = URL.createObjectURL(file);
+    a.download = `export.${ext}`;
+    a.click();
+  };
   const doExport = (format: FormatType) => {
     const curitems = useSift.getState().items;
     const content = exportData(curitems, format);
@@ -310,14 +371,14 @@ const ROWS_PER_PAGE = 5;
 
 export function MiniDisplayTable({
   data,
-  columns = defaultColDefs,
+  columns = columnsBase,
 }: {
   data: TableItem[];
   columns?: ColumnDef<TableItem, any>[];
 }) {
   const [pagination, setPagination] = useState({
     pageIndex: 0, //initial page index
-    pageSize: ROWS_PER_PAGE, //default page size
+    pageSize: 5, //default page size
   });
   const table = useReactTable({
     data,

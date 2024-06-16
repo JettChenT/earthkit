@@ -32,7 +32,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Msg, ingestStream } from "@/lib/rpc";
 import { useRouter } from "next/navigation";
-import { useSift } from "@/lib/siftStore";
+import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
@@ -59,7 +59,7 @@ export default function StreetView() {
   });
   const [sampled, setSampled] = useState<Coords | null>(null);
   const [located, setLocated] = useState<Coords | null>(null);
-  const { setColDef, addItems, setTargetImage } = useSift();
+  const { setCols, addItems, setTargetImage } = useSift();
   const [topN, setTopN] = useState(20);
   const router = useRouter();
   const mapRef = useRef<MapRef>(null);
@@ -325,18 +325,14 @@ export default function StreetView() {
             onClick={() => {
               const stats = getStats(located!.coords.map((c) => c.aux.max_sim));
               setTargetImage(image!);
-              setColDef((colDefs) => [
-                ...colDefs,
-                columnHelper.accessor("aux.max_sim", {
-                  header: "StreetView Similarity",
-                  cell: ({ row }) => (
-                    <NumberPill
-                      value={row.original.aux?.max_sim}
-                      zval={zVal(row.original.aux?.max_sim, stats)}
-                      baseColor="grey"
-                    />
-                  ),
-                }),
+              setCols((cols) => [
+                ...cols,
+                {
+                  type: "NumericalCol",
+                  accessor: "max_sim",
+                  header: "Streetview Similarity",
+                  ...stats,
+                },
               ]);
               addItems(TableItemsFromCoord(located!));
               router.push("/sift");

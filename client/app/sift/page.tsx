@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ViewPanel from "./viewPanel";
 import Table from "./table";
-import { useSift } from "../../lib/siftStore";
+import { useSift } from "./siftStore";
 import LablView from "./lablView";
 import { GeoImport } from "./geo-import";
 
