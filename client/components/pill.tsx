@@ -3,7 +3,7 @@ import { cn, formatValue } from "@/lib/utils";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey";
 
-function getCn(color: PillColor) {
+export function getPillColorCn(color: PillColor) {
   switch (color) {
     case "red":
       return "bg-red-100 text-red-500";
@@ -39,7 +39,9 @@ export default function Pill({
   iconPosition?: "start" | "end";
 }) {
   return (
-    <div className={cn("px-2 py-1 rounded-md font-bold", getCn(color))}>
+    <div
+      className={cn("px-2 py-1 rounded-md font-bold", getPillColorCn(color))}
+    >
       {icon && iconPosition === "start" && <span className="mr-2">{icon}</span>}
       {children}
       {icon && iconPosition === "end" && <span className="ml-2">{icon}</span>}
@@ -64,7 +66,7 @@ export function NumberPill({
   );
 }
 
-const StatusToPillColor = (status: LabelType): PillColor => {
+export const statusToPillColor = (status: LabelType): PillColor => {
   switch (status) {
     case "Not Labeled":
       return "grey";
@@ -85,6 +87,6 @@ export const StatusNumberMap: Record<LabelType, number> = {
 };
 
 export function StatusCell({ status }: { status: LabelType }) {
-  const col: PillColor = StatusToPillColor(status);
+  const col: PillColor = statusToPillColor(status);
   return <Pill color={col}>{status}</Pill>;
 }

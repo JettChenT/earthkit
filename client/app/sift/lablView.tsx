@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LabelType, useSift } from "./siftStore";
 import { useHotkeys, Keys } from "react-hotkeys-hook";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +11,8 @@ import {
 
 import React from "react";
 import ImageUpload from "@/components/widgets/imageUpload";
+import { cn } from "@/lib/utils";
+import { getPillColorCn, statusToPillColor } from "@/components/pill";
 
 const Kbd = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -31,9 +33,19 @@ const LabelButton = ({
 }) => {
   const { setIdxData } = useSift();
   const btnRef = useRef<HTMLButtonElement>(null);
+  const [hl, setHl] = useState(false);
   useHotkeys(hotkey ?? "", () => {
     btnRef.current?.click();
   });
+
+  const triggerhl = () => {
+    setHl(true);
+    setTimeout(() => {
+      setHl(false);
+    }, 150);
+  };
+
+  const selCn = getPillColorCn(statusToPillColor(status));
 
   return (
     <TooltipProvider>
@@ -41,8 +53,14 @@ const LabelButton = ({
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className="py-8 w-32"
-            onClick={() => setIdxData({ status })}
+            className={cn(
+              "py-8 w-32 transition-all duration-100",
+              hl && `hover:${selCn} ${selCn}`
+            )}
+            onClick={() => {
+              triggerhl();
+              setIdxData({ status });
+            }}
             ref={btnRef}
           >
             {status}
