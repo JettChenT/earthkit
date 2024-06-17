@@ -1,7 +1,7 @@
 import { LabelType } from "@/app/sift/siftStore";
 import { cn, formatValue } from "@/lib/utils";
 
-export type PillColor = "red" | "blue" | "green" | "orange" | "grey";
+export type PillColor = "red" | "blue" | "green" | "orange" | "grey" | "hidden";
 
 export function getPillColorCn(color: PillColor) {
   switch (color) {
@@ -15,6 +15,8 @@ export function getPillColorCn(color: PillColor) {
       return "bg-orange-100 text-orange-500";
     case "grey":
       return "bg-slate-200 text-slate-500";
+    case "hidden":
+      return "bg-transparent text-current";
   }
 }
 

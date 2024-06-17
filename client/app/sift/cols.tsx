@@ -123,7 +123,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
               <NumberPill
                 value={val}
                 zval={(val - col.mean) / col.stdev}
-                baseColor={col.baseColor || "grey"}
+                baseColor={col.baseColor || "hidden"}
               />
             );
           },
@@ -134,7 +134,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           cell: (props) => {
             const val = props.getValue();
             if (col.usePill) {
-              return <Pill color={col.baseColor || "grey"}>{val}</Pill>;
+              return <Pill color={col.baseColor || "hidden"}>{val}</Pill>;
             } else {
               return <span>{val}</span>;
             }
