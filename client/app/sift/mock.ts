@@ -2,7 +2,7 @@ import { Col, defaultCols } from "./cols";
 import { TableEncapsulation, importData } from "./inout";
 import { LabelType, TableItem } from "./siftStore";
 
-export const MOCK = true;
+export const MOCK = false;
 
 const NUM_ITEMS = 20;
 
