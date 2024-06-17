@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import React from "react";
+import ImageUpload from "@/components/widgets/imageUpload";
 
 const Kbd = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -63,17 +64,28 @@ const LabelButton = ({
 };
 
 export default function LablView() {
-  const { setIdxData } = useSift();
+  const { setIdxData, setTargetImage, target_image } = useSift();
   const cur = useSift((state) => state.getSelected());
   return (
-    <div className="w-full h-full">
-      <TooltipProvider>
-        <div className="flex flex-row items-center justify-center h-full gap-5">
-          <LabelButton status="Match" hotkey={["h", "m", "1"]} />
-          <LabelButton status="Keep" hotkey={["p", "2"]} />
-          <LabelButton status="Not Match" hotkey={["l", "n", "3"]} />
-        </div>
-      </TooltipProvider>
+    <div className="w-full h-full flex flex-col">
+      <div className="my-5 p-3 mx-auto">
+        <ImageUpload
+          onSetImage={setTargetImage}
+          image={target_image}
+          imgClassName="max-h-28"
+          className="px-20"
+          content="Import Reference Image"
+        />
+      </div>
+      <div>
+        <TooltipProvider>
+          <div className="flex flex-row items-center justify-center h-full gap-5">
+            <LabelButton status="Match" hotkey={["h", "m", "1"]} />
+            <LabelButton status="Keep" hotkey={["p", "2"]} />
+            <LabelButton status="Not Match" hotkey={["l", "n", "3"]} />
+          </div>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }

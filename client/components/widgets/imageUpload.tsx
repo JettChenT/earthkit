@@ -8,7 +8,9 @@ interface ImageUploadProps {
   onUploadBegin?: () => void;
   fileTypes?: string[];
   className?: string;
+  imgClassName?: string;
   image?: string | null;
+  content?: string | null;
 }
 
 const fileTypes = ["JPG", "PNG", "GIF"];
@@ -16,6 +18,8 @@ const fileTypes = ["JPG", "PNG", "GIF"];
 const ImageUpload: React.FC<ImageUploadProps> = ({
   onSetImage,
   className,
+  imgClassName,
+  content,
   image,
 }) => {
   const [imgCache, setImgCache] = useState<string | null>(null);
@@ -31,7 +35,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   return image ? (
-    <img src={imgCache!} className="rounded-md" />
+    <img src={imgCache!} className={twMerge("rounded-md", imgClassName)} />
   ) : (
     <FileUploader handleChange={handleFileUpload} name="file" types={fileTypes}>
       <div
@@ -40,7 +44,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           className
         )}
       >
-        <div className="text-lg font-bold">Import Image</div>
+        <div className="text-lg font-bold">{content || "Import Image"}</div>
       </div>
     </FileUploader>
   );
