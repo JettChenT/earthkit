@@ -19,12 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Pill, { PillColor } from "@/components/pill";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Select,
   SelectContent,
@@ -148,7 +146,7 @@ export default function SiftTable() {
         </div>
       </div>
       <div
-        className="rounded-md border h-full overflow-y-auto"
+        className="rounded-md border h-full overflow-y-auto overflow-x-scroll"
         ref={tableContainerRef}
       >
         <Table className="h-full">
@@ -332,7 +330,7 @@ export function MiniDisplayTable({
   });
 
   return (
-    <div className="rounded-md border mt-4">
+    <div className="rounded-md border mt-4 overflow-x-scroll">
       <Table className="h-36">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

@@ -10,7 +10,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogContent,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { FileUploader } from "react-drag-drop-files";
 import { TableEncapsulation, importData } from "./inout";
