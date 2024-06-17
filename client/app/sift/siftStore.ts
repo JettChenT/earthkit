@@ -6,7 +6,7 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { create } from "zustand";
-import { MOCK, mockItems } from "./mock";
+import { MOCK, mockCols, mockItems } from "./mock";
 import { Col, defaultCols, mergeCols } from "@/app/sift/cols";
 import { TableEncapsulation } from "./inout";
 
@@ -54,7 +54,7 @@ export const useSift = create<SiftState>((set, get) => ({
   items: MOCK ? mockItems : [],
   idx: 0,
   viewPanelState: "streetview",
-  cols: defaultCols,
+  cols: MOCK ? mockCols : defaultCols,
   sorting: [],
   filtering: [
     {
