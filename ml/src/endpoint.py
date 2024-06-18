@@ -87,7 +87,7 @@ class GeoclipSimilarityRequest(BaseModel):
 def geoclip_similarity(request: GeoclipSimilarityRequest):
     c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
     img = proc_im_url(request.image_url)
-    res = c.inference.remote(img, request.coords.to_geo())
+    res = c.similarity.remote(img, request.coords.to_geo())
     return encode_msg(res)
 
 @web_app.post("/geoclip/similarity/streaming")
@@ -97,7 +97,7 @@ async def geoclip_similarity_sse(request: GeoclipSimilarityRequest):
         c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
         img = proc_im_url(request.image_url)
         coords_geo = request.coords.to_geo()
-        res = c.inference.remote(img, coords_geo)
+        res = c.similarity.remote(img, coords_geo)
         yield f"data: {json_encode(encode_msg(res))}\n\n"
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

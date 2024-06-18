@@ -35,6 +35,7 @@ import {
   FileJson2,
   Filter,
   Globe,
+  Plus,
   Table as TableIcn,
 } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -50,6 +51,11 @@ import {
 import { FormatType, exportData } from "./inout";
 import { downloadContent, formatValue } from "@/lib/utils";
 import { compileColDefs, defaultColDefs } from "./cols";
+import { toast } from "sonner";
+import { PointFromPurePoint } from "@/lib/geo";
+import ky from "ky";
+import { ingestStream } from "@/lib/rpc";
+import { API_URL } from "@/lib/constants";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -140,6 +146,7 @@ export default function SiftTable() {
       <div className="flex justify-between">
         <span className="text-md">{items.length} items</span>
         <div className="flex gap-2">
+          <ActionBtn />
           <ImportBtn />
           <ExportBtn />
           <StatusFilterSelect />
@@ -235,6 +242,84 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
     icon: <FileJson2 className="size-4 mr-3" />,
   },
 ];
+
+function ActionBtn() {
+  const { target_image, cols, setCols, items, updateItemResults } = useSift();
+  const similarityAction = async (
+    actionName: "geoclip" | "streetview" | "satellite"
+  ) => {
+    console.log(actionName);
+    if (!target_image) {
+      toast.error("No target image uploaded");
+      return;
+    }
+    const payload = {
+      image_url: target_image,
+      coords: {
+        coords: items.map((item) => PointFromPurePoint(item.coord, {})),
+      },
+    };
+    const targ_url = (() => {
+      switch (actionName) {
+        case "geoclip":
+          return "/geoclip/similarity/streaming";
+        case "streetview":
+          return "/streetview/locate/streaming";
+        case "satellite":
+          return "/satellite/similarity/streaming";
+      }
+    })();
+    const res = await ky.post(`${API_URL}${targ_url}`, {
+      timeout: false,
+      json: payload,
+    });
+
+    if (!res.ok || !res.body) {
+      console.error(res);
+      toast.error("Failed to get results");
+      return;
+    }
+
+    setCols((cols) => [
+      ...cols,
+      {
+        type: "NumericalCol",
+        accessor: actionName,
+        header: actionName,
+        mean: 0,
+        stdev: 0.1,
+      },
+    ]);
+
+    for await (const chunk of ingestStream(res)) {
+      if (chunk.type == "ResultsUpdate") {
+        updateItemResults(chunk, actionName);
+      }
+    }
+  };
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="default">
+          <Plus className="size-4 mr-1" />
+          Feature
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>Similarity Scores</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => similarityAction("geoclip")}>
+          GeoCLIP
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => similarityAction("streetview")}>
+          Streetview
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => similarityAction("satellite")}>
+          Satellite
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 function ExportBtn() {
   const doExport = (format: FormatType) => {

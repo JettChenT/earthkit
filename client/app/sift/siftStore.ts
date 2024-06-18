@@ -9,6 +9,7 @@ import { create } from "zustand";
 import { MOCK, mockCols, mockItems } from "./mock";
 import { Col, defaultCols, mergeCols } from "@/app/sift/cols";
 import { TableEncapsulation } from "./inout";
+import { ResultsUpdate } from "@/lib/rpc";
 
 export type TableItem = {
   coord: PurePoint;
@@ -35,6 +36,7 @@ export type SiftState = {
   sorting: SortingState;
   filtering: ColumnFiltersState;
   cols: Col[];
+  updateItemResults: (res: ResultsUpdate, feat: string) => void;
   setTargetImage: (img: string) => void;
   setItems: (items: TableItem[]) => void;
   addItems: (items: TableItem[]) => void;
@@ -62,6 +64,22 @@ export const useSift = create<SiftState>((set, get) => ({
       value: FiltPresets.All,
     },
   ],
+  updateItemResults: (res: ResultsUpdate, feat: string) =>
+    set((state) => ({
+      items: state.items.map((item, idx) => {
+        const result = res.results.find((result) => result.idx === idx);
+        if (result) {
+          return {
+            ...item,
+            aux: {
+              ...item.aux,
+              [feat]: result.value,
+            },
+          };
+        }
+        return item;
+      }),
+    })),
   setTargetImage: (img: string) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
   addItems: (newItems: TableItem[]) =>
