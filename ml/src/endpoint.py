@@ -78,6 +78,17 @@ def geoclip_inference(request: GeoclipRequest):
     ]
     return pnts
 
+class GeoclipSimilarityRequest(BaseModel):
+    image_url: str
+    coords: schema.Coords[None]
+
+@web_app.post("/geoclip/similarity")
+def geoclip_similarity(request: GeoclipSimilarityRequest):
+    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+    img = proc_im_url(request.image_url)
+    res = c.inference.remote(img, request.coords.to_geo())
+    return res
+
 @web_app.get("/geoclip/poke")
 def geoclip_poke():
     c = modal.Cls.lookup("geoclip", "GeoCLIPModel")

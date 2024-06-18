@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN, RAW_API_URL } from "@/lib/constants";
-import { Bounds, Coords, Point } from "@/lib/geo";
+import { Bounds, Coords, Point, applyResultsUpdate } from "@/lib/geo";
 import {
   DrawRectangleMode,
   EditableGeoJsonLayer,
@@ -114,7 +114,11 @@ export default function StreetView() {
     getPosition: (d) => [d.lon, d.lat],
     getRadius: (d) => 1,
     getFillColor: (d) =>
-      [Math.floor(255 * Math.sqrt(d.aux.max_sim)), 140, 0] as Color,
+      [
+        Math.floor(255 * Math.sqrt(d.aux.streetview_res?.max_sim)),
+        140,
+        0,
+      ] as Color,
     pickable: true,
     radiusMinPixels: 2,
     radiusMaxPixels: 100,
@@ -125,7 +129,11 @@ export default function StreetView() {
     return object
       ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
       Click to copy full coordinates
-      ${object.aux.max_sim ? `Similarity: ${object.aux.max_sim}` : ""}`
+      ${
+        object.aux.streetview_res
+          ? `Similarity: ${object.aux.streetview_res.max_sim}`
+          : ""
+      }`
       : null;
   }, []);
 
@@ -189,20 +197,15 @@ export default function StreetView() {
     for await (const msg of ingestStream(response)) {
       console.log("got message! ", msg);
       switch (msg.type) {
-        case "Coords":
+        case "ResultsUpdate":
           setLocated((loc) => {
             if (loc?.coords?.length) {
               console.log("Old coords:", loc.coords);
-              let new_cords = [...loc.coords, ...msg.coords].sort(
-                (a, b) => b.aux.max_sim - a.aux.max_sim
-              );
-              console.log("New coords (extension):", new_cords);
-              return {
-                coords: new_cords,
-              };
+              let new_coords = applyResultsUpdate(loc!, msg, "streetview_res");
+              console.log("New coords (extension):", new_coords);
+              return new_coords;
             }
-            console.log("New coords:", msg.coords);
-            return msg;
+            return applyResultsUpdate(sampled!, msg, "streetview_res");
           });
           break;
         case "ProgressUpdate":
@@ -212,6 +215,14 @@ export default function StreetView() {
           break;
       }
     }
+
+    setLocated((loc) => {
+      return {
+        coords: loc!.coords.sort(
+          (a, b) => b.aux.streetview_res.max_sim - a.aux.streetview_res.max_sim
+        ),
+      };
+    });
   };
 
   const locateWrapper = async () => {
@@ -323,13 +334,15 @@ export default function StreetView() {
           />
           <Button
             onClick={() => {
-              const stats = getStats(located!.coords.map((c) => c.aux.max_sim));
+              const stats = getStats(
+                located!.coords.map((c) => c.aux.streetview_res.max_sim)
+              );
               setTargetImage(image!);
               setCols((cols) => [
                 ...cols,
                 {
                   type: "NumericalCol",
-                  accessor: "max_sim",
+                  accessor: "streetview_res.max_sim",
                   header: "Streetview Similarity",
                   ...stats,
                 },

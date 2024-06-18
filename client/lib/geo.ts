@@ -1,3 +1,5 @@
+import { ResultsUpdate } from "./rpc";
+
 export interface Point {
   lon: number;
   lat: number;
@@ -42,4 +44,26 @@ export function getbbox(coords: Coords) {
     lat: Math.max(...coords.coords.map((c) => c.lat)),
   };
   return { lo, hi };
+}
+
+export function applyResultsUpdate(
+  original: Coords,
+  update: ResultsUpdate,
+  facet: string
+): Coords {
+  const updatedCoords = original.coords.map((point, idx) => {
+    const result = update.results.find((result) => result.idx === idx);
+    if (result) {
+      return {
+        ...point,
+        aux: {
+          ...point.aux,
+          [facet]: result.value,
+        },
+      };
+    }
+    return point;
+  });
+
+  return { coords: updatedCoords };
 }

@@ -98,6 +98,11 @@ class Coords:
         r = pdk.Deck(layers=[layer], initial_view_state=view_state)
         r.to_html(f_out)
         print(f"Plot generated and saved to '{f_out}'.")
+    
+    def inject_idx(self):
+        for i, point in enumerate(self.coords):
+            point.update_aux(idx=i)
+        return self
 
     def __getitem__(self, idx):
         if isinstance(idx, int):

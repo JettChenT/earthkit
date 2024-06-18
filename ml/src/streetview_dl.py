@@ -11,7 +11,7 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from aiostream import stream, pipe, streamcontext
 from .stream_utils import eager_chunks
-from .rpc import ProgressUpdate
+from .rpc import MsgType, ProgressUpdate, ResultsUpdate
 import time
 
 stub = Stub("streetview-locate")
@@ -109,6 +109,7 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
             "dir": dir
         } for dir, cropped in enumerate(crops)])
 
+    panos.inject_idx()
     pid_map = {p.aux['pano_id']: p for p in panos.coords}
 
     print("fetching streetviews...")
@@ -118,26 +119,26 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
     async def inference_batch(batch):
         flattened = [im['image'] for record in batch for im in record[1]]
         res = await inference.remote.aio(image, flattened)
-        updated_pnts = []
+        updated_pnts = Coords()
         for i in range(0, len(flattened), NUM_DIR):
             chunk = res[i:i+NUM_DIR]
             batch_i = i//NUM_DIR
             pid = batch[batch_i][0]
             pnt = pid_map[pid]
-            pnt.aux.update({
+            pnt.aux.update({"streetview_res":{
                 "sims": chunk,
                 "max_sim": max(chunk),
                 "max_sim_ind": chunk.index(max(chunk))
-            })
+            }})
             updated_pnts.append(pnt)
-        return Coords(updated_pnts)
+        return ResultsUpdate.from_coords(updated_pnts, "streetview_res")
             
     num_cords = len(panos.coords)
     coords_iter = stream.iterate(panos.coords)
     xs = coords_iter | pipe.map(fetch_image, ordered=False)
     batch_cnt = inference_batch_size // NUM_DIR
     inference_queue = asyncio.Queue()
-    response_queue = asyncio.Queue()
+    response_queue: asyncio.Queue[MsgType] = asyncio.Queue()
 
     async def task_download_panos():
         async with streamcontext(xs) as streamer:
@@ -203,9 +204,10 @@ async def main():
     im = open("tmp/fsr.png", "rb").read()
     tot_len = 0
     async for res in streetview_locate.remote_gen.aio(sampled_views, im):
-        if type(res) == Coords:
-            print(f"got {len(res.coords)} new coords")
-            tot_len += len(res.coords)
+        if type(res) == ResultsUpdate:
+            print(f"got {len(res.results)} new coords")
+            print(res)
+            tot_len += len(res.results)
         else:
             print(res)
     print(f"total length: {tot_len}")

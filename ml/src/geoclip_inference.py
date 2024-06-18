@@ -1,7 +1,9 @@
 import modal
 from modal import gpu, build, enter, method
 from .geoclip_mod.gclip import GeoCLIP
+from .geo import Coords
 import urllib.request
+import torch
 import io
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
@@ -28,6 +30,15 @@ class GeoCLIPModel:
             return
         top_pred_gps, top_pred_labels = self.model.predict(io.BytesIO(image), top_k=top_k)
         return top_pred_gps.tolist(), top_pred_labels.tolist()
+    
+    @method()
+    def similarity(self, image: bytes, coords: Coords) -> Coords:
+        gps_gallary = list(map(lambda x: (x.lat, x.lon), coords.coords))
+        gps_gallary = torch.tensor(gps_gallary)
+        probs_per_image = self.model.predict_coords(io.BytesIO(image), gps_gallary).tolist()
+        for i, prob in enumerate(probs_per_image):
+            coords.coords[i].update_aux(geoclip_sim=prob)
+        return coords
 
 @app.local_entrypoint()
 def main():

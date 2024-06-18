@@ -3,6 +3,14 @@ import { ProgressDelta } from "./progress_manager";
 import { events, stream } from "fetch-event-stream";
 
 export type CoordMsg = Coords & { type: "Coords" };
+export type SiftResult = {
+  idx: number;
+  value: string;
+};
+export type ResultsUpdate = {
+  results: SiftResult[];
+  type: "ResultsUpdate";
+};
 export type ProgressMsg = ProgressDelta & {
   type: "ProgressUpdate";
 };
@@ -17,4 +25,4 @@ export async function* ingestStream(resp: Response): AsyncIterable<Msg> {
   }
 }
 
-export type Msg = CoordMsg | ProgressMsg;
+export type Msg = ResultsUpdate | ProgressMsg;

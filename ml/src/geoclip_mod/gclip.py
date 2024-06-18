@@ -115,3 +115,14 @@ class GeoCLIP(nn.Module):
         top_pred_prob = top_pred.values[0]
 
         return top_pred_gps, top_pred_prob
+    
+    @torch.no_grad()
+    def predict_coords(self, image_path, gps_gallary: torch.Tensor):
+        image = Image.open(image_path)
+        image = self.image_encoder.preprocess_image(image)
+        image = image.to(self.device)
+        gps_gallary = gps_gallary.to(self.device)
+
+        logits_per_image = self.forward(image, gps_gallary)
+        probs_per_image = logits_per_image.softmax(dim=-1).cpu()
+        return probs_per_image
