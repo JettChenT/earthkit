@@ -41,6 +41,10 @@ def encode_msg(msg: MsgType, enforce: bool = True) -> dict:
         assert_msg(msg)
     return converter.unstructure(msg, unstructure_as=MsgType)
 
+def sse_encode(msg: MsgType) -> str:
+    from .utils import json_encode
+    return f"data: {json_encode(encode_msg(msg))}\n\n"
+
 def assert_msg(msg: MsgType) -> None:
     assert isinstance(msg, _MsgCheck), f"Expected a message of type {_MsgCheck}, got {type(msg)}"
 

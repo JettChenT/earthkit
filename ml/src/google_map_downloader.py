@@ -62,6 +62,27 @@ def download_google_map_area(bounds: Bounds, zoom=17) -> Coords:
 
     return Coords(results)
 
+def download_sat_coords(coords: Coords, zoom=17) -> Coords:
+    """
+    Downloads Google map tiles given a list of coordinates and a zoom level.
+    
+    Args:
+        coords: Coords object containing a list of Points.
+        zoom: Zoom level for the tiles.
+    
+    Returns:
+        A list of tuples, each containing the tile coordinates and the tile image.
+    """
+    with ThreadPoolExecutor() as executor:
+        total_tiles = len(coords)
+        print(f"Downloading {total_tiles} tiles")
+        futures = [executor.submit(download_tile, *lat_lng_to_tile(point, zoom), zoom) for point in coords]
+        results = []
+        for future in tqdm(futures, total=total_tiles, desc="Downloading tiles"):
+            results.append(future.result())
+
+    return Coords(results)
+
 def tst_math():
     import random
     for _ in range(10):

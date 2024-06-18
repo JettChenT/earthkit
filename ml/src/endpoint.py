@@ -7,9 +7,10 @@ import modal
 from typing import List, Type, TypeVar
 from . import schema, geo
 from .utils import json_encode, proc_im_url
-from .rpc import encode_msg
+from .rpc import ResultsUpdate, encode_msg, sse_encode
 from fastapi.responses import StreamingResponse
 from fastapi.encoders import jsonable_encoder
+from typing import Any
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geopy==2.4.1", "requests==2.28.1", "websockets==12.0", "cattrs==23.2.3"
@@ -80,14 +81,26 @@ def geoclip_inference(request: GeoclipRequest):
 
 class GeoclipSimilarityRequest(BaseModel):
     image_url: str
-    coords: schema.Coords[None]
+    coords: schema.Coords[Any]
 
 @web_app.post("/geoclip/similarity")
 def geoclip_similarity(request: GeoclipSimilarityRequest):
     c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
     img = proc_im_url(request.image_url)
     res = c.inference.remote(img, request.coords.to_geo())
-    return res
+    return encode_msg(res)
+
+@web_app.post("/geoclip/similarity/streaming")
+async def geoclip_similarity_sse(request: GeoclipSimilarityRequest):
+    # just to support our generic API endpoints
+    async def event_generator():
+        c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+        img = proc_im_url(request.image_url)
+        coords_geo = request.coords.to_geo()
+        res = c.inference.remote(img, coords_geo)
+        yield f"data: {json_encode(encode_msg(res))}\n\n"
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 
 @web_app.get("/geoclip/poke")
 def geoclip_poke():
@@ -106,6 +119,18 @@ def satellite_locate(request: SatelliteLocateRequest):
     res: geo.Coords = f.remote(img, request.bounds.to_geo())
     return schema.Coords.from_geo(res)
 
+class SatelliteSimRequest(BaseModel):
+    image_url: str
+    coords: schema.Coords[Any]
+
+@web_app.post("/satellite/similarity/streaming")
+async def satellite_sim_sse(request: SatelliteSimRequest):
+    async def event_generator():
+        f = modal.Function.lookup("satellite", "satellite_sim")
+        img = proc_im_url(request.image_url)
+        res: ResultsUpdate = f.remote(img, request.coords.to_geo())
+        yield sse_encode(res)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @app.function(image=image)
 @asgi_app()
