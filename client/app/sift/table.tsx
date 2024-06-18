@@ -284,7 +284,8 @@ function ActionBtn() {
       ...cols,
       {
         type: "NumericalCol",
-        accessor: actionName,
+        accessor:
+          actionName == "streetview" ? "streetview.max_sim" : actionName,
         header: actionName,
         mean: 0,
         stdev: 0.1,

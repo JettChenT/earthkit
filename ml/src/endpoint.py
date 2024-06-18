@@ -43,7 +43,7 @@ class PanoAux(BaseModel):
     pano_id: str
 
 class SVLocateRequest(BaseModel):
-    coords: schema.Coords[PanoAux]
+    coords: schema.Coords[Any]
     image_url: str
 
 @web_app.post("/streetview/locate")

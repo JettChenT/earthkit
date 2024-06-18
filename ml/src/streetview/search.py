@@ -5,7 +5,9 @@ from typing import List, Optional
 import requests
 from pydantic import BaseModel
 from requests.models import Response
+import httpx
 
+aclient = httpx.AsyncClient()
 
 class Panorama(BaseModel):
     pano_id: str
@@ -40,6 +42,16 @@ def search_request(lat: float, lon: float) -> Response:
     """
     url = make_search_url(lat, lon)
     return requests.get(url)
+
+
+async def search_request_async(lat: float, lon: float) -> httpx.Response:
+    """
+    Asynchronously gets the response of the script on Google's servers that returns the
+    closest panoramas (ids) to a given GPS coordinate.
+    """
+    url = make_search_url(lat, lon)
+    response = await aclient.get(url)
+    return response
 
 
 def extract_panoramas(text: str) -> List[Panorama]:
@@ -96,5 +108,13 @@ def search_panoramas(lat: float, lon: float) -> List[Panorama]:
     """
 
     resp = search_request(lat, lon)
+    pans = extract_panoramas(resp.text)
+    return pans
+
+async def search_panoramas_async(lat: float, lon: float) -> List[Panorama]:
+    """
+    Asynchronously gets the closest panoramas (ids) to the GPS coordinates.
+    """
+    resp = await search_request_async(lat, lon)
     pans = extract_panoramas(resp.text)
     return pans
