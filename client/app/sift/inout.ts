@@ -91,7 +91,7 @@ const parseJsonExport = (items: TableEncapsulation): string => {
   return JSON.stringify(items);
 };
 
-const pointCoersion = (
+export const pointCoersion = (
   feats: GeoJSON.FeatureCollection
 ): GeoJSON.FeatureCollection<GeoJSON.Point> => {
   return {
@@ -105,7 +105,7 @@ const pointCoersion = (
             ...f,
             geometry: {
               type: "Point",
-              coordinates: center(f.geometry),
+              coordinates: center(f.geometry).geometry.coordinates,
             },
           };
       }

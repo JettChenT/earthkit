@@ -269,17 +269,6 @@ function ActionBtn() {
           return "/satellite/similarity/streaming";
       }
     })();
-    const res = await ky.post(`${API_URL}${targ_url}`, {
-      timeout: false,
-      json: payload,
-    });
-
-    if (!res.ok || !res.body) {
-      console.error(res);
-      toast.error("Failed to get results");
-      return;
-    }
-
     setCols((cols) => [
       ...cols,
       {
@@ -291,6 +280,17 @@ function ActionBtn() {
         stdev: 0.1,
       },
     ]);
+
+    const res = await ky.post(`${API_URL}${targ_url}`, {
+      timeout: false,
+      json: payload,
+    });
+
+    if (!res.ok || !res.body) {
+      console.error(res);
+      toast.error("Failed to get results");
+      return;
+    }
 
     for await (const chunk of ingestStream(res)) {
       if (chunk.type == "ResultsUpdate") {

@@ -32,8 +32,9 @@ export const maxDuration = 30;
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
-const getOsmPart = (content: string) => {
-  return content.split("```overpassql\n").at(-1)?.split("\n```").at(0);
+export const getOsmPart = (content: string) => {
+  const match = content.match(/```overpassql\n([\s\S]*?)\n```/);
+  return match ? match[1] : null;
 };
 
 const queryOsm = async (osm_codeblock: string) => {
@@ -128,6 +129,7 @@ export default function OSM() {
             ],
           });
           setGeojsonData(geojson);
+          if (geojson.features.length == 0) return;
           const [minLng, minLat, maxLng, maxLat] = bbox(geojson);
           const vp = layer.context.viewport as WebMercatorViewport;
           const { longitude, latitude, zoom } = vp.fitBounds(
@@ -204,26 +206,40 @@ function DummyProgressIndicator({ children }: { children: React.ReactNode }) {
 function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
   const { addItems } = useSift();
   const router = useRouter();
+  const featuresCount = feats.features.length;
+
   return (
-    <div className="p-2 bg-secondary rounded-md">
-      Fetched {feats.features.length} features
-      <Button
-        onClick={() => {
-          const res = parseGeoJsonImport(feats);
-          console.log(res.items);
-          addItems(res.items);
-          router.push("/sift");
-        }}
-      >
-        Sift
-      </Button>
-      <Button
-        onClick={() => {
-          downloadContent(JSON.stringify(feats), "geojson");
-        }}
-      >
-        Export
-      </Button>
+    <div className="p-2 bg-secondary rounded-md flex items-center justify-between">
+      <span className="text-sm font-medium">
+        {featuresCount > 0
+          ? `Fetched ${featuresCount} features`
+          : "No features found"}
+      </span>
+      {featuresCount > 0 && (
+        <div className="flex gap-1">
+          <Button
+            className="bg-primary text-white py-1 rounded-md text-sm"
+            size={"sm"}
+            onClick={() => {
+              const res = parseGeoJsonImport(feats);
+              console.log(res.items);
+              addItems(res.items);
+              router.push("/sift");
+            }}
+          >
+            Sift
+          </Button>
+          <Button
+            className="bg-primary text-white py-1 rounded-md text-sm"
+            size={"sm"}
+            onClick={() => {
+              downloadContent(JSON.stringify(feats), "geojson");
+            }}
+          >
+            Export
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
