@@ -106,26 +106,22 @@ def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
 
 @stub.function(image=sv_image)
 async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
+    # TODO: clarify flow & dedup based on panoid
     tracer = get_tracer()
 
-    pid_map = {}
-
     @tracer.start_as_current_span("fetch_image")
-    async def fetch_image(pano: Point):
+    async def fetch_image(idx:int, pano: Point):
         if "pano_id" not in pano.aux:
             pano.aux["pano_id"] = await fetch_single_pano(pano)
-        nonlocal pid_map
-        pid_map[pano.aux["pano_id"]] = pano
         pid = pano.aux["pano_id"]
         pano_im = await get_panorama_async(pid, zoom=2)
         crops = crop_pano(pano_im)
-        return (pid, [{
+        return (idx, [{
             "image": cropped, 
             "dir": dir
         } for dir, cropped in enumerate(crops)])
 
     panos.inject_idx()
-    # pid_map = {p.aux['pano_id']: p for p in panos.coords}
 
     print("fetching streetviews...")
     VPRModel = modal.Cls.lookup("vpr", "VPRModel")
@@ -138,8 +134,8 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
         for i in range(0, len(flattened), NUM_DIR):
             chunk = res[i:i+NUM_DIR]
             batch_i = i//NUM_DIR
-            pid = batch[batch_i][0]
-            pnt = pid_map[pid]
+            idx = batch[batch_i][0]
+            pnt = panos.coords[idx]
             pnt.aux.update({"streetview_res":{
                 "sims": chunk,
                 "max_sim": max(chunk),
@@ -149,8 +145,8 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
         return ResultsUpdate.from_coords(updated_pnts, "streetview_res")
             
     num_cords = len(panos.coords)
-    coords_iter = stream.iterate(panos.coords)
-    xs = coords_iter | pipe.map(fetch_image, ordered=False)
+    coords_iter = stream.iterate(panos.coords) | pipe.enumerate()
+    xs = coords_iter | pipe.starmap(fetch_image, ordered=False)
     batch_cnt = inference_batch_size // NUM_DIR
     inference_queue = asyncio.Queue()
     response_queue: asyncio.Queue[MsgType] = asyncio.Queue()

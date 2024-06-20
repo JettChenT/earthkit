@@ -124,6 +124,7 @@ export const parseGeoJsonImport = (
   const auxLst: any[] = [];
   const items = pointGeoJson.features.map((feature) => {
     let { status, aux } = feature.properties as any;
+    aux = aux || {};
     auxLst.push(aux);
     return {
       coord: {
@@ -134,6 +135,7 @@ export const parseGeoJsonImport = (
       aux,
     };
   });
+  console.log(auxLst);
   const cols: Col[] =
     (geoJson as any).properties?.cols || deriveColDefs(getEntries(auxLst));
   return { items, cols };

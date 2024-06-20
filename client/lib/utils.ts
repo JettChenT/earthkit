@@ -20,9 +20,6 @@ export function TableItemsFromCoord(coord: Coords): TableItem[] {
 }
 
 export function formatValue(value: any) {
-  if (value === null) {
-    return "N/A";
-  }
   if (typeof value === "number" && !Number.isInteger(value)) {
     return value.toFixed(3);
   }

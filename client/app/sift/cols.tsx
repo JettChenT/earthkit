@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { columnHelper } from "./table";
 import Pill, {
+  LoadingIfNull,
   NumberPill,
   PillColor,
   StatusCell,
@@ -34,6 +35,7 @@ export type StatusCol = {
 export type ColBase = {
   accessor: string;
   header: string;
+  isFunCall?: boolean;
 };
 
 export type NumericalCol = ColBase & {
@@ -124,6 +126,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
                 value={val}
                 zval={(val - col.mean) / col.stdev}
                 baseColor={col.baseColor || "hidden"}
+                isFunCall={col.isFunCall}
               />
             );
           },
@@ -133,10 +136,13 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           header: sortableHeader(col.header, "text"),
           cell: (props) => {
             const val = props.getValue();
+            const valNode = (
+              <LoadingIfNull value={val} activated={!col.isFunCall} />
+            );
             if (col.usePill) {
-              return <Pill color={col.baseColor || "hidden"}>{val}</Pill>;
+              return <Pill color={col.baseColor || "hidden"}>{valNode}</Pill>;
             } else {
-              return <span>{val}</span>;
+              return <span>{valNode}</span>;
             }
           },
         });

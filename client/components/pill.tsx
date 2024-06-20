@@ -1,5 +1,6 @@
 import { LabelType } from "@/app/sift/siftStore";
 import { cn, formatValue } from "@/lib/utils";
+import { Skeleton } from "./ui/skeleton";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey" | "hidden";
 
@@ -55,15 +56,19 @@ export function NumberPill({
   value,
   zval,
   baseColor,
+  isFunCall,
 }: {
   value: number;
   zval: number;
   baseColor: PillColor;
+  isFunCall?: boolean;
 }) {
   const color = colorFromZVal(zval);
   return (
     <Pill color={baseColor}>
-      <span style={{ color }}>{formatValue(value)}</span>
+      <span style={{ color }}>
+        <LoadingIfNull value={formatValue(value)} activated={!isFunCall} />
+      </span>
     </Pill>
   );
 }
@@ -91,4 +96,14 @@ export const StatusNumberMap: Record<LabelType, number> = {
 export function StatusCell({ status }: { status: LabelType }) {
   const col: PillColor = statusToPillColor(status);
   return <Pill color={col}>{status}</Pill>;
+}
+
+export function LoadingIfNull({
+  value,
+  activated,
+}: {
+  value: React.ReactNode;
+  activated?: boolean;
+}) {
+  return value || !activated ? value : <Skeleton className="h-4 w-20" />;
 }
