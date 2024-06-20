@@ -29,28 +29,29 @@ const sideBarData: SideBarItem[] = [
     icon: <Glasses className="size-4" />,
   },
   {
+    tool: "osm",
+    display: "Overpass Query",
+    tooltip:
+      "Query the OpenStreetmap database with natural language and intelligent suggestions",
+    icon: <SearchCode className="size-4" />,
+  },
+  {
     tool: "streetview",
     display: "Street View",
     tooltip: "Locate a ground-level image based on street view imagery",
     icon: <CarTaxiFront className="size-4" />,
   },
   {
-    tool: "osm",
-    display: "OSM",
-    tooltip: "OpenStreetMap",
-    icon: <SearchCode className="size-4" />,
+    tool: "satellite",
+    display: "Satellite",
+    tooltip: "Locate a ground-level image based on satellite imagery",
+    icon: <Satellite className="size-4" />,
   },
   {
     tool: "geoclip",
     display: "Geoestimation",
     tooltip: "Global Location-Estimation Tool",
     icon: <Earth className="size-4" />,
-  },
-  {
-    tool: "satellite",
-    display: "Satellite",
-    tooltip: "Locate a ground-level image based on satellite imagery",
-    icon: <Satellite className="size-4" />,
   },
 ];
 
