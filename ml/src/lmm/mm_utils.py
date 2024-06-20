@@ -15,7 +15,8 @@ def render_text_description(
 
     # Create a draw object and add text to the bar
     draw = ImageDraw.Draw(bar)
-    font = ImageFont.truetype(f"{os.path.dirname(__file__)}/fonts/Inter-Regular.ttf", line_height)
+    font_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fonts", "Inter-Regular.ttf")
+    font = ImageFont.truetype(font_path, line_height)
     text_width = draw.textlength(text, font)
     position = ((bar.width - text_width) / 2, int(line_height * 0.1))
     draw.text(position, text, fill="white", font=font)

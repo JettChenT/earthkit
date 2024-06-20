@@ -92,7 +92,7 @@ export default function LablView() {
           image={target_image}
           imgClassName="max-h-28"
           className="px-20"
-          content="Import Reference Image"
+          content="Import Target Image"
         />
       </div>
       <div>

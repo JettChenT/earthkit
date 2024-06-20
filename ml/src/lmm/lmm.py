@@ -1,4 +1,5 @@
-from ..schema import Coords, Point
+from ..schema import Coords
+from ..geo import Point
 from ..streetview import fetch_single_pano
 from ..rpc import ResultsUpdate, SiftResult
 from ..streetview import get_panorama_async
@@ -14,6 +15,7 @@ import asyncio
 from aiostream import stream, pipe
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
+import traceback
 import os
 
 class Dependency(BaseModel):
@@ -52,11 +54,10 @@ def process_response(res:str, format: OutputEnum):
 async def process_request(req: LmmRequest):
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE"))
     async def fetch_dependencies(point:Point) -> List[ChatCompletionMessageParam]:
-        pnt = point.to_geo()
         tasks = []
         if req.dependencies.streetview:
             async def sv_task():
-                pano_id = await fetch_single_pano(pnt)
+                pano_id = await fetch_single_pano(point.lat, point.lon)
                 if not pano_id:
                     return None
                 res_im = await get_panorama_async(pano_id, 2)
@@ -64,12 +65,12 @@ async def process_request(req: LmmRequest):
             tasks.append(asyncio.create_task(sv_task()))
         if req.dependencies.satellite:
             async def sat_task():
-                res = await download_point_async(pnt)
+                res = await download_point_async(point)
                 return render_text_description(res, "Satellite Image")
             tasks.append(asyncio.create_task(sat_task()))
         if req.dependencies.basicmap:
             async def bm_task():
-                res = await download_point_async(pnt, lyr="m")
+                res = await download_point_async(point, lyr="m")
                 return render_text_description(res, "Basic Map")
             tasks.append(asyncio.create_task(bm_task()))
         await asyncio.gather(*tasks)
@@ -105,7 +106,11 @@ async def process_request(req: LmmRequest):
                 "thought": thought
             })])
         except Exception as e:
+            print(e)
+            traceback.print_exc()
             return ResultsUpdate([SiftResult(idx, None, str(e))])
-    xs = stream.iterate(req.coords) | pipe.enumerate() | pipe.starmap(proc_point)
-    async for x in xs:
-        yield x
+    coords = req.coords.to_geo()
+    xs = stream.iterate(coords.coords) | pipe.enumerate() | pipe.starmap(proc_point)
+    async with xs.stream() as streamer:
+        async for x in streamer:
+            yield x

@@ -1,16 +1,31 @@
 "use client";
-import { FiltPresets, LabelType, TableItem, useSift } from "./siftStore";
 import {
   ColumnDef,
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  createColumnHelper,
-  getSortedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
+import { FiltPresets, TableItem, useSift } from "./siftStore";
 
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -19,16 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Key } from "ts-key-enum";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { API_URL } from "@/lib/constants";
+import { PointFromPurePoint } from "@/lib/geo";
+import { ingestStream } from "@/lib/rpc";
+import { downloadContent } from "@/lib/utils";
+import ky from "ky";
 import {
   FileDown,
   FileInput,
@@ -38,24 +48,14 @@ import {
   Plus,
   Table as TableIcn,
 } from "lucide-react";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { GeoImport } from "./geo-import";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { FormatType, exportData } from "./inout";
-import { downloadContent, formatValue } from "@/lib/utils";
-import { compileColDefs, defaultColDefs } from "./cols";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
-import { PointFromPurePoint } from "@/lib/geo";
-import ky from "ky";
-import { ingestStream } from "@/lib/rpc";
-import { API_URL } from "@/lib/constants";
+import { Key } from "ts-key-enum";
+import { compileColDefs, defaultColDefs } from "./cols";
+import { GeoImport } from "./geo-import";
+import { FormatType, exportData } from "./inout";
+import { CustomExtraction } from "./lmm";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -298,27 +298,41 @@ function ActionBtn() {
       }
     }
   };
+
+  const extractionTrigger = useRef<HTMLDivElement>(null);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="default">
-          <Plus className="size-4 mr-1" />
-          Feature
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel>Similarity Scores</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => similarityAction("geoclip")}>
-          GeoCLIP
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => similarityAction("streetview")}>
-          Streetview
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => similarityAction("satellite")}>
-          Satellite
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="default">
+            <Plus className="size-4 mr-1" />
+            Feature
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Similarity Scores</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => similarityAction("geoclip")}>
+            GeoCLIP
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => similarityAction("streetview")}>
+            Streetview
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => similarityAction("satellite")}>
+            Satellite
+          </DropdownMenuItem>
+          <DropdownMenuLabel>Custom Extraction</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => {
+              extractionTrigger.current?.click();
+            }}
+          >
+            Vision-Language Model
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <CustomExtraction ref={extractionTrigger} />
+    </>
   );
 }
 

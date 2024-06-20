@@ -40,8 +40,8 @@ export type ColBase = {
 
 export type NumericalCol = ColBase & {
   type: "NumericalCol";
-  mean: number;
-  stdev: number;
+  mean?: number;
+  stdev?: number;
   baseColor?: PillColor;
 };
 
@@ -124,7 +124,11 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
             return (
               <NumberPill
                 value={val}
-                zval={(val - col.mean) / col.stdev}
+                zval={
+                  col.mean && col.stdev
+                    ? (val - col.mean) / col.stdev
+                    : undefined
+                }
                 baseColor={col.baseColor || "hidden"}
                 isFunCall={col.isFunCall}
               />

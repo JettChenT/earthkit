@@ -1,4 +1,4 @@
-import { PurePoint } from "@/lib/geo";
+import { Coords, PointFromPurePoint, PurePoint } from "@/lib/geo";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -43,6 +43,7 @@ export type SiftState = {
   tableImport: (tabl: TableEncapsulation) => void;
   setViewPanelState: (state: ViewPanelType) => void;
   getSelected: () => TableItem | null;
+  getCoords: () => Coords;
   idxDelta: (delta: number) => void;
   setIdx: (index: number) => void;
   setIdxData: (newItem: Partial<TableItem>) => void;
@@ -118,4 +119,7 @@ export const useSift = create<SiftState>((set, get) => ({
       items: [...state.items, ...table.items],
       cols: mergeCols(state.cols, table.cols),
     })),
+  getCoords: () => ({
+    coords: get().items.map((item) => PointFromPurePoint(item.coord, {})),
+  }),
 }));

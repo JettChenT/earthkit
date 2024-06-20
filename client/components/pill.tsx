@@ -59,14 +59,14 @@ export function NumberPill({
   isFunCall,
 }: {
   value: number;
-  zval: number;
+  zval?: number;
   baseColor: PillColor;
   isFunCall?: boolean;
 }) {
-  const color = colorFromZVal(zval);
+  const color = zval && colorFromZVal(zval);
   return (
     <Pill color={baseColor}>
-      <span style={{ color }}>
+      <span style={color ? { color } : undefined}>
         <LoadingIfNull value={formatValue(value)} activated={!isFunCall} />
       </span>
     </Pill>
