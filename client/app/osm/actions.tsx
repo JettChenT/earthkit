@@ -46,7 +46,7 @@ export type AIState = Array<ServerMessage>;
 
 export type UIState = Array<ClientMessage>;
 
-async function sendMessage(user_req: string) {
+async function sendMessage(user_req: string, sys_results: string[] = []) {
   "use server";
 
   const history = getMutableAIState();
@@ -55,8 +55,14 @@ async function sendMessage(user_req: string) {
   const progressStream = createStreamableValue<ProgressUpdate>();
 
   (async () => {
+    const sysMessages = sys_results.map((result) => ({
+      role: "system",
+      content: result,
+    }));
+
     history.update([
       ...history.get(),
+      ...sysMessages,
       {
         role: "user",
         content: user_req,

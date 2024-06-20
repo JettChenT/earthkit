@@ -26,6 +26,12 @@ import { downloadContent } from "@/lib/utils";
 import { center } from "@turf/center";
 import { useSift } from "@/app/sift/siftStore";
 import { useRouter } from "next/navigation";
+import { overpassJson } from "@/lib/overpass";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -35,21 +41,6 @@ const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 export const getOsmPart = (content: string) => {
   const match = content.match(/```overpassql\n([\s\S]*?)\n```/);
   return match ? match[1] : null;
-};
-
-const queryOsm = async (osm_codeblock: string) => {
-  console.log(osm_codeblock);
-  const result = await ky
-    .post(OVERPASS_URL, {
-      body: "data=" + encodeURIComponent(osm_codeblock),
-      timeout: false,
-    })
-    .json()
-    .catch((e) => {
-      console.log(e);
-    });
-  console.log(`result: ${result}`);
-  return osmtogeojson(result);
 };
 
 export default function OSM() {
@@ -79,14 +70,17 @@ export default function OSM() {
     initializeDb().then((db) => setDb(db));
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (
+    user_input: string,
+    sys_results: string[] = []
+  ) => {
     setConversation((prev: ClientMessage[]) => [
       ...prev,
-      { role: "user", content: input, id: nanoid() },
+      { role: "user", content: user_input, id: nanoid() },
     ]);
-    setInput("");
     const { textStream, upperIndicator, progressStream } = await sendMessage(
-      input
+      user_input,
+      sys_results
     );
     const generation_id = nanoid();
     setConversation((prev: ClientMessage[]) => [
@@ -120,7 +114,28 @@ export default function OSM() {
             </DummyProgressIndicator>,
           ],
         });
-        const geojson = await queryOsm(osm_codeblock);
+        const geojson = await overpassJson(osm_codeblock)
+          .then((res) => {
+            console.log("results", res);
+            return osmtogeojson(res);
+          })
+          .catch((e) => {
+            updateConversation(generation_id, {
+              lowerIndicators: [
+                <ErrorDisplay
+                  key={nanoid()}
+                  errorHeader={"Overpass Turbo Query Error"}
+                  errorDetail={e.message}
+                  onFix={() => {
+                    handleSubmit("Please fix this error", [
+                      `Error: ${e.message}`,
+                    ]);
+                  }}
+                />,
+              ],
+            });
+            return null;
+          });
         console.log("parsed geojson", geojson);
         if (geojson) {
           updateConversation(generation_id, {
@@ -173,7 +188,10 @@ export default function OSM() {
       <div className="flex-1 flex flex-col overflow-hidden justify-start">
         <ChatMessages />
         <Chatbox
-          handleSubmit={handleSubmit}
+          handleSubmit={() => {
+            handleSubmit(input);
+            setInput("");
+          }}
           handleInputChange={(newInput) => {
             setInput(newInput);
           }}
@@ -203,6 +221,47 @@ function DummyProgressIndicator({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ErrorDisplay({
+  errorHeader,
+  errorDetail,
+  onFix,
+}: {
+  errorHeader: string;
+  errorDetail: string;
+  onFix: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <div className="p-2 bg-red-100 rounded-md flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-red-700">
+            {errorHeader}
+          </span>
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" onClick={onFix}>
+              Fix
+            </Button>
+            <CollapsibleTrigger asChild>
+              <Button size="sm" variant="outline">
+                {isOpen ? "Hide Details" : "Show Details"}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+        <CollapsibleContent>
+          <textarea
+            className="w-full mt-2 text-sm text-red-700 bg-black p-2 rounded-md h-64"
+            readOnly
+            value={errorDetail}
+          />
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
 function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
   const { addItems } = useSift();
   const router = useRouter();
@@ -218,7 +277,6 @@ function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
       {featuresCount > 0 && (
         <div className="flex gap-1">
           <Button
-            className="bg-primary text-white py-1 rounded-md text-sm"
             size={"sm"}
             onClick={() => {
               const res = parseGeoJsonImport(feats);
@@ -230,7 +288,6 @@ function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
             Sift
           </Button>
           <Button
-            className="bg-primary text-white py-1 rounded-md text-sm"
             size={"sm"}
             onClick={() => {
               downloadContent(JSON.stringify(feats), "geojson");
