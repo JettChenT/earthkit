@@ -1,6 +1,8 @@
 import base64
 import requests
 from fastapi.encoders import jsonable_encoder
+from PIL import Image
+from io import BytesIO
 import json
 
 def proc_im_url(image_url: str) -> bytes:
@@ -12,6 +14,9 @@ def proc_im_url(image_url: str) -> bytes:
         response = requests.get(image_url)
         response.raise_for_status() 
         return response.content
+
+def pil_im_url(image_url: str) -> Image.Image:
+    return Image.open(BytesIO(proc_im_url(image_url)))
 
 def json_encode(obj) -> str:
     return json.dumps(jsonable_encoder(obj))

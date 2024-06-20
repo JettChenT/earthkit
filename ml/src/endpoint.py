@@ -1,4 +1,4 @@
-from modal import App, asgi_app
+from modal import App, asgi_app, Secret
 from fastapi import FastAPI, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,12 +8,12 @@ from typing import List, Type, TypeVar
 from . import schema, geo
 from .utils import json_encode, proc_im_url
 from .rpc import ResultsUpdate, encode_msg, sse_encode
+from . import lmm
 from fastapi.responses import StreamingResponse
-from fastapi.encoders import jsonable_encoder
 from typing import Any
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geopy==2.4.1", "requests==2.28.1", "websockets==12.0", "cattrs==23.2.3"
+    "geopy==2.4.1", "requests==2.28.1", "websockets==12.0", "cattrs==23.2.3", "openai==1.30.4", "aiostream==0.5.2", "pillow==10.2.0"
 )
 
 web_app = FastAPI()
@@ -132,7 +132,14 @@ async def satellite_sim_sse(request: SatelliteSimRequest):
         yield sse_encode(res)
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-@app.function(image=image)
+@web_app.post("/lmm/streaming")
+async def lmm_streaming(request: lmm.LmmRequest):
+    async def event_generator():
+        async for res in lmm.process_request(request):
+            yield sse_encode(res)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@app.function(image=image, secrets=[Secret.from_name("oai")])
 @asgi_app()
 def fastapi_app():
     return web_app

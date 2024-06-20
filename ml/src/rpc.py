@@ -16,6 +16,7 @@ class ProgressUpdate:
 class SiftResult:
     idx: int
     value: Any
+    error: Optional[str] = None
 
 @define
 class ResultsUpdate:

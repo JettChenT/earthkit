@@ -5,12 +5,11 @@ instrument()
 import modal
 from modal import Stub
 from typing import List
-from .streetview import search_panoramas, get_panorama_async, search_panoramas_async
+from .streetview import search_panoramas, get_panorama_async, search_panoramas_async, fetch_single_pano
 from .geo import Coords, Point, Bounds, Distance
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from aiostream import stream, pipe, streamcontext
-from .stream_utils import eager_chunks
 from .rpc import MsgType, ProgressUpdate, ResultsUpdate
 import time
 
@@ -35,16 +34,6 @@ def fetch_panoramas(coord: Point):
             }
         )
     return res
-
-
-async def fetch_single_pano(coord:Point) -> str | None:
-    best_date = None
-    best_pano = None
-    for pno in await search_panoramas_async(coord.lat, coord.lon):
-        if best_date is None or pno.date is None or pno.date < best_date:
-            best_date = pno.date
-            best_pano = pno
-    return best_pano.pano_id if best_pano else None
 
 @stub.function(image=sv_image)
 def sample_streetviews(bounds: Bounds, interval: Distance):
@@ -112,7 +101,7 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
     @tracer.start_as_current_span("fetch_image")
     async def fetch_image(idx:int, pano: Point):
         if "pano_id" not in pano.aux:
-            pano.aux["pano_id"] = await fetch_single_pano(pano)
+            pano.aux["pano_id"] = await fetch_single_pano(pano.lat, pano.lon)
         pid = pano.aux["pano_id"]
         pano_im = await get_panorama_async(pid, zoom=2)
         crops = crop_pano(pano_im)

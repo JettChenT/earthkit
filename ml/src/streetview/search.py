@@ -118,3 +118,12 @@ async def search_panoramas_async(lat: float, lon: float) -> List[Panorama]:
     resp = await search_request_async(lat, lon)
     pans = extract_panoramas(resp.text)
     return pans
+
+async def fetch_single_pano(lat: float, lon:float) -> str | None:
+    best_date = None
+    best_pano = None
+    for pno in await search_panoramas_async(lat, lon):
+        if best_date is None or pno.date is None or pno.date < best_date:
+            best_date = pno.date
+            best_pano = pno
+    return best_pano.pano_id if best_pano else None

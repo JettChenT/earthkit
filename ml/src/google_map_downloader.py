@@ -6,6 +6,7 @@ from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from tqdm import tqdm
+from httpx import AsyncClient
 from .geo import Point, Bounds, Coords
 
 def lat_lng_to_tile(point: Point, zoom):
@@ -33,6 +34,20 @@ def download_tile(x, y, zoom):
     # print(f"Downloading tile: {x}, {y}, {zoom}")
     pnt.aux = {'image': image, 'x': x, 'y': y, 'zoom': zoom}
     return pnt
+
+asclient = AsyncClient()
+
+async def download_tile_async(x, y, zoom, lyr="s"):
+    url = f'https://mt0.google.com/vt/lyrs={lyr}&?x={x}&y={y}&z={zoom}'
+    resp = await asclient.get(url)
+    resp.raise_for_status()
+    image_data = resp.content
+    image = Image.open(BytesIO(image_data))
+    return image
+
+async def download_point_async(pnt: Point, zoom=17, lyr="s"):
+    x, y = lat_lng_to_tile(pnt, zoom)
+    return await download_tile_async(x, y, zoom, lyr)
 
 def download_google_map_area(bounds: Bounds, zoom=17) -> Coords:
     """
