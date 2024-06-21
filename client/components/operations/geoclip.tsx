@@ -17,6 +17,7 @@ import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { getHeaders } from "@/lib/supabase/client";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function GeoCLIP() {
   const [predictions, setPredictions] = useState<Coords | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
 
-  const onInference = () => {
+  const onInference = async () => {
     setIsRunning(true);
     setPredictions(null);
     fetch(`${API_URL}/geoclip`, {
@@ -33,9 +34,7 @@ export default function GeoCLIP() {
         image_url: image,
         top_k: 100,
       }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...(await getHeaders()),
     })
       .then((res) => res.json())
       .then((data) => {

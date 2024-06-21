@@ -26,6 +26,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
 import "mapbox-gl/dist/mapbox-gl.css";
+import { getHeaders } from "@/lib/supabase/client";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -92,7 +93,7 @@ export default function Satellite() {
       : null;
   }, []);
 
-  const onLocate = () => {
+  const onLocate = async () => {
     setLocating(true);
     setSelected(true);
     setSelecting(false);
@@ -119,9 +120,7 @@ export default function Satellite() {
         bounds,
         image_url: image,
       }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...(await getHeaders()),
     })
       .then((res) => res.json())
       .then((data) => {

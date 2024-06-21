@@ -82,6 +82,8 @@ deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-grpc
     # via opentelemetry-exporter-otlp-proto-http
+deprecation==2.1.0
+    # via postgrest
 dill==0.3.8
     # via pandarallel
 distro==1.9.0
@@ -120,6 +122,8 @@ geopy==2.4.1
 googleapis-common-protos==1.63.0
     # via opentelemetry-exporter-otlp-proto-grpc
     # via opentelemetry-exporter-otlp-proto-http
+gotrue==2.5.1
+    # via supabase
 grpcio==1.64.0
     # via opentelemetry-exporter-otlp-proto-grpc
 grpclib==0.4.7
@@ -135,9 +139,14 @@ httpcore==1.0.5
     # via httpx
     # via ml
 httpx==0.27.0
+    # via gotrue
     # via jupyterlab
     # via ml
     # via openai
+    # via postgrest
+    # via storage3
+    # via supabase
+    # via supafunc
 huggingface-hub==0.17.3
     # via timm
     # via tokenizers
@@ -336,6 +345,7 @@ opentelemetry-util-http==0.45b0
 overrides==7.7.0
     # via jupyter-server
 packaging==22.0
+    # via deprecation
     # via huggingface-hub
     # via ipykernel
     # via jupyter-server
@@ -369,6 +379,8 @@ pinecone-client==4.1.0
     # via ml
 platformdirs==4.2.0
     # via jupyter-core
+postgrest==0.16.8
+    # via supabase
 prometheus-client==0.20.0
     # via jupyter-server
 prompt-toolkit==3.0.43
@@ -391,8 +403,10 @@ pycparser==2.22
     # via cffi
 pydantic==2.7.1
     # via fastapi
+    # via gotrue
     # via ml
     # via openai
+    # via postgrest
 pydantic-core==2.18.2
     # via pydantic
 pydeck==0.8.0
@@ -404,6 +418,8 @@ pygments==2.17.2
     # via nbconvert
     # via qtconsole
     # via rich
+pyjwt==2.8.0
+    # via ml
 pyparsing==3.1.2
     # via matplotlib
 pyproject-local-kernel==0.5.5
@@ -413,6 +429,8 @@ python-dateutil==2.9.0.post0
     # via jupyter-client
     # via matplotlib
     # via pandas
+    # via realtime
+    # via storage3
 python-dotenv==1.0.1
     # via ml
 python-json-logger==2.0.7
@@ -441,6 +459,8 @@ qtconsole==5.5.1
     # via jupyter
 qtpy==2.4.1
     # via qtconsole
+realtime==1.0.3
+    # via supabase
 referencing==0.34.0
     # via jsonschema
     # via jsonschema-specifications
@@ -500,6 +520,14 @@ stack-data==0.6.3
     # via ipython
 starlette==0.37.2
     # via fastapi
+storage3==0.7.6
+    # via supabase
+strenum==0.4.15
+    # via postgrest
+supabase==2.5.1
+    # via ml
+supafunc==0.4.6
+    # via supabase
 sympy==1.12
     # via torch
 synchronicity==0.6.7
@@ -585,6 +613,8 @@ typing-extensions==4.8.0
     # via pydantic
     # via pydantic-core
     # via pytorch-lightning
+    # via realtime
+    # via storage3
     # via synchronicity
     # via torch
     # via typer
@@ -609,6 +639,7 @@ websocket-client==1.7.0
     # via jupyter-server
 websockets==12.0
     # via ml
+    # via realtime
 widgetsnbextension==4.0.10
     # via ipywidgets
 wrapt==1.16.0

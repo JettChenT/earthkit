@@ -56,6 +56,7 @@ import { compileColDefs, defaultColDefs } from "./cols";
 import { GeoImport } from "./geo-import";
 import { FormatType, exportData } from "./inout";
 import { CustomExtraction } from "./lmm";
+import { getHeaders } from "@/lib/supabase/client";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -284,6 +285,7 @@ function ActionBtn() {
     const res = await ky.post(`${API_URL}${targ_url}`, {
       timeout: false,
       json: payload,
+      ...(await getHeaders()),
     });
 
     if (!res.ok || !res.body) {

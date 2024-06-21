@@ -23,6 +23,7 @@ export default function Profile() {
       .getSession()
       .then((session) => {
         console.log(session, session.data.session?.user);
+        console.log("access token", session.data.session?.access_token);
         setUser(session.data.session?.user ?? null);
         setLoading(false);
       })

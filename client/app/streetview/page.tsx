@@ -36,6 +36,7 @@ import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
+import { getHeaders } from "@/lib/supabase/client";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -137,7 +138,7 @@ export default function StreetView() {
       : null;
   }, []);
 
-  const onSample = () => {
+  const onSample = async () => {
     setSampling(true);
     setSelected(true);
     setSelecting(false);
@@ -164,6 +165,7 @@ export default function StreetView() {
         bounds,
         dist_km: distKm,
       },
+      ...(await getHeaders()),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -182,9 +184,7 @@ export default function StreetView() {
     const response = await ky.post(`${API_URL}/streetview/locate/streaming`, {
       timeout: false,
       json: payload,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...(await getHeaders()),
     });
 
     if (!response.ok) {

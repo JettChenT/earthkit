@@ -12,6 +12,7 @@ import ky from "ky";
 import { API_URL } from "@/lib/constants";
 import { toast } from "sonner";
 import { ingestStream } from "@/lib/rpc";
+import { getHeaders } from "@/lib/supabase/client";
 
 export type Dependency = {
   satellite: boolean;
@@ -73,6 +74,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
       const res = await ky.post(`${API_URL}/lmm/streaming`, {
         timeout: false,
         json: payload,
+        ...(await getHeaders()),
       });
 
       if (!res.ok || !res.body) {
