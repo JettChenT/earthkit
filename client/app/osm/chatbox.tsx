@@ -1,180 +1,26 @@
 "use client";
-import { Textarea } from "@/components/ui/textarea";
+import { OSMOrama, searchDb } from "@/app/osm/searchSuggestions";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Key, Pin, Tag } from "lucide-react";
-import { MentionsInput, Mention, OnChangeHandlerFunc } from "react-mentions";
-import { OSMOrama, searchDb, Document } from "@/app/osm/searchSuggestions";
-import CodeMirror, {
-  EditorState,
-  ReactCodeMirrorRef,
-  Text,
-} from "@uiw/react-codemirror";
+import { geoSearch } from "@/lib/nominatim";
+import { renderReactNode } from "@/lib/react_utils";
 import {
   CompletionContext,
-  autocompletion,
   CompletionResult,
+  autocompletion,
   startCompletion,
 } from "@codemirror/autocomplete";
-import {
-  MatchDecorator,
-  WidgetType,
-  Decoration,
-  DecorationSet,
-  EditorView,
-  ViewPlugin,
-  keymap,
-  ViewUpdate,
-} from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
+import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
-import React, { createRef, useRef } from "react";
+import { CornerDownLeft, Image } from "lucide-react";
+import React, { useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { geoSearch } from "@/lib/nominatim";
-
-function renderReactNode(
-  node: React.ReactNode,
-  parent: string = "div",
-  className?: string
-): HTMLElement {
-  const div = document.createElement(parent);
-  if (className) {
-    div.className = className;
-  }
-  const root = createRoot(div);
-  root.render(node);
-  return div;
-}
-
-function OSMSuggestionPill({
-  type,
-  name,
-}: {
-  type: "key" | "tag" | "location";
-  name: string;
-}) {
-  const tpName = type == "key" ? "key" : "feat";
-  return (
-    <div
-      className={`inline-flex items-baseline px-1 mt-1 rounded-sm shadow-sm  ${
-        type == "key"
-          ? "bg-blue-100 text-blue-800"
-          : type == "location"
-          ? "bg-red-100 text-red-800"
-          : "bg-green-100 text-green-800"
-      }`}
-    >
-      <span className="font-bold mr-1">
-        {type == "key" ? (
-          <Key className="size-3 inline-block" />
-        ) : type == "location" ? (
-          <Pin className="size-3 inline-block" />
-        ) : (
-          <Tag strokeWidth={3} className="size-3 inline-block" />
-        )}
-      </span>
-      <span>{name}</span>
-    </div>
-  );
-}
-
-class OSMSuggestionWidget extends WidgetType {
-  type: string;
-  name: string;
-  constructor(type: string, name: string) {
-    super();
-    this.type = type;
-    this.name = name;
-  }
-  toDOM(view: EditorView): HTMLElement {
-    return renderReactNode(
-      <OSMSuggestionPill type={this.type as any} name={this.name} />,
-      "span",
-      "font-bold"
-    );
-  }
-}
-
-class LocationSuggestionWidget extends WidgetType {
-  name: string;
-  constructor(name: string) {
-    super();
-    this.name = name;
-  }
-  toDOM(view: EditorView): HTMLElement {
-    return renderReactNode(
-      <OSMSuggestionPill type="location" name={this.name} />,
-      "span",
-      "font-bold"
-    );
-  }
-}
-
-const osmSuggestionMatcher = new MatchDecorator({
-  regexp: /\(OSM (\w+): `([^\`]+)`\)/g,
-  decoration: (match) =>
-    Decoration.replace({
-      widget: new OSMSuggestionWidget(match[1], match[2]),
-    }),
-});
-
-const locationSuggestionMatcher = new MatchDecorator({
-  regexp: /\(Entity osm_id=(\d+);area_id=(\d+);(\w+): `([^\`]+)`\)/g,
-  decoration: (match) =>
-    Decoration.replace({
-      widget: new LocationSuggestionWidget(match[4]),
-    }),
-});
-
-export const osm_placeholders = ViewPlugin.fromClass(
-  class {
-    placeholders: DecorationSet;
-    constructor(view: EditorView) {
-      this.placeholders = osmSuggestionMatcher.createDeco(view);
-    }
-    update(update: ViewUpdate) {
-      this.placeholders = osmSuggestionMatcher.updateDeco(
-        update,
-        this.placeholders
-      );
-    }
-  },
-  {
-    decorations: (instance) => instance.placeholders,
-    provide: (plugin) =>
-      EditorView.atomicRanges.of((view) => {
-        return view.plugin(plugin)?.placeholders || Decoration.none;
-      }),
-  }
-);
-
-export const location_placeholders = ViewPlugin.fromClass(
-  class {
-    placeholders: DecorationSet;
-    constructor(view: EditorView) {
-      this.placeholders = locationSuggestionMatcher.createDeco(view);
-    }
-    update(update: ViewUpdate) {
-      this.placeholders = locationSuggestionMatcher.updateDeco(
-        update,
-        this.placeholders
-      );
-    }
-  },
-  {
-    decorations: (instance) => instance.placeholders,
-    provide: (plugin) =>
-      EditorView.atomicRanges.of((view) => {
-        return view.plugin(plugin)?.placeholders || Decoration.none;
-      }),
-  }
-);
-
-interface ChatboxProps {
-  handleSubmit: () => void;
-  handleInputChange: (newInput: string) => void;
-  input: string;
-  db: OSMOrama | null;
-}
+import { location_placeholders, osm_placeholders } from "./cm_common";
+import {
+  CancellableImage,
+  ImageUploadButton,
+} from "@/components/widgets/imageUpload";
 
 const locationCompletion = async (
   context: CompletionContext
@@ -222,11 +68,22 @@ const locationCompletion = async (
   };
 };
 
+interface ChatboxProps {
+  handleSubmit: () => void;
+  handleInputChange: (newInput: string) => void;
+  input: string;
+  db: OSMOrama | null;
+  images: string[];
+  setImages: (images: string[]) => void;
+}
+
 export function Chatbox({
   handleSubmit,
   handleInputChange,
   input,
   db,
+  images,
+  setImages,
 }: ChatboxProps) {
   const handleKeyDown = (
     event:
@@ -316,6 +173,18 @@ export function Chatbox({
       onSubmit={handleSubmit}
       className="flex-none p-2 bg-white border rounded-md w-full mb-3"
     >
+      <div className="flex-row gap-1 pl-3">
+        {images.map((image, idx) => (
+          <CancellableImage
+            key={idx}
+            image={image}
+            className="mb-2"
+            onCancel={() => {
+              setImages(images.filter((_, i) => i !== idx));
+            }}
+          />
+        ))}
+      </div>
       <div className="flex-1 pl-2">
         <CodeMirror
           value={input}
@@ -371,6 +240,11 @@ export function Chatbox({
           >
             @ Locations
           </Button>
+          {/* <ImageUploadButton
+            onSetImage={(image) => {
+              setImages([...images, image]);
+            }}
+          /> */}
         </div>
         <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />

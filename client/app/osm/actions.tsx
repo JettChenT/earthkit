@@ -6,10 +6,19 @@ import {
   createStreamableValue,
   getMutableAIState,
 } from "ai/rsc";
-import { embed, streamText } from "ai";
+import {
+  AssistantContent,
+  CoreMessage,
+  ImagePart,
+  UserContent,
+  embed,
+  streamText,
+} from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { SYSTEM_PROMPT } from "@/lib/prompting";
+
+export type AIContent = UserContent | AssistantContent;
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -21,13 +30,13 @@ const index = pc.index("osm-queries");
 
 export interface ServerMessage {
   role: "user" | "assistant" | "system";
-  content: string;
+  content: AIContent;
 }
 
 export interface ClientMessage {
   id: string;
   role: "user" | "assistant";
-  content: string;
+  content: AIContent;
   upperIndicator?: ReactNode; // used to display server progress
   lowerIndicators?: ReactNode[]; // used to display execution results
 }
@@ -46,17 +55,23 @@ export type AIState = Array<ServerMessage>;
 
 export type UIState = Array<ClientMessage>;
 
-async function sendMessage(user_req: string, sys_results: string[] = []) {
+async function sendMessage(
+  user_req: string,
+  sys_results: string[] = [],
+  images: string[] = []
+) {
   "use server";
 
-  const history = getMutableAIState();
+  const history = getMutableAIState<typeof AI>();
   const textStream = createStreamableValue<string>();
   const upperIndicatorStream = createStreamableUI();
   const progressStream = createStreamableValue<ProgressUpdate>();
 
+  console.log("images", images.length);
+
   (async () => {
     const sysMessages = sys_results.map((result) => ({
-      role: "system",
+      role: "system" as const,
       content: result,
     }));
 
@@ -65,7 +80,16 @@ async function sendMessage(user_req: string, sys_results: string[] = []) {
       ...sysMessages,
       {
         role: "user",
-        content: user_req,
+        content: [
+          ...images.map(
+            (image) =>
+              ({
+                type: "image",
+                image,
+              } as ImagePart)
+          ),
+          { type: "text", text: user_req },
+        ],
       },
     ]);
     upperIndicatorStream.update(<div>Embedding...</div>);
@@ -93,18 +117,22 @@ async function sendMessage(user_req: string, sys_results: string[] = []) {
       },
     ]);
     upperIndicatorStream.done(<></>);
+    console.log("history", history.get());
     const { textStream: txtStream, text: resultText } = await streamText({
       model: openai("gpt-4o"),
       system: SYSTEM_PROMPT,
-      messages: history.get(),
+      messages: history.get().map((x) => ({
+        role: x.role,
+        content: x.content as any,
+      })),
     });
 
     for await (const text of txtStream) {
       textStream.update(text);
     }
     const final_text = await resultText;
-    history.done((messages: ServerMessage[]) => [
-      ...messages,
+    history.done([
+      ...history.get(),
       { role: "assistant", content: final_text },
     ]);
     progressStream.done({ kind: "done", value: final_text });

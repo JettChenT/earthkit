@@ -1,7 +1,7 @@
 "use client";
 
-import { Chatbox } from "@/components/chatbox";
-import { ChatMessages } from "@/components/chat-messages";
+import { Chatbox } from "@/app/osm/chatbox";
+import { ChatMessages } from "@/app/osm/chat-messages";
 import ky from "ky";
 import DeckGL, {
   FlyToInterpolator,
@@ -16,7 +16,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import { AI, ClientMessage } from "./actions";
 import { unstable_noStore as noStore } from "next/cache";
-import { nanoid } from "ai";
+import { DataContent, ImagePart, nanoid } from "ai";
 import { bbox } from "@turf/bbox";
 import { Orama } from "@orama/orama";
 import { initializeDb, schema, searchDb } from "./searchSuggestions";
@@ -36,8 +36,6 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
-
 export const getOsmPart = (content: string) => {
   const match = content.match(/```overpassql\n([\s\S]*?)\n```/);
   return match ? match[1] : null;
@@ -50,6 +48,7 @@ export default function OSM() {
     features: [],
   });
   const [input, setInput] = useState("");
+  const [images, setImages] = useState<string[]>([]);
   const [conversation, setConversation] = useUIState<typeof AI>();
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
@@ -72,15 +71,26 @@ export default function OSM() {
 
   const handleSubmit = async (
     user_input: string,
-    sys_results: string[] = []
+    sys_results: string[] = [],
+    images: string[] = []
   ) => {
+    const image_content: ImagePart[] = images.map((image) => ({
+      type: "image",
+      image: image,
+    }));
+    console.log("image_content", image_content);
     setConversation((prev: ClientMessage[]) => [
       ...prev,
-      { role: "user", content: user_input, id: nanoid() },
+      {
+        role: "user",
+        content: [...image_content, { type: "text", text: user_input }],
+        id: nanoid(),
+      },
     ]);
     const { textStream, upperIndicator, progressStream } = await sendMessage(
       user_input,
-      sys_results
+      sys_results,
+      images
     );
     const generation_id = nanoid();
     setConversation((prev: ClientMessage[]) => [
@@ -95,7 +105,7 @@ export default function OSM() {
     for await (const value of readStreamableValue(textStream)) {
       setConversation((prevConversation) =>
         prevConversation.map((msg) => {
-          if (msg.id === generation_id) {
+          if (msg.id === generation_id && value) {
             return { ...msg, content: msg.content + value };
           }
           return msg;
@@ -189,12 +199,15 @@ export default function OSM() {
         <ChatMessages />
         <Chatbox
           handleSubmit={() => {
-            handleSubmit(input);
+            handleSubmit(input, [], images);
             setInput("");
+            setImages([]);
           }}
           handleInputChange={(newInput) => {
             setInput(newInput);
           }}
+          images={images}
+          setImages={setImages}
           input={input}
           db={db}
         />
