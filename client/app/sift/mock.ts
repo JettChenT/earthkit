@@ -1,10 +1,9 @@
 import { Col, defaultCols } from "./cols";
 import { TableEncapsulation, importData } from "./inout";
 import { LabelType, TableItem } from "./siftStore";
+import SampleDat from "./sample_dat.json";
 
-export const MOCK = false;
-
-const NUM_ITEMS = 20;
+export const MOCK = true;
 
 const generateDeterministicFeature = (index: number) => {
   return ((index % 10) + 1 + index / 77).toFixed(1);
@@ -39,50 +38,9 @@ const generateMockItems = (numItems: number): TableItem[] => {
     };
   });
 };
-export const mockItems = generateMockItems(NUM_ITEMS);
 
-export const mockCols: Col[] = [
-  ...defaultCols,
-  {
-    accessor: "feata",
-    header: "Feature A",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-  {
-    accessor: "featb",
-    header: "Feature B",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-  {
-    accessor: "featc",
-    header: "Feature C",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-  {
-    accessor: "featd",
-    header: "Feature D",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-  {
-    accessor: "feate",
-    header: "Feature E",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-  {
-    accessor: "feath",
-    header: "Feature H",
-    type: "NumericalCol",
-    mean: 3.0,
-    stdev: 1.0,
-  },
-];
+const mockTableEncapsulation = SampleDat as TableEncapsulation;
+
+export const mockItems = mockTableEncapsulation.items;
+
+export const mockCols: Col[] = mockTableEncapsulation.cols;

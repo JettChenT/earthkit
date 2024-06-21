@@ -52,3 +52,7 @@ export const downloadContent = (content: string, ext: string) => {
   a.download = `export.${ext}`;
   a.click();
 };
+
+export function isnil(value: any) {
+  return value === undefined || value === null;
+}

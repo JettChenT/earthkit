@@ -17,7 +17,7 @@ import Pill, {
   StatusCell,
   StatusNumberMap,
 } from "@/components/pill";
-import { formatValue } from "@/lib/utils";
+import { formatValue, isnil } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 // hard-coded columns
@@ -50,6 +50,12 @@ export type TextCol = ColBase & {
   accessor: string;
   usePill?: boolean;
   baseColor?: PillColor;
+};
+
+export type BoolCol = ColBase & {
+  type: "BoolCol";
+  accessor: string;
+  isFunCall?: boolean;
 };
 
 const sortableHeader: (
@@ -141,13 +147,25 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           cell: (props) => {
             const val = props.getValue();
             const valNode = (
-              <LoadingIfNull value={val} activated={!col.isFunCall} />
+              <LoadingIfNull value={val} activated={col.isFunCall} />
             );
-            if (col.usePill) {
-              return <Pill color={col.baseColor || "hidden"}>{valNode}</Pill>;
-            } else {
-              return <span>{valNode}</span>;
-            }
+            return <Pill color={col.baseColor || "hidden"}>{valNode}</Pill>;
+          },
+        });
+      case "BoolCol":
+        return columnHelper.accessor(`aux.${col.accessor}`, {
+          header: sortableHeader(col.header, "text"),
+          cell: (props) => {
+            const val = props.getValue();
+            return (
+              <Pill color={isnil(val) ? "hidden" : val ? "green" : "red"}>
+                <LoadingIfNull
+                  displayOverride={val ? "yes" : "no"}
+                  value={val}
+                  activated={col.isFunCall}
+                />
+              </Pill>
+            );
           },
         });
     }
@@ -171,4 +189,4 @@ export function mergeCols(colA: Col[], colB: Col[]) {
   return [...colA, ...cbfilt];
 }
 
-export type Col = CoordCol | StatusCol | NumericalCol | TextCol;
+export type Col = CoordCol | StatusCol | NumericalCol | TextCol | BoolCol;

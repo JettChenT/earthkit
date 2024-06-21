@@ -57,7 +57,12 @@ export const CustomExtraction = forwardRef<HTMLDivElement>((props, ref) => {
     setCols((cols) => [
       ...cols,
       {
-        type: outputFormat == "number" ? "NumericalCol" : "TextCol",
+        type:
+          outputFormat == "boolean"
+            ? "BoolCol"
+            : outputFormat == "number"
+            ? "NumericalCol"
+            : "TextCol",
         accessor: `${title}.answer`,
         header: title,
         isFunCall: true,

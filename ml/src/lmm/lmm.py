@@ -110,7 +110,7 @@ async def process_request(req: LmmRequest):
             traceback.print_exc()
             return ResultsUpdate([SiftResult(idx, None, str(e))])
     coords = req.coords.to_geo()
-    xs = stream.iterate(coords.coords) | pipe.enumerate() | pipe.starmap(proc_point)
+    xs = stream.iterate(coords.coords) | pipe.enumerate() | pipe.starmap(proc_point, ordered=False)
     async with xs.stream() as streamer:
         async for x in streamer:
             yield x

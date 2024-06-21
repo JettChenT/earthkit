@@ -1,5 +1,5 @@
 import { LabelType } from "@/app/sift/siftStore";
-import { cn, formatValue } from "@/lib/utils";
+import { cn, formatValue, isnil } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey" | "hidden";
@@ -101,9 +101,15 @@ export function StatusCell({ status }: { status: LabelType }) {
 export function LoadingIfNull({
   value,
   activated,
+  displayOverride,
 }: {
   value: React.ReactNode;
+  displayOverride?: React.ReactNode;
   activated?: boolean;
 }) {
-  return value || !activated ? value : <Skeleton className="h-4 w-20" />;
+  return isnil(value) || !activated ? (
+    <Skeleton className="h-4 w-20" />
+  ) : (
+    displayOverride || value
+  );
 }
