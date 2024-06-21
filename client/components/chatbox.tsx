@@ -4,11 +4,16 @@ import { Button } from "@/components/ui/button";
 import { CornerDownLeft, Key, Pin, Tag } from "lucide-react";
 import { MentionsInput, Mention, OnChangeHandlerFunc } from "react-mentions";
 import { OSMOrama, searchDb, Document } from "@/app/osm/searchSuggestions";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, {
+  EditorState,
+  ReactCodeMirrorRef,
+  Text,
+} from "@uiw/react-codemirror";
 import {
   CompletionContext,
   autocompletion,
   CompletionResult,
+  startCompletion,
 } from "@codemirror/autocomplete";
 import {
   MatchDecorator,
@@ -282,6 +287,30 @@ export function Chatbox({
     };
   };
 
+  const completionExt = autocompletion({
+    aboveCursor: true,
+    override: [osmCompletion, locationCompletion],
+  });
+
+  let cmref = useRef<ReactCodeMirrorRef | null>(null);
+
+  const handleShortcut = (shortcut: string) => {
+    cmref.current?.view?.dispatch({
+      changes: {
+        from: cmref.current.view.state.selection.main.head,
+        insert: shortcut,
+      },
+      selection: {
+        anchor: cmref.current.view.state.selection.main.head + 1,
+        head: cmref.current.view.state.selection.main.head + 1,
+      },
+    });
+    cmref.current?.view?.focus();
+    if (cmref.current?.view) {
+      startCompletion(cmref.current.view);
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -290,6 +319,7 @@ export function Chatbox({
       <div className="flex-1 pl-2">
         <CodeMirror
           value={input}
+          ref={cmref}
           onChange={(value) => {
             if (value.includes("\n")) {
               handleSubmit();
@@ -306,10 +336,7 @@ export function Chatbox({
               },
             }),
             EditorView.lineWrapping,
-            autocompletion({
-              aboveCursor: true,
-              override: [osmCompletion, locationCompletion],
-            }),
+            completionExt,
             osm_placeholders,
             location_placeholders,
           ]}
@@ -321,9 +348,29 @@ export function Chatbox({
         />
       </div>
       <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500 ml-4">
-          <span className="font-bold">#</span>Tags/Features{" "}
-          <span className="font-bold">@</span>Locations
+        <div className="flex ml-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-secondary-foreground px-1"
+            type="button"
+            onClick={() => {
+              handleShortcut("#");
+            }}
+          >
+            # Features
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-secondary-foreground px-1"
+            type="button"
+            onClick={() => {
+              handleShortcut("@");
+            }}
+          >
+            @ Locations
+          </Button>
         </div>
         <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />
