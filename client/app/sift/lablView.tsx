@@ -85,22 +85,21 @@ export default function LablView() {
   const { setIdxData, setTargetImage, target_image } = useSift();
   const cur = useSift((state) => state.getSelected());
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="my-5 p-3 mx-auto">
+    <div className="w-full h-full flex flex-col items-center p-6">
+      <div className="my-5 p-3 max-h-64 w-full max-w-lg overflow-auto">
         <ImageUpload
           onSetImage={setTargetImage}
           image={target_image}
-          imgClassName="max-h-28"
-          className="px-20"
+          className="w-full h-48 object-cover rounded-lg shadow-md"
           content="Import Target Image"
         />
       </div>
-      <div>
+      <div className="w-full max-w-lg">
         <TooltipProvider>
-          <div className="flex flex-row items-center justify-center h-full gap-5">
-            <LabelButton status="Match" hotkey={["h", "m", "1"]} />
+          <div className="flex flex-row items-center justify-around h-full gap-5">
+            <LabelButton status="Not Match" hotkey={["h", "n", "3"]} />
             <LabelButton status="Keep" hotkey={["p", "2"]} />
-            <LabelButton status="Not Match" hotkey={["l", "n", "3"]} />
+            <LabelButton status="Match" hotkey={["l", "m", "1"]} />
           </div>
         </TooltipProvider>
       </div>

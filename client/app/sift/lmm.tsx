@@ -87,8 +87,30 @@ export const CustomExtraction = forwardRef<HTMLDivElement>((props, ref) => {
     }
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setTitle("");
+    setPrompt("");
+    setDependencies({
+      satellite: false,
+      streetview: false,
+      basicmap: false,
+      target_image: false,
+    });
+    setOutputFormat("text");
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (open) {
+          setOpen(true);
+        } else {
+          handleClose();
+        }
+      }}
+    >
       <DialogTrigger>
         <div ref={ref} className="hidden" />
       </DialogTrigger>
@@ -161,10 +183,16 @@ export const CustomExtraction = forwardRef<HTMLDivElement>((props, ref) => {
           placeholder="Describe the data you want to extract"
         />
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="default" onClick={triggerAction}>
+          <Button
+            variant="default"
+            onClick={() => {
+              triggerAction();
+              handleClose();
+            }}
+          >
             Add Column
           </Button>
         </div>
