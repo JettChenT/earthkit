@@ -145,7 +145,7 @@ async def satellite_sim_sse(request: SatelliteSimRequest, user: str = Depends(ge
 
 @web_app.post("/lmm/streaming")
 async def lmm_streaming(request: lmm.LmmRequest, user: str = Depends(get_current_user)):
-    await verify_cost(user, math.ceil(len(request.coords.coords)/60))
+    await verify_cost(user, math.ceil(len(request.coords.coords)/20))
     async def event_generator():
         async for res in lmm.process_request(request):
             yield sse_encode(res)
