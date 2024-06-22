@@ -145,12 +145,13 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
               onSelect={() => toggleDependency("basicmap")}
               bgImage="https://maps.gstatic.com/tactile/layerswitcher/ic_default_colors2-2x.png"
             >
-              Administrative
+              Civic
             </SelectionBox>
             <SelectionBox
               selected={dependencies.target_image}
               onSelect={() => toggleDependency("target_image")}
               bgImage={target_image || ""}
+              disabled={!target_image}
             >
               Target Image
             </SelectionBox>
@@ -210,29 +211,39 @@ function SelectionBox({
   onSelect,
   className,
   bgImage,
+  disabled,
   children,
 }: {
   selected: boolean;
   onSelect: () => void;
   className?: string;
   bgImage?: string;
+  disabled?: boolean;
   children?: React.ReactNode;
 }) {
   return (
     <div
-      onClick={onSelect}
+      onClick={!disabled ? onSelect : undefined}
       className={cn(
-        `h-24 w-full border rounded-md p-2 cursor-pointer transition-all duration-200 flex items-start justify-start ${
+        `relative h-24 w-full border rounded-md p-2 cursor-pointer transition-all duration-200 flex items-start justify-start ${
           selected
-            ? "bg-blue-400 border-blue-700 ring-2"
-            : "bg-white border-gray-300"
-        }`,
+            ? "bg-blue-200 border-blue-500 ring-2"
+            : "bg-white border-gray-300 hover:bg-blue-100"
+        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`,
         className
       )}
-      style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover" }}
     >
-      <div className="flex items-center gap-2">
-        <span>{children}</span>
+      {bgImage && (
+        <img
+          src={bgImage}
+          alt="background"
+          className="absolute inset-0 w-full h-full object-cover rounded-md opacity-30"
+        />
+      )}
+      <div className="flex items-center gap-2 relative z-10">
+        <span className="whitespace-normal opacity-100 text-black">
+          {children}
+        </span>
       </div>
     </div>
   );
