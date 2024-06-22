@@ -24,11 +24,13 @@ import { Button } from "@/components/ui/button";
 export type CoordCol = {
   type: "CoordCol";
   accessor: "coord";
+  header: "Coords";
 };
 
 export type StatusCol = {
   type: "StatusCol";
   accessor: "status";
+  header: "Status";
 };
 
 // For custom-defined columns
@@ -173,8 +175,8 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
 }
 
 export const defaultCols: Col[] = [
-  { type: "CoordCol", accessor: "coord" },
-  { type: "StatusCol", accessor: "status" },
+  { type: "CoordCol", accessor: "coord", header: "Coords" },
+  { type: "StatusCol", accessor: "status", header: "Status" },
 ];
 export const defaultColDefs: ColumnDef<TableItem, any>[] =
   compileColDefs(defaultCols);

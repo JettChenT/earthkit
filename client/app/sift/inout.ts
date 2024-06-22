@@ -4,7 +4,7 @@ import { parse as csvParse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 import { FeatureCollection, Point as GeoJSONPoint } from "geojson";
 import { Col } from "./cols";
-import { getStats } from "@/lib/utils";
+import { getStats, isnil } from "@/lib/utils";
 
 export type TableEncapsulation = {
   items: TableItem[];
@@ -67,6 +67,21 @@ const parseCsvImport = (input: string): TableEncapsulation => {
   };
 };
 
+const enforceString = (value: any) => {
+  if (typeof value === "string") return value;
+  if (isnil(value)) return "";
+  return value.toString();
+};
+
+const accessProperty = (value: any, accessor: string) => {
+  let parts = accessor.split(".");
+  let res = value;
+  for (const part of parts) {
+    res = res[part];
+  }
+  return res;
+};
+
 const parseCsvExport = (input: TableEncapsulation): string => {
   // Looses the cols information
   // Maybe encode the cols json in base64 comment?? sounds cursed
@@ -75,7 +90,15 @@ const parseCsvExport = (input: TableEncapsulation): string => {
       lat: item.coord.lat,
       lon: item.coord.lon,
       status: item.status,
-      ...item.aux,
+      ...Object.fromEntries(
+        input.cols
+          .filter((col) => col.type != "CoordCol" && col.type != "StatusCol")
+          .map((col) => [
+            col.header,
+            enforceString(accessProperty(item.aux, col.accessor)),
+          ])
+      ),
+      raw_auxiliary: item.aux,
     })),
     {
       header: true,

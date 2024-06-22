@@ -430,7 +430,7 @@ export function MiniDisplayTable({
 
   return (
     <div className="rounded-md border mt-4 overflow-x-scroll">
-      <div className="h-[390px]">
+      <div className="h-[300px]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
