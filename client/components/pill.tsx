@@ -67,7 +67,7 @@ export function NumberPill({
   return (
     <Pill color={baseColor}>
       <span style={color ? { color } : undefined}>
-        <LoadingIfNull value={formatValue(value)} activated={!isFunCall} />
+        <LoadingIfNull value={formatValue(value)} activated={isFunCall} />
       </span>
     </Pill>
   );
@@ -107,7 +107,7 @@ export function LoadingIfNull({
   displayOverride?: React.ReactNode;
   activated?: boolean;
 }) {
-  return isnil(value) || !activated ? (
+  return isnil(value) && activated ? (
     <Skeleton className="h-4 w-20" />
   ) : (
     displayOverride || value
