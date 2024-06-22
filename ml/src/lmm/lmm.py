@@ -16,6 +16,7 @@ from aiostream import stream, pipe
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 import traceback
+import re
 import os
 
 class Dependency(BaseModel):
@@ -47,7 +48,11 @@ def process_response(res:str, format: OutputEnum):
     if format == OutputEnum.text:
         return final_content, thought_process
     elif format == OutputEnum.number:
-        return float(final_content), thought_process
+        number_match = re.search(r"[-+]?\d*\.\d+|\d+", final_content)
+        if number_match:
+            return float(number_match.group()), thought_process
+        else:
+            raise ValueError("No number found in the response")
     elif format == OutputEnum.boolean:
         return final_content.lower()[:3] == "yes", thought_process
 
