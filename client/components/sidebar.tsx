@@ -57,10 +57,18 @@ const sideBarData: SideBarItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  if (pathname === "/") {
+    return null;
+  }
   return (
     <div className="flex-initial w-56 py-5 flex flex-col justify-between h-full">
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-        <h1 className="text-2xl font-bold mb-3 ml-2">EarthKit</h1>
+        <Link href="/" className="text-2xl font-bold mb-3 ml-2 font-mono">
+          <span className="text-blue-700">E</span>
+          <span>arth</span>
+          <span className="text-green-700">K</span>
+          <span>it</span>
+        </Link>
         {sideBarData.map((item) => (
           <Link
             key={item.tool}
