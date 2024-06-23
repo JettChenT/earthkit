@@ -17,7 +17,7 @@ export type TableItem = {
   aux: any;
 };
 
-export type ViewPanelType = "streetview" | "map" | "satellite";
+export type ViewPanelType = "overview" | "streetview" | "map" | "satellite";
 export type LabelType = "Match" | "Keep" | "Not Match" | "Not Labeled";
 export const FiltPresets = {
   Match: ["Match"],
@@ -56,7 +56,7 @@ export const useSift = create<SiftState>((set, get) => ({
   target_image: null,
   items: MOCK ? mockItems : [],
   idx: 0,
-  viewPanelState: "streetview",
+  viewPanelState: "overview",
   cols: MOCK ? mockCols : defaultCols,
   sorting: [],
   filtering: [

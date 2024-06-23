@@ -9,7 +9,11 @@ import DeckGL, {
   WebMercatorViewport,
 } from "deck.gl";
 import { Map } from "react-map-gl";
-import { INITIAL_VIEW_STATE, MAPBOX_TOKEN } from "@/lib/constants";
+import {
+  DEFAULT_MAP_STYLE,
+  INITIAL_VIEW_STATE,
+  MAPBOX_TOKEN,
+} from "@/lib/constants";
 import osmtogeojson from "osmtogeojson";
 import { useEffect, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -216,7 +220,7 @@ export default function OSM() {
         <div className="h-full relative">
           <DeckGL initialViewState={viewState} controller layers={[layer]}>
             <Map
-              mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+              mapStyle={DEFAULT_MAP_STYLE}
               mapboxAccessToken={MAPBOX_TOKEN}
             ></Map>
           </DeckGL>

@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { API_URL, MAPBOX_TOKEN } from "@/lib/constants";
+import { API_URL, DEFAULT_MAP_STYLE, MAPBOX_TOKEN } from "@/lib/constants";
 import { Coords, Point, getbbox } from "@/lib/geo";
 import {
   DeckGL,
@@ -104,10 +104,7 @@ export default function GeoCLIP() {
       layers={[layer]}
       getTooltip={getTooltip}
     >
-      <Map
-        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-        mapboxAccessToken={MAPBOX_TOKEN}
-      ></Map>
+      <Map mapStyle={DEFAULT_MAP_STYLE} mapboxAccessToken={MAPBOX_TOKEN}></Map>
       <OperationContainer className="w-64">
         <article className="prose prose-sm leading-5 mb-2">
           <h3>GeoCLIP Geoestimation</h3>

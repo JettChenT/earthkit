@@ -164,8 +164,10 @@ export const parseGeoJsonImport = (
   return { items, cols };
 };
 
-const parseGeoJsonExport = (items: TableEncapsulation): string => {
-  const geoJson: FeatureCollection<GeoJSONPoint> = {
+export const createGeoJson = (
+  items: TableEncapsulation
+): FeatureCollection<GeoJSONPoint> => {
+  return {
     type: "FeatureCollection",
     features: items.items.map((item) => {
       const { coord, ...properties } = item;
@@ -183,9 +185,12 @@ const parseGeoJsonExport = (items: TableEncapsulation): string => {
       cols: items.cols,
     },
   };
-  return JSON.stringify(geoJson);
 };
 
+const parseGeoJsonExport = (items: TableEncapsulation): string => {
+  const geoJson = createGeoJson(items);
+  return JSON.stringify(geoJson);
+};
 export type FormatType = "json" | "geojson" | "csv";
 
 export const importData = (

@@ -11,4 +11,7 @@ export const INITIAL_VIEW_STATE: MapViewState = {
   zoom: 1,
 };
 
+export const DEFAULT_MAP_STYLE =
+  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+
 export { API_URL, RAW_API_URL, MAPBOX_TOKEN, GOOGLE_MAPS_API_KEY };
