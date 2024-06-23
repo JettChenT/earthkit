@@ -12,7 +12,7 @@ import {
 } from "deck.gl";
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Map } from "react-map-gl";
+import { Map } from "react-map-gl/maplibre";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
@@ -104,7 +104,7 @@ export default function GeoCLIP() {
       layers={[layer]}
       getTooltip={getTooltip}
     >
-      <Map mapStyle={DEFAULT_MAP_STYLE} mapboxAccessToken={MAPBOX_TOKEN}></Map>
+      <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
       <OperationContainer className="w-64">
         <article className="prose prose-sm leading-5 mb-2">
           <h3>GeoCLIP Geoestimation</h3>
