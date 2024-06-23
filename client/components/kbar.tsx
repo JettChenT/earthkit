@@ -35,7 +35,7 @@ export type Listener = {
   handler: () => unknown;
 };
 
-export function bindListeners(listeners: Listener[]) {
+export function useListeners(listeners: Listener[]) {
   useEffect(() => {
     listeners.forEach((listener) => {
       document.addEventListener(listener.event, listener.handler);
@@ -123,7 +123,7 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
                 className="flex items-center gap-2 justify-start"
               >
                 {item.icon}
-                {item.display}
+                Go To {item.display}
               </CommandItem>
             ))}
           </CommandGroup>
@@ -133,7 +133,7 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
   );
 }
 
-const DefaultPathList = ["/osm", "/streetview", "/satellite", "/geoclip"];
+const DefaultPathList = ["/streetview", "/satellite", "/geoclip"];
 
 export function DefaultKBar() {
   const pathname = usePathname();

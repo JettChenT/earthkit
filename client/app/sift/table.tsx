@@ -69,7 +69,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CommandBar, Listener, bindListeners } from "@/components/kbar";
+import { CommandBar, Listener, useListeners } from "@/components/kbar";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -496,7 +496,7 @@ function ActionBtn() {
 
   const extractionTrigger = useRef<HTMLDivElement>(null);
 
-  bindListeners([
+  useListeners([
     {
       event: "SiftVLM",
       handler: () => extractionTrigger.current?.click(),
@@ -564,7 +564,7 @@ function ExportBtn() {
     { event: "SiftExportGeoJSON", handler: () => doExport("geojson") },
     { event: "SiftExportJSON", handler: () => doExport("json") },
   ];
-  bindListeners(listeners);
+  useListeners(listeners);
   const { items } = useSift();
   return (
     <DropdownMenu>

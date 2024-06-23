@@ -241,11 +241,6 @@ export function Chatbox({
           >
             @ Locations
           </Button>
-          {/* <ImageUploadButton
-            onSetImage={(image) => {
-              setImages([...images, image]);
-            }}
-          /> */}
         </div>
         <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />

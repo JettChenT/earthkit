@@ -36,6 +36,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { CommandBar, useListeners } from "@/components/kbar";
+import { ArrowRight, Download, Trash2 } from "lucide-react";
+import { create } from "zustand";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -44,6 +47,17 @@ export const getOsmPart = (content: string) => {
   const match = content.match(/```overpassql\n([\s\S]*?)\n```/);
   return match ? match[1] : null;
 };
+
+type OsmGlobs = {
+  latestGeneration: string | null;
+  setLatestGeneration: (generation_id: string) => void;
+};
+
+const useOsmGlobs = create<OsmGlobs>((set) => ({
+  latestGeneration: null,
+  setLatestGeneration: (generation_id: string) =>
+    set({ latestGeneration: generation_id }),
+}));
 
 export default function OSM() {
   noStore();
@@ -57,6 +71,7 @@ export default function OSM() {
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
+  const { setLatestGeneration } = useOsmGlobs();
 
   const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
     setConversation((prevConversation) =>
@@ -152,9 +167,14 @@ export default function OSM() {
           });
         console.log("parsed geojson", geojson);
         if (geojson) {
+          setLatestGeneration(generation_id);
           updateConversation(generation_id, {
             lowerIndicators: [
-              <ResultsDisplay feats={geojson} key={nanoid()} />,
+              <ResultsDisplay
+                feats={geojson}
+                generation_id={generation_id}
+                key={nanoid()}
+              />,
             ],
           });
           setGeojsonData(geojson);
@@ -226,6 +246,42 @@ export default function OSM() {
           </DeckGL>
         </div>
       </div>
+      <CommandBar
+        commands={[
+          {
+            type: "CommandGroupData",
+            children: [
+              {
+                type: "CommandItemData",
+                action: () => {
+                  setConversation([]);
+                  setGeojsonData({
+                    type: "FeatureCollection",
+                    features: [],
+                  });
+                },
+                display: "Clear Chat",
+                icon: <Trash2 className="size-5" />,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftLatest",
+                display: "Sift Through the Latest Results",
+                disabled: geojsonData.features.length == 0,
+                icon: <ArrowRight className="size-5" />,
+              },
+              {
+                type: "CommandItemData",
+                event: "ExportLatest",
+                display: "Export Latest Results to GeoJSON",
+                disabled: geojsonData.features.length == 0,
+                icon: <Download className="size-5" />,
+              },
+            ],
+            heading: "Overpass Query Actions",
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -279,10 +335,43 @@ function ErrorDisplay({
   );
 }
 
-function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
+function ResultsDisplay({
+  feats,
+  generation_id,
+}: {
+  feats: GeoJSON.FeatureCollection;
+  generation_id: string;
+}) {
   const { addItems } = useSift();
   const router = useRouter();
   const featuresCount = feats.features.length;
+  const toSift = () => {
+    const res = parseGeoJsonImport(feats);
+    console.log(res.items);
+    addItems(res.items);
+    router.push("/sift");
+  };
+
+  const toExport = () => {
+    downloadContent(JSON.stringify(feats), "geojson");
+  };
+
+  let { latestGeneration } = useOsmGlobs();
+
+  useListeners([
+    {
+      event: "SiftLatest",
+      handler: () => {
+        if (latestGeneration == generation_id) toSift();
+      },
+    },
+    {
+      event: "ExportLatest",
+      handler: () => {
+        if (latestGeneration == generation_id) toExport();
+      },
+    },
+  ]);
 
   return (
     <div className="p-2 bg-secondary rounded-md flex items-center justify-between">
@@ -293,23 +382,10 @@ function ResultsDisplay({ feats }: { feats: GeoJSON.FeatureCollection }) {
       </span>
       {featuresCount > 0 && (
         <div className="flex gap-1">
-          <Button
-            size={"sm"}
-            onClick={() => {
-              const res = parseGeoJsonImport(feats);
-              console.log(res.items);
-              addItems(res.items);
-              router.push("/sift");
-            }}
-          >
+          <Button size={"sm"} onClick={toSift}>
             Sift
           </Button>
-          <Button
-            size={"sm"}
-            onClick={() => {
-              downloadContent(JSON.stringify(feats), "geojson");
-            }}
-          >
+          <Button size={"sm"} onClick={toExport}>
             Export
           </Button>
         </div>

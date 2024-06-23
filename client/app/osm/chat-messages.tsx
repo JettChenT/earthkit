@@ -28,24 +28,25 @@ function RenderContent({
       ];
   return (
     <div className="flex flex-col gap-2 mb-2">
-      {parts.map((part) => {
+      {parts.map((part, idx) => {
         switch (part.type) {
           case "image":
             if (typeof part.image === "string" || part.image instanceof URL) {
-              return <img src={part.image.toString()} alt="image" />;
+              return <img key={idx} src={part.image.toString()} alt="image" />;
             } else {
-              return <span>Image type not supported yet</span>;
+              return <span key={idx}>Image type not supported yet</span>;
             }
           case "text":
             if (role === "assistant") {
               return (
-                <div className="prose prose-stone text-sm pl-0">
+                <div className="prose prose-stone text-sm pl-0" key={idx}>
                   <MarkdownRenderer content={part.text} />
                 </div>
               );
             }
             return (
               <CodeMirror
+                key={idx}
                 value={part.text}
                 theme={EditorView.theme({
                   "&": {
@@ -66,7 +67,7 @@ function RenderContent({
               />
             );
           case "tool-call":
-            return <div>{part.toolName}</div>;
+            return <div key={idx}>{part.toolName}</div>;
         }
       })}
     </div>
