@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   CollapsibleTrigger,
@@ -31,6 +31,7 @@ function tryParse(content: string, fileName: string) {
 
 export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
   const [results, setResults] = useState<TableEncapsulation | null>(null);
+  const [fmtOpen, fmtSetOpen] = useState(false);
   const { tableImport } = useSift();
   let miniColDef = useMemo(() => {
     if (results) {
@@ -63,6 +64,12 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
 
   // TODO: make wider
 
+  useEffect(() => {
+    if (results !== null) {
+      fmtSetOpen(false);
+    }
+  }, [results]);
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -73,7 +80,11 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
           Choose a CSV, JSON, or GeoJSON file to upload.
         </DialogDescription>
       </DialogHeader>
-      <FmtInfo />
+      <FmtInfo
+        open={fmtOpen}
+        setOpen={fmtSetOpen}
+        disabled={results !== null}
+      />
       {results === null ? (
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
           <FileUploader
@@ -120,11 +131,27 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
   );
 }
 
-function FmtInfo() {
+function FmtInfo({
+  open,
+  setOpen,
+  disabled,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
-    <Collapsible className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+    >
       <CollapsibleTrigger asChild>
-        <Button className="w-full justify-between" variant="ghost">
+        <Button
+          className="w-full justify-between"
+          variant="ghost"
+          disabled={disabled}
+        >
           <div className="flex items-center gap-2">
             <InfoIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             <span className="font-medium">File Format Specification</span>
@@ -134,30 +161,34 @@ function FmtInfo() {
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 p-4">
         <div>
-          <h3 className="text-md font-medium">CSV (Comma-Separated Values)</h3>
-          <p className="text-gray-500 text-sm dark:text-gray-400">
-            CSV files are a simple and widely-used format for storing tabular
-            data. They are commonly used for spreadsheets, databases, and data
-            exchange.
-          </p>
-        </div>
-        <div>
-          <h3 className="text-md font-medium">
-            JSON (JavaScript Object Notation)
-          </h3>
-          <p className="text-gray-500 text-sm dark:text-gray-400">
-            JSON is a lightweight data-interchange format that is easy for
-            humans to read and write, and easy for machines to parse and
-            generate. It is often used for transmitting data between a server
-            and web application.
+          <h3 className="text-md font-medium">CSV</h3>
+          <p className="text-gray-500 text-sm dark:text-gray-4000">
+            CSV files require the longitude data to be present in a column named
+            either "lon", "lng", or "longitude". The latitude data must be in a
+            column named "lat" or "latitude". Other column names will also be
+            imported as auxiliary features.
           </p>
         </div>
         <div>
           <h3 className="text-md font-medium">GeoJSON</h3>
+          <p className="text-gray-500 text-sm dark:text-gray-4000">
+            In general Feature Collections of Points should just work. If you
+            have a Feature Collection of Polygons or Lines, we will try to
+            coerce that into points by taking the midpoint of each feature.
+          </p>
+        </div>
+        <div>
+          <h3 className="text-md font-medium">JSON</h3>
           <p className="text-gray-500 text-sm dark:text-gray-400">
-            GeoJSON is an open standard format for encoding a variety of
-            geographic data structures. It is often used for mapping and
-            geographic information systems (GIS) applications.
+            It is not adviced to use JSON for import if the data has not been
+            exported from EarthKit. Please reference the{" "}
+            <a
+              href="https://github.com/JettChenT/earthkit/blob/main/client/app/sift/inout.ts"
+              className="text-blue-500 underline"
+            >
+              source code{" "}
+            </a>
+            for the specification. (documentation coming soon)
           </p>
         </div>
       </CollapsibleContent>

@@ -50,7 +50,8 @@ const parseCsvImport = (input: string): TableEncapsulation => {
       return val;
     },
   }).map((record: any): TableItem => {
-    let { lat, lon, latitude, longitude, lng, status, ...aux } = record;
+    let { lat, lon, latitude, longitude, lng, status, raw_auxiliary, ...aux } =
+      record;
     auxLst.push(aux);
     return {
       coord: {

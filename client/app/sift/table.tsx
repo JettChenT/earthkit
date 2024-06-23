@@ -352,19 +352,19 @@ function GetStarted() {
         </Dialog>
         <GSCard
           title="Overpass Turbo Query"
-          description="This is some description"
+          description="Overpass Turbo with Natural Langauge and Intelligent Suggestions"
           icon={<SearchCode className="size-5" />}
           onClick={() => router.push("/osm")}
         />
         <GSCard
           title="Sample Streetview Locations"
-          description="This is some description"
+          description="(Experimental) Start from sampling streetview imagery of an area"
           icon={<CarFront className="size-5" />}
           onClick={() => router.push("/streetview")}
         />
         <GSCard
           title="Sample Satellite Locations"
-          description="This is some description"
+          description="(Experimental) Start from sampling Satellite imagery of an area"
           icon={<Satellite className="size-5" />}
           onClick={() => router.push("/satellite")}
         />
