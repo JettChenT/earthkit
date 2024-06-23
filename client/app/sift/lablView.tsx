@@ -13,6 +13,7 @@ import React from "react";
 import ImageUpload from "@/components/widgets/imageUpload";
 import { cn } from "@/lib/utils";
 import { getPillColorCn, statusToPillColor } from "@/components/pill";
+import { Label } from "@/components/ui/label";
 
 const Kbd = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -86,18 +87,40 @@ const LabelButton = ({
 
 export default function LablView() {
   const { setIdxData, setTargetImage, target_image } = useSift();
+  const [imageExpanded, setImageExpanded] = useState(true);
   const cur = useSift((state) => state.getSelected());
   return (
-    <div className="w-full h-full flex flex-col items-center p-6">
-      <div className="my-5 p-3 max-h-64 w-full max-w-lg overflow-auto">
+    <div className="w-full h-full flex flex-col items-center py-3 gap-2 px-2">
+      {target_image && (
+        <div className="w-full flex justify-start flex-none gap-1 items-center">
+          <Label className="font-bold">Target Image</Label>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setTargetImage(null)}
+          >
+            Clear
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setImageExpanded(!imageExpanded)}
+          >
+            {imageExpanded ? "Collapse" : "Expand"}
+          </Button>
+        </div>
+      )}
+      <div className="w-full overflow-auto flex-grow justify-center border border-dashed mx-4">
         <ImageUpload
           onSetImage={setTargetImage}
           image={target_image}
-          className="w-full h-48 object-cover rounded-lg shadow-md"
+          imgClassName={imageExpanded ? "w-full" : "h-full m-auto"}
+          className="w-full h-full object-cover rounded-lg shadow-md"
           content="Import Target Image"
         />
       </div>
-      <div className="w-full max-w-lg">
+
+      <div className="w-full flex-none">
         <TooltipProvider>
           <div className="flex flex-row items-center justify-around h-full gap-5">
             <LabelButton

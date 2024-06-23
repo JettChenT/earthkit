@@ -37,7 +37,7 @@ export type SiftState = {
   filtering: ColumnFiltersState;
   cols: Col[];
   updateItemResults: (res: ResultsUpdate, feat: string) => void;
-  setTargetImage: (img: string) => void;
+  setTargetImage: (img: string | null) => void;
   setItems: (items: TableItem[]) => void;
   addItems: (items: TableItem[]) => void;
   tableImport: (tabl: TableEncapsulation) => void;
@@ -82,7 +82,7 @@ export const useSift = create<SiftState>((set, get) => ({
         return item;
       }),
     })),
-  setTargetImage: (img: string) => set(() => ({ target_image: img })),
+  setTargetImage: (img: string | null) => set(() => ({ target_image: img })),
   setItems: (items: TableItem[]) => set(() => ({ items })),
   addItems: (newItems: TableItem[]) =>
     set((state) => ({ items: [...state.items, ...newItems] })),

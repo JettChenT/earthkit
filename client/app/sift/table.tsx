@@ -159,7 +159,7 @@ export default function SiftTable() {
         <TooltipProvider>
           <ActionBtn />
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <ImportBtn />
             </TooltipTrigger>
             <TooltipContent>
@@ -167,7 +167,7 @@ export default function SiftTable() {
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <ExportBtn />
             </TooltipTrigger>
             <TooltipContent>
@@ -175,7 +175,7 @@ export default function SiftTable() {
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <ClearBtn />
             </TooltipTrigger>
             <TooltipContent>
@@ -183,7 +183,7 @@ export default function SiftTable() {
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <StatusFilterSelect />
             </TooltipTrigger>
             <TooltipContent>
@@ -192,8 +192,11 @@ export default function SiftTable() {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <div ref={tableContainerRef} className="h-full overflow-auto">
-        <Table className="rounded-md border h-full">
+      <div
+        ref={tableContainerRef}
+        className="h-full overflow-auto rounded-sm border"
+      >
+        <Table className="h-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="">
