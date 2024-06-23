@@ -197,6 +197,7 @@ export function Chatbox({
             handleInputChange(value);
           }}
           height="50px"
+          autoFocus={true}
           placeholder="Describe a query... Use `#` for OSM tags/features, `@` for locations/areas."
           extensions={[
             EditorView.theme({
