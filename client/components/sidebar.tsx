@@ -75,7 +75,7 @@ export default function Sidebar() {
             href={`/${item.tool}`}
             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
               pathname === `/${item.tool}`
-                ? "bg-primary-foreground text-primary"
+                ? "bg-gray-100 border border-gray-200 text-primary"
                 : ""
             }`}
           >

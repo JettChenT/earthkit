@@ -54,14 +54,13 @@ export default function ViewPanel() {
 
 function MapOverview() {
   let { items, cols, idx } = useSift();
-  let [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   let mapRef = useRef<MapRef>(null);
 
-  useEffect(() => {
+  const viewState = useMemo(() => {
+    if (!items.length) return INITIAL_VIEW_STATE;
     let gjson = createGeoJson({ items, cols });
     let [minLng, minLat, maxLng, maxLat] = bbox(gjson);
-    console.log(mapRef.current);
-    if (!mapRef.current) return;
+    if (!mapRef.current) return INITIAL_VIEW_STATE;
     let { longitude, latitude, zoom } = mapRef.current.fitBounds(
       [
         [minLng, minLat],
@@ -69,14 +68,14 @@ function MapOverview() {
       ],
       { padding: 100 }
     );
-    setViewState({
+    return {
       longitude,
       latitude,
       zoom: Math.max(zoom - 1, 2),
       transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
       transitionDuration: "auto",
-    });
-  }, [items]);
+    };
+  }, [items, cols]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -107,7 +106,7 @@ function MapOverview() {
   }, [items, idx]);
 
   return (
-    <div className="w-full h-full relative rounded-md">
+    <div className="w-full h-full relative rounded-md p-2 pb-6">
       <Map
         ref={mapRef}
         initialViewState={viewState}

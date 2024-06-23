@@ -26,10 +26,12 @@ const LabelButton = ({
   status,
   hotkey,
   explainer,
+  disabled,
 }: {
   status: LabelType;
   hotkey?: string[];
   explainer?: string;
+  disabled?: boolean;
 }) => {
   const { setIdxData } = useSift();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -62,6 +64,7 @@ const LabelButton = ({
               setIdxData({ status });
             }}
             ref={btnRef}
+            disabled={disabled}
           >
             {status}
           </Button>
@@ -97,9 +100,17 @@ export default function LablView() {
       <div className="w-full max-w-lg">
         <TooltipProvider>
           <div className="flex flex-row items-center justify-around h-full gap-5">
-            <LabelButton status="Not Match" hotkey={["h", "n", "3"]} />
-            <LabelButton status="Keep" hotkey={["p", "2"]} />
-            <LabelButton status="Match" hotkey={["l", "m", "1"]} />
+            <LabelButton
+              disabled={!cur}
+              status="Not Match"
+              hotkey={["h", "n", "3"]}
+            />
+            <LabelButton disabled={!cur} status="Keep" hotkey={["p", "2"]} />
+            <LabelButton
+              disabled={!cur}
+              status="Match"
+              hotkey={["l", "m", "1"]}
+            />
           </div>
         </TooltipProvider>
       </div>

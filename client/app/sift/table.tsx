@@ -158,7 +158,7 @@ export default function SiftTable() {
         </div>
       </div>
       <div ref={tableContainerRef} className="h-full overflow-auto">
-        <Table className="rounded-md border">
+        <Table className="rounded-md border h-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="">
@@ -224,12 +224,10 @@ function GetStarted() {
   const router = useRouter();
   let [importOpen, setImportOpen] = useState(false);
   return (
-    <div className="container w-full mt-2 prose lg:prose-lg">
-      <p>
-        No coordinates to view yet! <br /> Get started from any of the options
-        below:
-      </p>
-      <div className="flex flex-col gap-4 mx-auto">
+    <div className="container w-full -mt-14 prose lg:prose-lg">
+      <p>No Coordinates to see yet!</p>
+      <div className="flex flex-col gap-4 mx-auto not-prose">
+        <p className="-mb-2">Get Started:</p>
         <Dialog open={importOpen} onOpenChange={setImportOpen}>
           <DialogTrigger asChild>
             <GSCard
