@@ -50,6 +50,7 @@ export type SiftState = {
   setSorting: OnChangeFn<SortingState>;
   setFiltering: OnChangeFn<ColumnFiltersState>;
   setCols: OnChangeFn<Col[]>;
+  clearTable: () => void;
 };
 
 export const useSift = create<SiftState>((set, get) => ({
@@ -122,4 +123,12 @@ export const useSift = create<SiftState>((set, get) => ({
   getCoords: () => ({
     coords: get().items.map((item) => PointFromPurePoint(item.coord, {})),
   }),
+  clearTable: () =>
+    set(() => ({
+      items: [],
+      idx: 0,
+      cols: defaultCols,
+      sorting: [],
+      filtering: [],
+    })),
 }));

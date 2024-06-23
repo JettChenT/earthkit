@@ -50,6 +50,7 @@ import {
   Satellite,
   SearchCode,
   Table as TableIcn,
+  Trash,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -148,14 +149,12 @@ export default function SiftTable() {
 
   return (
     <div className="flex flex-col gap-4 p-2 h-full">
-      <div className="flex justify-between items-center">
-        <span className="text-md">{items.length} items</span>
-        <div className="flex gap-2">
-          <ActionBtn />
-          <ImportBtn />
-          <ExportBtn />
-          <StatusFilterSelect />
-        </div>
+      <div className="flex justify-end gap-2 items-center">
+        <ActionBtn />
+        <ImportBtn />
+        <ExportBtn />
+        <ClearBtn />
+        <StatusFilterSelect />
       </div>
       <div ref={tableContainerRef} className="h-full overflow-auto">
         <Table className="rounded-md border h-full">
@@ -385,7 +384,7 @@ function ActionBtn() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="default">
+          <Button variant="default" disabled={!items.length}>
             <Plus className="size-4 mr-1" />
             Feature
           </Button>
@@ -425,10 +424,11 @@ function ExportBtn() {
     );
     downloadContent(content, format);
   };
+  const { items } = useSift();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" disabled={!items.length}>
           <FileDown className="h-4 w-4 mr-1" />
           Export
         </Button>
@@ -447,6 +447,16 @@ function ExportBtn() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function ClearBtn() {
+  const { clearTable, items } = useSift();
+  return (
+    <Button onClick={clearTable} variant={"outline"} disabled={!items.length}>
+      <Trash className="size-4 mr-1" />
+      Clear
+    </Button>
   );
 }
 

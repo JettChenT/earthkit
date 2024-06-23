@@ -112,6 +112,9 @@ function MapOverview() {
         initialViewState={viewState}
         mapStyle={DEFAULT_MAP_STYLE}
       >
+        <div className="absolute top-5 right-5 font-mono p-2 bg-muted/50 rounded-md">
+          {items.length} items
+        </div>
         {markers}
       </Map>
     </div>
