@@ -62,6 +62,12 @@ import { FormatType, exportData } from "./inout";
 import { CustomExtraction } from "./lmm";
 import { getHeaders } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -150,11 +156,41 @@ export default function SiftTable() {
   return (
     <div className="flex flex-col gap-4 p-2 h-full">
       <div className="flex justify-end gap-2 items-center">
-        <ActionBtn />
-        <ImportBtn />
-        <ExportBtn />
-        <ClearBtn />
-        <StatusFilterSelect />
+        <TooltipProvider>
+          <ActionBtn />
+          <Tooltip>
+            <TooltipTrigger>
+              <ImportBtn />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Import Items</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <ExportBtn />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Export Data</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <ClearBtn />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clear Table</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <StatusFilterSelect />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Filter table data by status</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <div ref={tableContainerRef} className="h-full overflow-auto">
         <Table className="rounded-md border h-full">
@@ -293,8 +329,8 @@ function ImportBtn() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <FileInput className="h-4 w-4 mr-1" />
-          Import
+          <FileInput className="h-4 w-4" />
+          {/* Import */}
         </Button>
       </DialogTrigger>
       <GeoImport setOpen={setOpen} />
@@ -429,8 +465,8 @@ function ExportBtn() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" disabled={!items.length}>
-          <FileDown className="h-4 w-4 mr-1" />
-          Export
+          <FileDown className="h-4 w-4" />
+          {/* Export */}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-32">
@@ -454,8 +490,8 @@ function ClearBtn() {
   const { clearTable, items } = useSift();
   return (
     <Button onClick={clearTable} variant={"outline"} disabled={!items.length}>
-      <Trash className="size-4 mr-1" />
-      Clear
+      <Trash className="size-4" />
+      {/* Clear */}
     </Button>
   );
 }
