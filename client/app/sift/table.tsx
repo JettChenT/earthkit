@@ -40,12 +40,15 @@ import { ingestStream } from "@/lib/rpc";
 import { downloadContent } from "@/lib/utils";
 import ky from "ky";
 import {
+  CarFront,
   FileDown,
   FileInput,
   FileJson2,
   Filter,
   Globe,
   Plus,
+  Satellite,
+  SearchCode,
   Table as TableIcn,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -57,6 +60,7 @@ import { GeoImport } from "./geo-import";
 import { FormatType, exportData } from "./inout";
 import { CustomExtraction } from "./lmm";
 import { getHeaders } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -144,7 +148,7 @@ export default function SiftTable() {
 
   return (
     <div className="flex flex-col gap-4 p-2 h-full">
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <span className="text-md">{items.length} items</span>
         <div className="flex gap-2">
           <ActionBtn />
@@ -153,7 +157,7 @@ export default function SiftTable() {
           <StatusFilterSelect />
         </div>
       </div>
-      <div ref={tableContainerRef} className="h-full">
+      <div ref={tableContainerRef} className="h-full overflow-auto">
         <Table className="rounded-md border">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -174,7 +178,13 @@ export default function SiftTable() {
             ))}
           </TableHeader>
           <TableBody className="h-full">
-            {table.getRowModel().rows?.length ? (
+            {items.length == 0 ? (
+              <TableRow className="hover:bg-muted/0">
+                <TableCell colSpan={cols.length}>
+                  <GetStarted />
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, dispIdx) => (
                 <TableRow
                   key={row.id}
@@ -207,6 +217,76 @@ export default function SiftTable() {
         </Table>
       </div>
     </div>
+  );
+}
+
+function GetStarted() {
+  const router = useRouter();
+  let [importOpen, setImportOpen] = useState(false);
+  return (
+    <div className="container w-full mt-2 prose lg:prose-lg">
+      <p>
+        No coordinates to view yet! <br /> Get started from any of the options
+        below:
+      </p>
+      <div className="flex flex-col gap-4 mx-auto">
+        <Dialog open={importOpen} onOpenChange={setImportOpen}>
+          <DialogTrigger asChild>
+            <GSCard
+              title="Import File"
+              description="Import geojson, csv, json..."
+              icon={<FileInput className="size-5" />}
+            />
+          </DialogTrigger>
+          <GeoImport setOpen={setImportOpen} />
+        </Dialog>
+        <GSCard
+          title="Overpass Turbo Query"
+          description="This is some description"
+          icon={<SearchCode className="size-5" />}
+          onClick={() => router.push("/osm")}
+        />
+        <GSCard
+          title="Sample Streetview Locations"
+          description="This is some description"
+          icon={<CarFront className="size-5" />}
+          onClick={() => router.push("/streetview")}
+        />
+        <GSCard
+          title="Sample Satellite Locations"
+          description="This is some description"
+          icon={<Satellite className="size-5" />}
+          onClick={() => router.push("/satellite")}
+        />
+      </div>
+    </div>
+  );
+}
+
+function GSCard({
+  title,
+  description,
+  icon,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <Button
+      variant={"secondary"}
+      size={"lg"}
+      className="max-w-lg justify-start rounded-lg border border-gray-200 shadow-sm flex flex-row h-14 gap-3 pl-3 hover:scale-[101%] transition-all"
+      onClick={onClick}
+    >
+      <div className="flex-none">{icon}</div>
+      <div className="flex-grow flex flex-col">
+        <span className="text-[16px] font-bold w-full text-left">{title}</span>
+        <span className="text-[14px] w-full text-left">{description}</span>
+      </div>
+    </Button>
   );
 }
 

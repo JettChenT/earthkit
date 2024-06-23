@@ -39,7 +39,7 @@ export default function Home() {
           <span>it</span>
         </h2>
         <p className="font-bold">
-          A Nifty and Smart toolkit that helps you Geolocate faster with AI.
+          A Nifty toolkit that helps you Geolocate faster with AI.
         </p>
         <p>
           Automate the process of constructing overpass turbo queries, sifting
