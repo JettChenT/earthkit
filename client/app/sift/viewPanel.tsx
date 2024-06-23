@@ -97,7 +97,7 @@ function MapOverview() {
         latitude={item.coord.lat}
         longitude={item.coord.lon}
         style={{
-          zIndex: itemIdx === idx ? 1000 : 0,
+          zIndex: itemIdx === idx ? 50 : 0,
         }}
       >
         <MapMarker fill={itemIdx === idx ? "red" : "#3FB1CE"} />

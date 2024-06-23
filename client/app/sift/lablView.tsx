@@ -114,7 +114,8 @@ export default function LablView() {
         <ImageUpload
           onSetImage={setTargetImage}
           image={target_image}
-          imgClassName={imageExpanded ? "w-full" : "h-full m-auto"}
+          imgClassName={imageExpanded ? "object-cover" : "h-full m-auto"}
+          // TODO: use object-contain to do this; however it doesn't seem to work
           className="w-full h-full object-cover rounded-lg shadow-md"
           content="Import Target Image"
         />

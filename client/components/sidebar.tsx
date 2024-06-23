@@ -21,7 +21,7 @@ export type SideBarItem = {
   icon: React.ReactNode;
 };
 
-const sideBarData: SideBarItem[] = [
+export const sideBarData: SideBarItem[] = [
   {
     tool: "sift",
     display: "Sift",

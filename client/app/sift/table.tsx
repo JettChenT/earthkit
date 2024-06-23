@@ -46,6 +46,7 @@ import {
   FileJson2,
   Filter,
   Globe,
+  MapPin,
   Plus,
   Satellite,
   SearchCode,
@@ -68,6 +69,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CommandBar, Listener, bindListeners } from "@/components/kbar";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -254,6 +256,78 @@ export default function SiftTable() {
           </TableBody>
         </Table>
       </div>
+      <CommandBar
+        commands={[
+          {
+            type: "CommandGroupData",
+            heading: "Sift Table Actions",
+            children: [
+              {
+                type: "CommandItemData",
+                event: "SiftImport",
+                display: "Import File",
+                icon: <FileInput className="size-5" />,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftExportCSV",
+                display: "Export CSV",
+                icon: <FileDown className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftExportGeoJSON",
+                display: "Export GeoJSON",
+                icon: <Globe className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftExportJSON",
+                display: "Export JSON",
+                icon: <FileJson2 className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftClear",
+                display: "Clear Table",
+                icon: <Trash className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftVLM",
+                display: "Add Feature: Vision-Language Model",
+                icon: <SearchCode className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftGeoClip",
+                display: "Add Feature: GeoCLIP",
+                icon: <MapPin className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftStreetview",
+                display: "Add Feature: Streetview",
+                icon: <CarFront className="size-5" />,
+                disabled: !items.length,
+              },
+              {
+                type: "CommandItemData",
+                event: "SiftSatellite",
+                display: "Add Feature: Satellite",
+                icon: <Satellite className="size-5" />,
+                disabled: !items.length,
+              },
+            ],
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -331,9 +405,12 @@ function ImportBtn() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button
+          variant="outline"
+          onClick={() => setOpen(true)}
+          regEvent="SiftImport"
+        >
           <FileInput className="h-4 w-4" />
-          {/* Import */}
         </Button>
       </DialogTrigger>
       <GeoImport setOpen={setOpen} />
@@ -419,6 +496,25 @@ function ActionBtn() {
 
   const extractionTrigger = useRef<HTMLDivElement>(null);
 
+  bindListeners([
+    {
+      event: "SiftVLM",
+      handler: () => extractionTrigger.current?.click(),
+    },
+    {
+      event: "SiftGeoClip",
+      handler: () => similarityAction("geoclip"),
+    },
+    {
+      event: "SiftStreetview",
+      handler: () => similarityAction("streetview"),
+    },
+    {
+      event: "SiftSatellite",
+      handler: () => similarityAction("satellite"),
+    },
+  ]);
+
   return (
     <>
       <DropdownMenu>
@@ -463,13 +559,18 @@ function ExportBtn() {
     );
     downloadContent(content, format);
   };
+  const listeners: Listener[] = [
+    { event: "SiftExportCSV", handler: () => doExport("csv") },
+    { event: "SiftExportGeoJSON", handler: () => doExport("geojson") },
+    { event: "SiftExportJSON", handler: () => doExport("json") },
+  ];
+  bindListeners(listeners);
   const { items } = useSift();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" disabled={!items.length}>
           <FileDown className="h-4 w-4" />
-          {/* Export */}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-32">
@@ -478,7 +579,7 @@ function ExportBtn() {
           <div key={idx}>
             <DropdownMenuItem
               key={format.name}
-              onMouseDown={() => doExport(format.ext)}
+              onClick={() => doExport(format.ext)}
             >
               {format.icon} {format.name}
             </DropdownMenuItem>
@@ -492,9 +593,13 @@ function ExportBtn() {
 function ClearBtn() {
   const { clearTable, items } = useSift();
   return (
-    <Button onClick={clearTable} variant={"outline"} disabled={!items.length}>
+    <Button
+      onClick={clearTable}
+      variant={"outline"}
+      disabled={!items.length}
+      regEvent="SiftClear"
+    >
       <Trash className="size-4" />
-      {/* Clear */}
     </Button>
   );
 }

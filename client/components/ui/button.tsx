@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useEffect } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -37,15 +38,48 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  regEvent?: string;
+  eventGuard?: (event: Event) => boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      regEvent,
+      eventGuard,
+      onClick,
+      onMouseDown,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
+    useEffect(() => {
+      if (!regEvent) return;
+
+      const handler = (event: Event) => {
+        if (disabled || (eventGuard && !eventGuard(event))) return;
+        onClick?.(new MouseEvent("click", event) as any);
+        onMouseDown?.(new MouseEvent("mousedown", event) as any);
+      };
+
+      document.addEventListener(regEvent, handler);
+      return () => {
+        document.removeEventListener(regEvent, handler);
+      };
+    }, [regEvent, eventGuard, disabled, onClick, onMouseDown]);
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        onClick={onClick}
+        onMouseDown={onMouseDown}
+        disabled={disabled}
         {...props}
       />
     );
