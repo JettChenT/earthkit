@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Profile from "./profile";
+import { UsageBar } from "./usagebar";
 
 export type SideBarItem = {
   tool: Tool;
@@ -84,7 +85,10 @@ export default function Sidebar() {
           </Link>
         ))}
       </nav>
-      <Profile />
+      <div className="flex flex-col gap-2">
+        <UsageBar />
+        <Profile />
+      </div>
     </div>
   );
 }

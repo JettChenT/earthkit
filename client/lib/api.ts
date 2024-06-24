@@ -19,10 +19,12 @@ export function useKy() {
 }
 
 export default function useClerkSWR(url: string) {
-  const getKyInst = useKy();
+  const { getToken } = useAuth();
+
   const fetcher = async (...args: [RequestInfo]) => {
-    const kyInst = await getKyInst();
-    return kyInst.get(url).json();
+    return fetch(...args, {
+      headers: { Authorization: `Bearer ${await getToken()}` },
+    }).then((res) => res.json());
   };
 
   return useSWR(url, fetcher);

@@ -20,8 +20,8 @@ export async function fetchUsage(
     return { quota: DEFAULT_CREDIT, remaining: DEFAULT_CREDIT };
   }
   return {
-    quota: fields.remaining as number,
-    remaining: fields.quota as number,
+    remaining: fields.remaining as number,
+    quota: fields.quota as number,
   };
 }
 
