@@ -164,9 +164,10 @@ function FmtInfo({
           <h3 className="text-md font-medium">CSV</h3>
           <p className="text-gray-500 text-sm dark:text-gray-4000">
             CSV files require the longitude data to be present in a column named
-            either "lon", "lng", or "longitude". The latitude data must be in a
-            column named "lat" or "latitude". Other column names will also be
-            imported as auxiliary features.
+            either &quot;lon&quot;, &quot;lng&quot;, or &quot;longitude&quot;.
+            The latitude data must be in a column named &quot;lat&quot; or
+            &quot;latitude&quot;. Other column names will also be imported as
+            auxiliary features.
           </p>
         </div>
         <div>
