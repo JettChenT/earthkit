@@ -18,6 +18,10 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { SYSTEM_PROMPT } from "@/lib/prompting";
 import { auth } from "@clerk/nextjs/server";
+import { Redis } from "@upstash/redis";
+import { verifyCost } from "@/lib/db";
+
+const redis = Redis.fromEnv();
 
 export type AIContent = UserContent | AssistantContent;
 
@@ -82,6 +86,7 @@ async function sendMessage(
   }
 
   (async () => {
+    if (model === "gpt-4o") await verifyCost(redis, userId!, 1);
     const sysMessages = sys_results.map((result) => ({
       role: "system" as const,
       content: result,

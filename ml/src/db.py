@@ -27,13 +27,19 @@ async def get_usage(user:str):
     return UsageData(quota=int(quota), remaining=int(remaining))
 
 async def verify_cost(user:str, cost:int):
-    assert cost>=0
+    assert cost >= 0
     client = await get_client()
     remaining = await client.hincrby(user, "remaining", -cost)
+    if remaining == -cost and (await client.hget(user, "quota")) is None:
+        await client.hmset(user, {
+            "remaining": DEFAULT_CREDIT - cost,
+            "quota": DEFAULT_CREDIT,
+        })
+        remaining = DEFAULT_CREDIT - cost
     if remaining < 0:
         await client.hincrby(user, "remaining", cost)
         raise HTTPException(
             status_code=402,
-            detail=f"Quota exceeded. This operation requires a credit of at least {cost}. You have {remaining+cost} credits remaining."
+            detail=f"Quota exceeded. This operation requires a credit of at least {cost}. You have {remaining + cost} credits remaining."
         )
     return remaining
