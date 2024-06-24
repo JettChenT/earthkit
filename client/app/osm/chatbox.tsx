@@ -261,7 +261,7 @@ export function Chatbox({
             onValueChange={(value) => setModel(value as Model)}
           >
             <SelectTrigger className="w-[100px] py-0 h-6 focus:ring-0 text-[12px]">
-              <SelectValue />
+              {model == "gpt-3.5-turbo" ? "GPT-3.5" : "GPT-4o"}
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="gpt-3.5-turbo">GPT-3.5</SelectItem>

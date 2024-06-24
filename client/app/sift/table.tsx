@@ -221,7 +221,7 @@ export default function SiftTable() {
           <TableBody className="h-full">
             {items.length == 0 ? (
               <TableRow className="hover:bg-muted/0">
-                <TableCell colSpan={cols.length}>
+                <TableCell colSpan={cols.length} className="p-4">
                   <GetStarted />
                 </TableCell>
               </TableRow>
@@ -337,9 +337,9 @@ function GetStarted() {
   const router = useRouter();
   let [importOpen, setImportOpen] = useState(false);
   return (
-    <div className="container w-full -mt-14 prose lg:prose-lg">
+    <div className="w-full -mt-14 prose lg:prose-lg">
       <p>No Coordinates to see yet!</p>
-      <div className="flex flex-col gap-4 mx-auto not-prose">
+      <div className="flex flex-col gap-4 mx-auto not-prose w-full">
         <p className="-mb-2">Get Started:</p>
         <Dialog open={importOpen} onOpenChange={setImportOpen}>
           <DialogTrigger asChild>
@@ -353,19 +353,19 @@ function GetStarted() {
         </Dialog>
         <GSCard
           title="Overpass Turbo Query"
-          description="Overpass Turbo with Natural Langauge and Intelligent Suggestions"
+          description="Natural-language querying with Intelligent Suggestions"
           icon={<SearchCode className="size-5" />}
           onClick={() => router.push("/osm")}
         />
         <GSCard
-          title="Sample Streetview Locations"
-          description="(Experimental) Start from sampling streetview imagery of an area"
+          title="Sample Streetview Locations (Experimental)"
+          description="Start from sampling streetview imagery of an area"
           icon={<CarFront className="size-5" />}
           onClick={() => router.push("/streetview")}
         />
         <GSCard
-          title="Sample Satellite Locations"
-          description="(Experimental) Start from sampling Satellite imagery of an area"
+          title="Sample Satellite Locations (Experimental)"
+          description="Start from sampling Satellite imagery of an area"
           icon={<Satellite className="size-5" />}
           onClick={() => router.push("/satellite")}
         />
@@ -389,7 +389,7 @@ function GSCard({
     <Button
       variant={"secondary"}
       size={"lg"}
-      className="lg:max-w-md xl:max-w-lg justify-start rounded-lg border border-gray-200 shadow-sm flex h-14 flex-row gap-3 pl-3 hover:scale-[101%] transition-all"
+      className="max-w-md xl:max-w-lg justify-start rounded-lg border border-gray-200 shadow-sm flex h-14 flex-row gap-3 pl-3 hover:scale-[102%] transition-all"
       onClick={onClick}
     >
       <div className="flex-none">{icon}</div>
