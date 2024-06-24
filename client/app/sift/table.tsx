@@ -389,13 +389,15 @@ function GSCard({
     <Button
       variant={"secondary"}
       size={"lg"}
-      className="max-w-lg justify-start rounded-lg border border-gray-200 shadow-sm flex flex-row h-14 gap-3 pl-3 hover:scale-[101%] transition-all"
+      className="lg:max-w-md xl:max-w-lg justify-start rounded-lg border border-gray-200 shadow-sm flex h-14 flex-row gap-3 pl-3 hover:scale-[101%] transition-all"
       onClick={onClick}
     >
       <div className="flex-none">{icon}</div>
       <div className="flex-grow flex flex-col">
         <span className="text-[16px] font-bold w-full text-left">{title}</span>
-        <span className="text-[14px] w-full text-left">{description}</span>
+        <span className="text-[14px] w-full text-left break-words">
+          {description}
+        </span>
       </div>
     </Button>
   );

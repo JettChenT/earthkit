@@ -2,7 +2,8 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ export interface ButtonProps
   asChild?: boolean;
   regEvent?: string;
   eventGuard?: (event: Event) => boolean;
+  requireLogin?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -55,6 +57,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       onClick,
       onMouseDown,
       disabled,
+      requireLogin,
+      children,
       ...props
     },
     ref
@@ -74,15 +78,31 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         document.removeEventListener(regEvent, handler);
       };
     }, [regEvent, eventGuard, disabled, onClick, onMouseDown]);
+
+    const user = useUser();
+    const unauthorized = useMemo(() => {
+      if (!requireLogin) return false;
+      if (user) return false;
+      return true;
+    }, [user, requireLogin]);
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         onClick={onClick}
         onMouseDown={onMouseDown}
-        disabled={disabled}
+        disabled={disabled || unauthorized}
         {...props}
-      />
+      >
+        {unauthorized ? (
+          <>
+            {children}
+            <span className="text-secondary-foreground">(Requires Login)</span>
+          </>
+        ) : (
+          children
+        )}
+      </Comp>
     );
   }
 );

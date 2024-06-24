@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import base64
 import os
 
-SECRET_KEY = base64.b64decode(os.getenv("JWT_PK") or "")
+PUB_KEY = base64.b64decode(os.getenv("JWT_PK") or "")
 ALGORITHM = "RS256"
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(authorizationUrl="foo", tokenUrl="token")
@@ -22,7 +22,7 @@ credentials_exception = HTTPException(
 
 def decode_access_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, PUB_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception

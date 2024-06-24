@@ -17,6 +17,7 @@ import {
 import { createOpenAI } from "@ai-sdk/openai";
 import { Pinecone, RecordMetadata } from "@pinecone-database/pinecone";
 import { SYSTEM_PROMPT } from "@/lib/prompting";
+import { auth } from "@clerk/nextjs/server";
 
 export type AIContent = UserContent | AssistantContent;
 
@@ -55,10 +56,13 @@ export type AIState = Array<ServerMessage>;
 
 export type UIState = Array<ClientMessage>;
 
+export type Model = "gpt-3.5-turbo" | "gpt-4o";
+
 async function sendMessage(
   user_req: string,
   sys_results: string[] = [],
-  images: string[] = []
+  images: string[] = [],
+  model: Model = "gpt-3.5-turbo"
 ) {
   "use server";
 
@@ -68,6 +72,14 @@ async function sendMessage(
   const progressStream = createStreamableValue<ProgressUpdate>();
 
   console.log("images", images.length);
+  const { userId } = auth();
+
+  if (!["gpt-3.5-turbo", "gpt-4o"].includes(model)) {
+    throw new Error("Invalid model");
+  }
+  if (!userId && model === "gpt-4o") {
+    throw new Error("Unauthorized");
+  }
 
   (async () => {
     const sysMessages = sys_results.map((result) => ({
@@ -119,7 +131,7 @@ async function sendMessage(
     upperIndicatorStream.done(<></>);
     console.log("history", history.get());
     const { textStream: txtStream, text: resultText } = await streamText({
-      model: openai("gpt-4o"),
+      model: openai(model),
       system: SYSTEM_PROMPT,
       messages: history.get().map((x) => ({
         role: x.role,

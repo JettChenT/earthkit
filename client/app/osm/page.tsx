@@ -1,44 +1,42 @@
 "use client";
 
-import { Chatbox } from "@/app/osm/chatbox";
 import { ChatMessages } from "@/app/osm/chat-messages";
-import ky from "ky";
-import DeckGL, {
-  FlyToInterpolator,
-  GeoJsonLayer,
-  WebMercatorViewport,
-} from "deck.gl";
-import { Map } from "react-map-gl";
-import {
-  DEFAULT_MAP_STYLE,
-  INITIAL_VIEW_STATE,
-  MAPBOX_TOKEN,
-} from "@/lib/constants";
-import osmtogeojson from "osmtogeojson";
-import { useEffect, useState } from "react";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { readStreamableValue, useActions, useUIState } from "ai/rsc";
-import { AI, ClientMessage } from "./actions";
-import { unstable_noStore as noStore } from "next/cache";
-import { DataContent, ImagePart, nanoid } from "ai";
-import { bbox } from "@turf/bbox";
-import { Orama } from "@orama/orama";
-import { initializeDb, schema, searchDb } from "./searchSuggestions";
-import { Button } from "@/components/ui/button";
-import { importData, parseGeoJsonImport } from "../sift/inout";
-import { downloadContent } from "@/lib/utils";
-import { center } from "@turf/center";
+import { Chatbox } from "@/app/osm/chatbox";
 import { useSift } from "@/app/sift/siftStore";
-import { useRouter } from "next/navigation";
-import { overpassJson } from "@/lib/overpass";
+import { CommandBar, useListeners } from "@/components/kbar";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { CommandBar, useListeners } from "@/components/kbar";
+import {
+  DEFAULT_MAP_STYLE,
+  INITIAL_VIEW_STATE,
+  MAPBOX_TOKEN,
+} from "@/lib/constants";
+import { overpassJson } from "@/lib/overpass";
+import { downloadContent } from "@/lib/utils";
+import { Orama } from "@orama/orama";
+import { bbox } from "@turf/bbox";
+import { ImagePart, nanoid } from "ai";
+import { readStreamableValue, useActions, useUIState } from "ai/rsc";
+import DeckGL, {
+  FlyToInterpolator,
+  GeoJsonLayer,
+  WebMercatorViewport,
+} from "deck.gl";
 import { ArrowRight, Download, Trash2 } from "lucide-react";
-import { create } from "zustand";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { unstable_noStore as noStore } from "next/cache";
+import { useRouter } from "next/navigation";
+import osmtogeojson from "osmtogeojson";
+import { useEffect, useState } from "react";
+import { Map } from "react-map-gl";
+import { parseGeoJsonImport } from "../sift/inout";
+import { AI, ClientMessage, Model } from "./actions";
+import { useOsmGlobs } from "./osmState";
+import { initializeDb, schema } from "./searchSuggestions";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -47,17 +45,6 @@ export const getOsmPart = (content: string) => {
   const match = content.match(/```overpassql\n([\s\S]*?)\n```/);
   return match ? match[1] : null;
 };
-
-type OsmGlobs = {
-  latestGeneration: string | null;
-  setLatestGeneration: (generation_id: string) => void;
-};
-
-const useOsmGlobs = create<OsmGlobs>((set) => ({
-  latestGeneration: null,
-  setLatestGeneration: (generation_id: string) =>
-    set({ latestGeneration: generation_id }),
-}));
 
 export default function OSM() {
   noStore();
@@ -71,7 +58,7 @@ export default function OSM() {
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
-  const { setLatestGeneration } = useOsmGlobs();
+  const { setLatestGeneration, model } = useOsmGlobs();
 
   const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
     setConversation((prevConversation) =>
@@ -91,13 +78,13 @@ export default function OSM() {
   const handleSubmit = async (
     user_input: string,
     sys_results: string[] = [],
-    images: string[] = []
+    images: string[] = [],
+    model: Model = "gpt-3.5-turbo"
   ) => {
     const image_content: ImagePart[] = images.map((image) => ({
       type: "image",
       image: image,
     }));
-    console.log("image_content", image_content);
     setConversation((prev: ClientMessage[]) => [
       ...prev,
       {
@@ -109,7 +96,8 @@ export default function OSM() {
     const { textStream, upperIndicator, progressStream } = await sendMessage(
       user_input,
       sys_results,
-      images
+      images,
+      model
     );
     const generation_id = nanoid();
     setConversation((prev: ClientMessage[]) => [
@@ -223,7 +211,7 @@ export default function OSM() {
         <ChatMessages />
         <Chatbox
           handleSubmit={() => {
-            handleSubmit(input, [], images);
+            handleSubmit(input, [], images, model);
             setInput("");
             setImages([]);
           }}

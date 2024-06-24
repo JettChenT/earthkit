@@ -1,8 +1,17 @@
 "use client";
 import { OSMOrama, searchDb } from "@/app/osm/searchSuggestions";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CancellableImage } from "@/components/widgets/imageUpload";
 import { geoSearch } from "@/lib/nominatim";
 import { renderReactNode } from "@/lib/react_utils";
+import { useUser } from "@clerk/nextjs";
 import {
   CompletionContext,
   CompletionResult,
@@ -13,15 +22,12 @@ import { EditorView } from "@codemirror/view";
 import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
-import { CornerDownLeft, Image } from "lucide-react";
-import React, { useRef } from "react";
+import { CornerDownLeft } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
+import { Model } from "./actions";
 import { location_placeholders, osm_placeholders } from "./cm_common";
-import {
-  CancellableImage,
-  ImageUploadButton,
-} from "@/components/widgets/imageUpload";
-
+import { useOsmGlobs } from "./osmState";
 const locationCompletion = async (
   context: CompletionContext
 ): Promise<CompletionResult | null> => {
@@ -168,6 +174,15 @@ export function Chatbox({
     }
   };
 
+  let { model, setModel } = useOsmGlobs();
+
+  let { isSignedIn } = useUser();
+  useEffect(() => {
+    if (isSignedIn) {
+      setModel("gpt-4o");
+    }
+  }, [isSignedIn]);
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -218,7 +233,7 @@ export function Chatbox({
         />
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex ml-2">
+        <div className="flex ml-2 items-center">
           <Button
             variant="ghost"
             size="sm"
@@ -241,6 +256,20 @@ export function Chatbox({
           >
             @ Locations
           </Button>
+          <Select
+            value={model}
+            onValueChange={(value) => setModel(value as Model)}
+          >
+            <SelectTrigger className="w-[100px] py-0 h-6 focus:ring-0 text-[12px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="gpt-3.5-turbo">GPT-3.5</SelectItem>
+              <SelectItem value="gpt-4o" disabled={!isSignedIn}>
+                GPT-4o {!isSignedIn && "(requires sign-in)"}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />

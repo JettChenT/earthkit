@@ -326,7 +326,11 @@ export default function StreetView() {
               Select Search Range
             </Button>
           )}
-          <Button onClick={locateWrapper} disabled={!sampled || locating}>
+          <Button
+            onClick={locateWrapper}
+            disabled={!sampled || locating}
+            requireLogin
+          >
             {locating ? "Locating..." : "Run Geolocalizaion"}
           </Button>
           <Label htmlFor="topn-slider">Top {topN} Results</Label>

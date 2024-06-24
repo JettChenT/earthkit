@@ -5,8 +5,8 @@ import useSWR from "swr";
 import { useAuth } from "@clerk/nextjs";
 
 export function useKy() {
+  const { getToken } = useAuth();
   const getKyInst = async () => {
-    const { getToken } = useAuth();
     let kyInst = ky.create({
       prefixUrl: API_URL,
       headers: {

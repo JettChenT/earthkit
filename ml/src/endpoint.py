@@ -25,7 +25,8 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "aiostream==0.5.2", 
     "pillow==10.2.0", 
     "pyjwt[cryptography]==2.8.0",
-    "supabase==2.5.1"
+    "supabase==2.5.1",
+    "redis==5.0.6"
 )
 
 web_app = FastAPI()

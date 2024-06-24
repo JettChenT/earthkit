@@ -27,6 +27,7 @@ async def get_usage(user:str):
     return UsageData(quota=int(quota), remaining=int(remaining))
 
 async def verify_cost(user:str, cost:int):
+    assert cost>=0
     client = await get_client()
     remaining = await client.hincrby(user, "remaining", -cost)
     if remaining < 0:
