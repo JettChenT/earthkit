@@ -29,7 +29,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        elements: {
+          socialButtons: {
+            flexDirection: "column",
+          },
+        },
+      }}
+    >
       <html lang="en">
         <body
           className={cn(
