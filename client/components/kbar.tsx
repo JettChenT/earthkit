@@ -12,6 +12,9 @@ import {
 import { sideBarData } from "./sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useEKGlobals } from "@/lib/globals";
+import { Hammer } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 export type CommandItemData = {
   type: "CommandItemData";
@@ -65,6 +68,7 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
     setOpen(false);
     fnc();
   };
+  const { getToken } = useAuth();
 
   const renderItem = (item: CommandItemData, idx: number) => {
     if (item.disabled) return null;
@@ -104,6 +108,8 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
     });
   };
 
+  const { debug, setDebug } = useEKGlobals();
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <Command className="rounded-lg border shadow-md">
@@ -127,6 +133,41 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
               </CommandItem>
             ))}
           </CommandGroup>
+          {renderGroup(
+            {
+              type: "CommandGroupData",
+              heading: "Miscallaneous",
+              children: [
+                {
+                  type: "CommandItemData",
+                  display: `Toggle Debug ${debug ? "OFF" : "ON"}`,
+                  action: () => setDebug(!debug),
+                  icon: <Hammer className="size-5" />,
+                },
+              ],
+            },
+            3
+          )}
+          {debug &&
+            renderGroup(
+              {
+                type: "CommandGroupData",
+                heading: "Debug",
+                children: [
+                  {
+                    type: "CommandItemData",
+                    display: "Print JWT",
+                    action: () => {
+                      (async () => {
+                        const token = await getToken();
+                        console.log(token);
+                      })();
+                    },
+                  },
+                ],
+              },
+              4
+            )}
         </CommandList>
       </Command>
     </CommandDialog>

@@ -59,6 +59,7 @@ certifi==2022.12.7
     # via requests
 cffi==1.16.0
     # via argon2-cffi-bindings
+    # via cryptography
 charset-normalizer==2.1.1
     # via requests
 click==8.1.7
@@ -70,6 +71,8 @@ comm==0.2.2
     # via ipywidgets
 contourpy==1.2.1
     # via matplotlib
+cryptography==42.0.8
+    # via pyjwt
 cycler==0.12.1
     # via matplotlib
 debugpy==1.8.1
@@ -461,6 +464,8 @@ qtpy==2.4.1
     # via qtconsole
 realtime==1.0.3
     # via supabase
+redis==5.0.6
+    # via ml
 referencing==0.34.0
     # via jsonschema
     # via jsonschema-specifications

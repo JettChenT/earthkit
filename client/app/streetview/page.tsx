@@ -37,6 +37,7 @@ import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
 import { getHeaders } from "@/lib/supabase/client";
+import { useKy } from "@/lib/api";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -47,6 +48,7 @@ export default function StreetView() {
   const [sampling, setSampling] = useState(false);
   const [locating, setLocating] = useState(false);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
+  const getKyInst = useKy();
   const [distKm, setDistKm] = useState(0.05);
   const deckRef = useRef<DeckGLRef>(null);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
@@ -159,14 +161,15 @@ export default function StreetView() {
         aux: {},
       },
     };
-    ky.post(`${API_URL}/streetview/sample`, {
-      timeout: false,
-      json: {
-        bounds,
-        dist_km: distKm,
-      },
-      ...(await getHeaders()),
-    })
+    const kyInst = await getKyInst();
+    kyInst
+      .post(`${API_URL}/streetview/sample`, {
+        timeout: false,
+        json: {
+          bounds,
+          dist_km: distKm,
+        },
+      })
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
@@ -181,11 +184,14 @@ export default function StreetView() {
       coords: { coords: sampled!.coords },
     };
 
-    const response = await ky.post(`${API_URL}/streetview/locate/streaming`, {
-      timeout: false,
-      json: payload,
-      ...(await getHeaders()),
-    });
+    const kyInst = await getKyInst();
+    const response = await kyInst.post(
+      `${API_URL}/streetview/locate/streaming`,
+      {
+        timeout: false,
+        json: payload,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to start locate: ${response.statusText}`);

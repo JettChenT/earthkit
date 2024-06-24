@@ -70,6 +70,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CommandBar, Listener, useListeners } from "@/components/kbar";
+import { useKy } from "@/lib/api";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -402,6 +403,7 @@ function GSCard({
 
 function ImportBtn() {
   const [open, setOpen] = useState(false);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -439,6 +441,7 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
 
 function ActionBtn() {
   const { target_image, cols, setCols, items, updateItemResults } = useSift();
+  const getKyInst = useKy();
   const similarityAction = async (
     actionName: "geoclip" | "streetview" | "satellite"
   ) => {
@@ -475,10 +478,10 @@ function ActionBtn() {
       },
     ]);
 
-    const res = await ky.post(`${API_URL}${targ_url}`, {
+    const kyInst = await getKyInst();
+    const res = await kyInst.post(`${API_URL}${targ_url}`, {
       timeout: false,
       json: payload,
-      ...(await getHeaders()),
     });
 
     if (!res.ok || !res.body) {

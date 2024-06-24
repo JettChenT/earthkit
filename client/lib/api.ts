@@ -1,18 +1,29 @@
 "use client";
 import ky from "ky";
 import { API_URL } from "./constants";
-import { getHeaders } from "./supabase/client";
+import useSWR from "swr";
+import { useAuth } from "@clerk/nextjs";
 
-export async function getKy() {
-  let kyInst = ky.create({
-    prefixUrl: API_URL,
-    ...(await getHeaders()),
-  });
-  return kyInst;
+export function useKy() {
+  const getKyInst = async () => {
+    const { getToken } = useAuth();
+    let kyInst = ky.create({
+      prefixUrl: API_URL,
+      headers: {
+        Authorization: `Bearer ${await getToken()}`,
+      },
+    });
+    return kyInst;
+  };
+  return getKyInst;
 }
 
-export async function fetcher<T>(url: string) {
-  const kyInst = await getKy();
-  const res = await kyInst.get(url).json<T>();
-  return res;
+export default function useClerkSWR(url: string) {
+  const getKyInst = useKy();
+  const fetcher = async (...args: [RequestInfo]) => {
+    const kyInst = await getKyInst();
+    return kyInst.get(url).json();
+  };
+
+  return useSWR(url, fetcher);
 }

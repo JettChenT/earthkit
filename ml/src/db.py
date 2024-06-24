@@ -1,42 +1,38 @@
 import os
-from supabase import AClient
-from attrs import define
-from fastapi import HTTPException, status
-import cattrs
+from attr import define
+from fastapi import HTTPException
+import redis.asyncio as redis
 
-def get_client():
-    SUPABASE_URL = os.getenv("SUPABASE_URL") or ""
-    SUPABASE_KEY = os.getenv("SUPABASE_KEY") or ""
-    return AClient(SUPABASE_URL, SUPABASE_KEY)
+DEFAULT_CREDIT=500
+
+async def get_client():
+    return await redis.Redis(
+        host=os.getenv("REDIS_HOST") or "localhost",
+        port=int(os.getenv("REDIS_PORT") or 6379),
+        password=os.getenv("REDIS_PASSWORD"),
+        ssl=True
+    )
 
 @define
-class Quota:
-    id: str
+class UsageData:
     quota: int
-    used: int
-    renew_month: int
+    remaining: int
 
-async def get_quota(user:str):
-    response = (get_client()
-                .table('usage')
-                .select('*')
-                .eq('id', user)
-                .single())
-    data = await response.execute()
-    return cattrs.structure(data.data, Quota)
-
+async def get_usage(user:str):
+    client = await get_client()
+    remaining, quota = await client.hmget(user, "remaining", "quota") 
+    if remaining is None:
+        remaining = quota = DEFAULT_CREDIT
+        await client.hmset(user, {"remaining": str(remaining), "quota": str(DEFAULT_CREDIT)})
+    return UsageData(quota=int(quota), remaining=int(remaining))
 
 async def verify_cost(user:str, cost:int):
-    quota = await get_quota(user)
-    if quota.used + cost > quota.quota:
+    client = await get_client()
+    remaining = await client.hincrby(user, "remaining", -cost)
+    if remaining < 0:
+        await client.hincrby(user, "remaining", cost)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"Quota exceeded. This operation requires {cost} tokens, you have {quota.quota - quota.used} tokens left."
-                    "Please contact contact@earthkit.app for a higher quota."
+            status_code=402,
+            detail=f"Quota exceeded. This operation requires a credit of at least {cost}. You have {remaining+cost} credits remaining."
         )
-    
-    upd = (get_client()
-            .table('usage')
-            .update({'used': quota.used + cost})
-            .eq('id', user))
-    return await upd.execute()
+    return remaining

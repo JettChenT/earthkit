@@ -13,6 +13,7 @@ import { API_URL } from "@/lib/constants";
 import { toast } from "sonner";
 import { ingestStream } from "@/lib/rpc";
 import { getHeaders } from "@/lib/supabase/client";
+import { useKy } from "@/lib/api";
 
 export type Dependency = {
   satellite: boolean;
@@ -28,6 +29,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [prompt, setPrompt] = useState("");
+    const getKyInst = useKy();
     const [dependencies, setDependencies] = useState<Dependency>({
       satellite: false,
       streetview: false,
@@ -71,10 +73,10 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
         },
       ]);
 
-      const res = await ky.post(`${API_URL}/lmm/streaming`, {
+      const kyInst = await getKyInst();
+      const res = await kyInst.post(`${API_URL}/lmm/streaming`, {
         timeout: false,
         json: payload,
-        ...(await getHeaders()),
       });
 
       if (!res.ok || !res.body) {

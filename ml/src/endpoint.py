@@ -11,7 +11,7 @@ from .rpc import ResultsUpdate, encode_msg, sse_encode
 from . import lmm
 from .auth import get_current_user
 import math
-from .db import verify_cost, get_quota
+from .db import verify_cost, get_usage
 import cattrs
 from fastapi.responses import StreamingResponse
 from typing import Any
@@ -24,7 +24,7 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "openai==1.30.4", 
     "aiostream==0.5.2", 
     "pillow==10.2.0", 
-    "pyjwt==2.8.0",
+    "pyjwt[cryptography]==2.8.0",
     "supabase==2.5.1"
 )
 
@@ -155,9 +155,9 @@ async def lmm_streaming(request: lmm.LmmRequest, user: str = Depends(get_current
 async def test_user(user: str = Depends(get_current_user)):
     import time
     t0 = time.time()
-    quota = await get_quota(user)
+    usage = await get_usage(user)
     t1 = time.time()
-    return {"user": user, "quota": cattrs.unstructure(quota), "quota_fetch_duration": t1-t0}
+    return {"user": user, "usage": cattrs.unstructure(usage), "usage_fetch_duration": t1-t0}
 
 @web_app.post("/test/simulate_cost")
 async def test_simulate_cost(cost:int=1, user: str = Depends(get_current_user)):
