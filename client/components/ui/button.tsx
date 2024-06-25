@@ -4,6 +4,12 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { cn } from "@/lib/utils";
 
@@ -43,6 +49,8 @@ export interface ButtonProps
   regEvent?: string;
   eventGuard?: (event: Event) => boolean;
   requireLogin?: boolean;
+  toolTip?: React.ReactNode;
+  side?: "left" | "right" | "top" | "bottom";
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -59,6 +67,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       requireLogin,
       children,
+      toolTip,
+      side,
       ...props
     },
     ref
@@ -85,7 +95,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (user) return false;
       return true;
     }, [user, requireLogin]);
-    return (
+    let res = (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
@@ -104,6 +114,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </Comp>
     );
+    if (toolTip) {
+      res = (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>{res}</TooltipTrigger>
+            <TooltipContent side={side}>{toolTip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    return res;
   }
 );
 Button.displayName = "Button";

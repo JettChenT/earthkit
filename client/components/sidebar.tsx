@@ -9,11 +9,19 @@ import {
   CarTaxiFront,
   SearchCode,
   Glasses,
+  ArrowLeftToLineIcon,
+  Ghost,
+  ArrowRightToLineIcon,
+  PanelRightIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Profile from "./profile";
 import { UsageBar } from "./usagebar";
+import { useEKGlobals } from "@/lib/globals";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "./ui/tooltip";
 
 export type SideBarItem = {
   tool: Tool;
@@ -56,39 +64,96 @@ export const sideBarData: SideBarItem[] = [
   },
 ];
 
+export function EKLogo({ expanded }: { expanded: boolean }) {
+  return (
+    <span>
+      <span className="text-blue-700">E</span>
+      {expanded && <span>arth</span>}
+      <span className="text-green-700">K</span>
+      {expanded && <span>it</span>}
+    </span>
+  );
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
+  let { sidebarExpanded, setSidebarExpanded } = useEKGlobals();
   if (pathname === "/") {
     return null;
   }
   return (
-    <div className="flex-initial w-56 py-5 flex flex-col justify-between h-full">
-      <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-        <Link href="/" className="text-2xl font-bold mb-3 ml-2 font-mono">
-          <span className="text-blue-700">E</span>
-          <span>arth</span>
-          <span className="text-green-700">K</span>
-          <span>it</span>
-        </Link>
-        {sideBarData.map((item) => (
-          <Link
-            key={item.tool}
-            href={`/${item.tool}`}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
-              pathname === `/${item.tool}`
-                ? "bg-gray-100 border border-gray-200 text-primary"
-                : ""
-            }`}
+    <TooltipProvider>
+      <div
+        className={cn(
+          "flex-initial py-5 flex flex-col justify-between h-full",
+          sidebarExpanded ? "w-56" : "w-16 pr-2 mr-2"
+        )}
+      >
+        <nav className="grid gap-1 items-start px-2 text-sm font-medium lg:px-4">
+          <div
+            className={cn(
+              "flex justify-center items-center mb-3 gap-1",
+              sidebarExpanded ? "ml-2" : "ml-0.5"
+            )}
           >
-            {item.icon}
-            {item.display}
-          </Link>
-        ))}
-      </nav>
-      <div className="flex flex-col gap-2">
-        <UsageBar />
-        <Profile />
+            <Link href="/" className="text-2xl font-bold font-mono">
+              <EKLogo expanded={sidebarExpanded} />
+            </Link>
+            {sidebarExpanded && (
+              <Button
+                variant="ghost"
+                onClick={() => setSidebarExpanded(!sidebarExpanded)}
+                toolTip="Collapse Sidebar"
+                side="right"
+              >
+                <ArrowLeftToLineIcon className="size-5" />
+              </Button>
+            )}
+          </div>
+          {sideBarData.map((item) => (
+            <Button
+              key={item.tool}
+              asChild
+              variant="ghost"
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start ${
+                pathname === `/${item.tool}`
+                  ? "bg-gray-100 border border-gray-200 text-primary"
+                  : ""
+              }`}
+              toolTip={!sidebarExpanded ? item.display : undefined}
+              side="right"
+            >
+              <Link href={`/${item.tool}`}>
+                <div
+                  className={
+                    sidebarExpanded
+                      ? "size-4"
+                      : "size-6 w-6 h-6 flex items-center justify-center"
+                  }
+                >
+                  {item.icon}
+                </div>
+                {sidebarExpanded && item.display}
+              </Link>
+            </Button>
+          ))}
+        </nav>
+        <div className={cn("flex flex-col gap-2", !sidebarExpanded && "ml-2")}>
+          {!sidebarExpanded && (
+            <Button
+              variant={"ghost"}
+              onClick={() => setSidebarExpanded(true)}
+              className="flex items-center"
+              toolTip="Expand Sidebar"
+              side="right"
+            >
+              <PanelRightIcon className="size-4" />
+            </Button>
+          )}
+          <UsageBar />
+          <Profile />
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

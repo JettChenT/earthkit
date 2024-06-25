@@ -11,11 +11,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEKGlobals } from "@/lib/globals";
 
 export function UsageBar() {
   let { isSignedIn } = useAuth();
   let { data, isLoading } = useClerkSWR("/api/usage");
-  if (!isSignedIn) return null;
+  let { sidebarExpanded } = useEKGlobals();
+  if (!isSignedIn || !sidebarExpanded) return null;
   data = data as UsageData;
   if (isLoading) return <Skeleton className="h-5 w-full px-6" />;
   return (
