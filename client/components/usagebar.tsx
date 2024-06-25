@@ -14,8 +14,8 @@ import {
 
 export function UsageBar() {
   let { isSignedIn } = useAuth();
-  if (!isSignedIn) return null;
   let { data, isLoading } = useClerkSWR("/api/usage");
+  if (!isSignedIn) return null;
   data = data as UsageData;
   if (isLoading) return <Skeleton className="h-5 w-full px-6" />;
   return (
