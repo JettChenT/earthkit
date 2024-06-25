@@ -89,12 +89,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       };
     }, [regEvent, eventGuard, disabled, onClick, onMouseDown]);
 
-    const user = useUser();
-    const unauthorized = useMemo(() => {
+    const { isLoaded, isSignedIn } = useUser();
+    let unauthorized = useMemo(() => {
       if (!requireLogin) return false;
-      if (user) return false;
-      return true;
-    }, [user, requireLogin]);
+      if (!isLoaded || !isSignedIn) return true;
+      return false;
+    }, [isLoaded, isSignedIn, requireLogin]);
+
     let res = (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -106,8 +107,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {unauthorized ? (
           <>
-            {children}
-            <span className="text-secondary-foreground">(Requires Login)</span>
+            {children} <span>(Requires Login)</span>
           </>
         ) : (
           children

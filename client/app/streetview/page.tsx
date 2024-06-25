@@ -36,7 +36,6 @@ import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
-import { getHeaders } from "@/lib/supabase/client";
 import { useKy } from "@/lib/api";
 import { useSWRConfig } from "swr";
 
@@ -164,7 +163,7 @@ export default function StreetView() {
     };
     const kyInst = await getKyInst();
     kyInst
-      .post(`${API_URL}/streetview/sample`, {
+      .post(`streetview/sample`, {
         timeout: false,
         json: {
           bounds,
@@ -188,13 +187,10 @@ export default function StreetView() {
     };
 
     const kyInst = await getKyInst();
-    const response = await kyInst.post(
-      `${API_URL}/streetview/locate/streaming`,
-      {
-        timeout: false,
-        json: payload,
-      }
-    );
+    const response = await kyInst.post(`streetview/locate/streaming`, {
+      timeout: false,
+      json: payload,
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to start locate: ${response.statusText}`);

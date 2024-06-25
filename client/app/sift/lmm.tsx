@@ -12,7 +12,6 @@ import ky from "ky";
 import { API_URL } from "@/lib/constants";
 import { toast } from "sonner";
 import { ingestStream } from "@/lib/rpc";
-import { getHeaders } from "@/lib/supabase/client";
 import { useKy } from "@/lib/api";
 import { useSWRConfig } from "swr";
 
@@ -76,7 +75,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
       ]);
 
       const kyInst = await getKyInst();
-      const res = await kyInst.post(`${API_URL}/lmm/streaming`, {
+      const res = await kyInst.post(`lmm/streaming`, {
         timeout: false,
         json: payload,
       });

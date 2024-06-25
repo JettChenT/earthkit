@@ -26,8 +26,9 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
 import "mapbox-gl/dist/mapbox-gl.css";
-import { getHeaders } from "@/lib/supabase/client";
 import { useSWRConfig } from "swr";
+import { useKy } from "@/lib/api";
+import { toast } from "sonner";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -95,6 +96,7 @@ export default function Satellite() {
   }, []);
 
   const { mutate } = useSWRConfig();
+  const getKyInst = useKy();
 
   const onLocate = async () => {
     setLocating(true);
@@ -117,20 +119,22 @@ export default function Satellite() {
         aux: {},
       },
     };
-    fetch(`${API_URL}/satellite/locate`, {
-      method: "POST",
-      body: JSON.stringify({
+    const ky = await getKyInst();
+    ky.post(`satellite/locate`, {
+      json: {
         bounds,
         image_url: image,
-      }),
-      ...(await getHeaders()),
+      },
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        setResults(data);
+        setResults(data as Coords);
         setLocating(false);
         mutate("/api/usage");
+      })
+      .catch((err) => {
+        toast.error(err.message);
+        setLocating(false);
       });
   };
 

@@ -17,27 +17,28 @@ import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { getHeaders } from "@/lib/supabase/client";
+import { useKy } from "@/lib/api";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [predictions, setPredictions] = useState<Coords | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
+  const getKyInst = useKy();
 
   const onInference = async () => {
     setIsRunning(true);
     setPredictions(null);
-    fetch(`${API_URL}/geoclip`, {
-      method: "POST",
-      body: JSON.stringify({
-        image_url: image,
-        top_k: 100,
-      }),
-      ...(await getHeaders()),
-    })
+    let kyInst = await getKyInst();
+    kyInst
+      .post(`geoclip`, {
+        json: {
+          image_url: image,
+          top_k: 100,
+        },
+      })
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: any) => {
         console.log(data);
         const max_conf = Math.max(...data.map((d: any) => d.aux.pred));
         const adjusted_data: Coords = {
@@ -120,15 +121,16 @@ export default function GeoCLIP() {
           onSetImage={(img) => {
             setImage(img);
           }}
-          onUploadBegin={() => {
-            fetch(`${API_URL}/geoclip/poke`);
-          }}
+          // onUploadBegin={() => {
+          //   fetch(`${API_URL}/geoclip/poke`);
+          // }}
           image={image}
         />
         <div className="flex flex-col items-center">
           <Button
             className={`mt-3 w-full`}
             disabled={!image || isRunning}
+            requireLogin
             onClick={onInference}
           >
             {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}

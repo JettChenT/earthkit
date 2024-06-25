@@ -61,7 +61,6 @@ import { compileColDefs, defaultColDefs } from "./cols";
 import { GeoImport } from "./geo-import";
 import { FormatType, exportData } from "./inout";
 import { CustomExtraction } from "./lmm";
-import { getHeaders } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
   Tooltip,
@@ -463,11 +462,11 @@ function ActionBtn() {
     const targ_url = (() => {
       switch (actionName) {
         case "geoclip":
-          return "/geoclip/similarity/streaming";
+          return "geoclip/similarity/streaming";
         case "streetview":
-          return "/streetview/locate/streaming";
+          return "streetview/locate/streaming";
         case "satellite":
-          return "/satellite/similarity/streaming";
+          return "satellite/similarity/streaming";
       }
     })();
     setCols((cols) => [
@@ -483,7 +482,7 @@ function ActionBtn() {
     ]);
 
     const kyInst = await getKyInst();
-    const res = await kyInst.post(`${API_URL}${targ_url}`, {
+    const res = await kyInst.post(targ_url, {
       timeout: false,
       json: payload,
     });
