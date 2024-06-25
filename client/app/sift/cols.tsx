@@ -1,4 +1,4 @@
-import { TableItem } from "@/app/sift/siftStore";
+import { TableItem, useSift } from "@/app/sift/siftStore";
 import { ColumnDef, StringOrTemplateHeader } from "@tanstack/react-table";
 import {
   ArrowDown01,
@@ -8,6 +8,7 @@ import {
   ArrowUp01,
   ArrowUpAZ,
   ArrowUpDown,
+  DotIcon,
 } from "lucide-react";
 import { columnHelper } from "./table";
 import Pill, {
@@ -103,16 +104,22 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           header: "Coords",
           cell: (props) => {
             const coord = props.getValue();
+            const { idx } = useSift();
             return (
-              <Pill
-                color="blue"
-                onClick={() => {
-                  navigator.clipboard.writeText(`${coord.lat}, ${coord.lon}`);
-                  toast.success("Copied Coordinates to clipboard");
-                }}
-              >
-                {formatValue(coord.lat)}, {formatValue(coord.lon)}
-              </Pill>
+              <div className="flex flex-row items-center">
+                <Pill
+                  color="blue"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${coord.lat}, ${coord.lon}`);
+                    toast.success("Copied Coordinates to clipboard");
+                  }}
+                  className={
+                    idx == props.row.index ? "scale-[102%] -translate-x-1" : ""
+                  }
+                >
+                  {formatValue(coord.lat)}, {formatValue(coord.lon)}
+                </Pill>
+              </div>
             );
           },
         });

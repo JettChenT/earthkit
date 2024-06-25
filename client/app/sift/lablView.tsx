@@ -87,7 +87,7 @@ const LabelButton = ({
 
 export default function LablView() {
   const { setIdxData, setTargetImage, target_image } = useSift();
-  const [imageExpanded, setImageExpanded] = useState(true);
+  const [imageExpanded, setImageExpanded] = useState(false);
   const cur = useSift((state) => state.getSelected());
   return (
     <div className="w-full h-full flex flex-col items-center py-3 gap-2 px-2">

@@ -41,6 +41,7 @@ export default function Pill({
   onClick,
   tooltip,
   toolTipSide,
+  className,
 }: {
   children: React.ReactNode;
   color: PillColor;
@@ -49,10 +50,15 @@ export default function Pill({
   onClick?: () => void;
   tooltip?: ReactNode;
   toolTipSide?: "left" | "right" | "top" | "bottom";
+  className?: string;
 }) {
   let res = (
     <div
-      className={cn("px-2 py-1 rounded-md font-bold", getPillColorCn(color))}
+      className={cn(
+        "px-2 py-1 rounded-md font-bold transition-all",
+        getPillColorCn(color),
+        className
+      )}
       onClick={onClick}
     >
       {icon && iconPosition === "start" && <span className="mr-2">{icon}</span>}
