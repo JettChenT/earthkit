@@ -3,7 +3,7 @@ import { TableEncapsulation, importData } from "./inout";
 import { LabelType, TableItem } from "./siftStore";
 import SampleDat from "./sample_dat.json";
 
-export const MOCK = true;
+export const MOCK = false;
 
 const generateDeterministicFeature = (index: number) => {
   return ((index % 10) + 1 + index / 77).toFixed(1);
