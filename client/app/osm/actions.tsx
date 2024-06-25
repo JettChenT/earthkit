@@ -79,7 +79,7 @@ async function sendMessage(
   const { userId } = auth();
 
   if (!["gpt-3.5-turbo", "gpt-4o"].includes(model)) {
-    throw new Error("Invalid model");
+    throw new Error(`Invalid model: ${model}`);
   }
   if (!userId && model === "gpt-4o") {
     throw new Error("Unauthorized");

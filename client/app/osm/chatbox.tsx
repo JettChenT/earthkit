@@ -181,7 +181,7 @@ export function Chatbox({
     if (isSignedIn) {
       setModel("gpt-4o");
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, setModel]);
 
   return (
     <form
@@ -258,7 +258,11 @@ export function Chatbox({
           </Button>
           <Select
             value={model}
-            onValueChange={(value) => setModel(value as Model)}
+            onValueChange={(value) => {
+              if (["gpt-3.5-turbo", "gpt-4o"].includes(value)) {
+                setModel(value as Model);
+              }
+            }}
           >
             <SelectTrigger className="w-[100px] py-0 h-6 focus:ring-0 text-[12px]">
               {model == "gpt-3.5-turbo" ? "GPT-3.5" : "GPT-4o"}
