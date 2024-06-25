@@ -156,11 +156,11 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
                 children: [
                   {
                     type: "CommandItemData",
-                    display: "Print JWT",
+                    display: "Copy JWT to Clipboard",
                     action: () => {
                       (async () => {
                         const token = await getToken();
-                        console.log(token);
+                        if (token) await navigator.clipboard.writeText(token);
                       })();
                     },
                   },

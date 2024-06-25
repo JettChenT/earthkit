@@ -24,7 +24,7 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "openai==1.30.4", 
     "aiostream==0.5.2", 
     "pillow==10.2.0", 
-    "pyjwt[cryptography]==2.8.0",
+    "pyjwt[crypto]==2.8.0",
     "supabase==2.5.1",
     "redis==5.0.6"
 )
@@ -82,7 +82,7 @@ async def geoclip_inference(request: GeoclipRequest, user: str = Depends(get_cur
     print("downloading image...")
     img = await proc_im_url_async(request.image_url)
     print("running inference...")
-    res_gps, res_pred = await c.inference.remote(img, request.top_k)
+    res_gps, res_pred = await c.inference.remote.aio(img, request.top_k)
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[0], lat=gps[1], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
     ]
@@ -97,7 +97,7 @@ async def geoclip_similarity(request: GeoclipSimilarityRequest, user: str = Depe
     await verify_cost(user, 1)
     c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
     img = await proc_im_url_async(request.image_url)
-    res = c.similarity.remote(img, request.coords.to_geo())
+    res = await c.similarity.remote.aio(img, request.coords.to_geo())
     return encode_msg(res)
 
 @web_app.post("/geoclip/similarity/streaming")

@@ -9,6 +9,7 @@ export function useKy() {
   const getKyInst = async () => {
     let kyInst = ky.create({
       prefixUrl: API_URL,
+      timeout: 1000 * 60 * 5, // 5 minutes
       headers: {
         Authorization: `Bearer ${await getToken()}`,
       },
