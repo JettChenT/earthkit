@@ -69,6 +69,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
               ? "NumericalCol"
               : "TextCol",
           accessor: `${title}.answer`,
+          tooltipAccessor: `${title}.thought`,
           header: title,
           isFunCall: true,
         },

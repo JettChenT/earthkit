@@ -1,6 +1,9 @@
 import { LabelType } from "@/app/sift/siftStore";
 import { cn, formatValue, isnil } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
+import { ReactNode } from "react";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export type PillColor = "red" | "blue" | "green" | "orange" | "grey" | "hidden";
 
@@ -35,21 +38,39 @@ export default function Pill({
   color,
   icon,
   iconPosition = "start", // default position is "start"
+  onClick,
+  tooltip,
+  toolTipSide,
 }: {
   children: React.ReactNode;
   color: PillColor;
   icon?: React.ReactNode;
   iconPosition?: "start" | "end";
+  onClick?: () => void;
+  tooltip?: ReactNode;
+  toolTipSide?: "left" | "right" | "top" | "bottom";
 }) {
-  return (
+  let res = (
     <div
       className={cn("px-2 py-1 rounded-md font-bold", getPillColorCn(color))}
+      onClick={onClick}
     >
       {icon && iconPosition === "start" && <span className="mr-2">{icon}</span>}
       {children}
       {icon && iconPosition === "end" && <span className="ml-2">{icon}</span>}
     </div>
   );
+  if (tooltip) {
+    res = (
+      <Tooltip>
+        <TooltipTrigger>{res}</TooltipTrigger>
+        <TooltipContent side={toolTipSide || "left"}>
+          <div className="max-w-48">{tooltip}</div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+  return res;
 }
 
 export function NumberPill({
@@ -57,15 +78,19 @@ export function NumberPill({
   zval,
   baseColor,
   isFunCall,
+  tooltip,
+  toolTipSide,
 }: {
   value: number;
   zval?: number;
   baseColor: PillColor;
   isFunCall?: boolean;
+  tooltip?: ReactNode;
+  toolTipSide?: "left" | "right" | "top" | "bottom";
 }) {
   const color = zval && colorFromZVal(zval);
   return (
-    <Pill color={baseColor}>
+    <Pill color={baseColor} tooltip={tooltip} toolTipSide={toolTipSide}>
       <span style={color ? { color } : undefined}>
         <LoadingIfNull value={formatValue(value)} activated={isFunCall} />
       </span>

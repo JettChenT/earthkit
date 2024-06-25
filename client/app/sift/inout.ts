@@ -74,11 +74,15 @@ const enforceString = (value: any) => {
   return value.toString();
 };
 
-const accessProperty = (value: any, accessor: string) => {
+export const accessProperty = (value: any, accessor: string) => {
   let parts = accessor.split(".");
   let res = value;
   for (const part of parts) {
-    res = res[part];
+    if (part in res) {
+      res = res[part];
+    } else {
+      return null;
+    }
   }
   return res;
 };

@@ -19,6 +19,8 @@ import Pill, {
 } from "@/components/pill";
 import { formatValue, isnil } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { accessProperty } from "./inout";
 
 // hard-coded columns
 export type CoordCol = {
@@ -36,6 +38,7 @@ export type StatusCol = {
 // For custom-defined columns
 export type ColBase = {
   accessor: string;
+  tooltipAccessor?: string;
   header: string;
   isFunCall?: boolean;
 };
@@ -101,7 +104,13 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           cell: (props) => {
             const coord = props.getValue();
             return (
-              <Pill color="blue">
+              <Pill
+                color="blue"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${coord.lat}, ${coord.lon}`);
+                  toast.success("Copied Coordinates to clipboard");
+                }}
+              >
                 {formatValue(coord.lat)}, {formatValue(coord.lon)}
               </Pill>
             );
@@ -129,6 +138,10 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           header: sortableHeader(col.header, "num"),
           cell: (props) => {
             const val = props.getValue();
+            console.log(props);
+            let tooltip = col.tooltipAccessor
+              ? accessProperty(props.row.original.aux, col.tooltipAccessor)
+              : undefined;
             return (
               <NumberPill
                 value={val}
@@ -138,6 +151,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
                     : undefined
                 }
                 baseColor={col.baseColor || "hidden"}
+                tooltip={tooltip}
                 isFunCall={col.isFunCall}
               />
             );
@@ -148,10 +162,17 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           header: sortableHeader(col.header, "text"),
           cell: (props) => {
             const val = props.getValue();
+            let tooltip = col.tooltipAccessor
+              ? accessProperty(props.row.original.aux, col.tooltipAccessor)
+              : undefined;
             const valNode = (
               <LoadingIfNull value={val} activated={col.isFunCall} />
             );
-            return <Pill color={col.baseColor || "hidden"}>{valNode}</Pill>;
+            return (
+              <Pill color={col.baseColor || "hidden"} tooltip={tooltip}>
+                {valNode}
+              </Pill>
+            );
           },
         });
       case "BoolCol":
@@ -159,8 +180,14 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
           header: sortableHeader(col.header, "text"),
           cell: (props) => {
             const val = props.getValue();
+            let tooltip = col.tooltipAccessor
+              ? accessProperty(props.row.original.aux, col.tooltipAccessor)
+              : undefined;
             return (
-              <Pill color={isnil(val) ? "hidden" : val ? "green" : "red"}>
+              <Pill
+                color={isnil(val) ? "hidden" : val ? "green" : "red"}
+                tooltip={tooltip}
+              >
                 <LoadingIfNull
                   displayOverride={val ? "yes" : "no"}
                   value={val}

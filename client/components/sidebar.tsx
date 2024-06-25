@@ -10,8 +10,6 @@ import {
   SearchCode,
   Glasses,
   ArrowLeftToLineIcon,
-  Ghost,
-  ArrowRightToLineIcon,
   PanelRightIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -45,6 +43,12 @@ export const sideBarData: SideBarItem[] = [
     icon: <SearchCode className="size-4" />,
   },
   {
+    tool: "geoclip",
+    display: "Geoestimation",
+    tooltip: "Global Location-Estimation Tool",
+    icon: <Earth className="size-4" />,
+  },
+  {
     tool: "streetview",
     display: "Street View",
     tooltip: "Locate a ground-level image based on street view imagery",
@@ -55,12 +59,6 @@ export const sideBarData: SideBarItem[] = [
     display: "Satellite",
     tooltip: "Locate a ground-level image based on satellite imagery",
     icon: <Satellite className="size-4" />,
-  },
-  {
-    tool: "geoclip",
-    display: "Geoestimation",
-    tooltip: "Global Location-Estimation Tool",
-    icon: <Earth className="size-4" />,
   },
 ];
 

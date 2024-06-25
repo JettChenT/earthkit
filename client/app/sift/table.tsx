@@ -158,8 +158,8 @@ export default function SiftTable() {
 
   return (
     <div className="flex flex-col gap-4 p-2 h-full">
-      <div className="flex justify-end gap-2 items-center">
-        <TooltipProvider>
+      <TooltipProvider>
+        <div className="flex justify-end gap-2 items-center">
           <ActionBtn />
           <Tooltip>
             <TooltipTrigger asChild>
@@ -193,142 +193,142 @@ export default function SiftTable() {
               <p>Filter table data by status</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
-      </div>
-      <div
-        ref={tableContainerRef}
-        className="h-full overflow-auto rounded-sm border"
-      >
-        <Table className="h-full">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className="h-full">
-            {items.length == 0 ? (
-              <TableRow className="hover:bg-muted/0">
-                <TableCell colSpan={cols.length} className="p-4">
-                  <GetStarted />
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, dispIdx) => (
-                <TableRow
-                  key={row.id}
-                  data-state={
-                    (row.getIsSelected() || row.index === idx) && "selected"
-                  }
-                  onMouseDown={() => {
-                    setSelectedIdx(dispIdx);
-                  }}
-                  className="cursor-pointer"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+        </div>
+        <div
+          ref={tableContainerRef}
+          className="h-full overflow-auto rounded-sm border"
+        >
+          <Table className="h-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="">
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={cols.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <CommandBar
-        commands={[
-          {
-            type: "CommandGroupData",
-            heading: "Sift Table Actions",
-            children: [
-              {
-                type: "CommandItemData",
-                event: "SiftImport",
-                display: "Import File",
-                icon: <FileInput className="size-5" />,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftExportCSV",
-                display: "Export CSV",
-                icon: <FileDown className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftExportGeoJSON",
-                display: "Export GeoJSON",
-                icon: <Globe className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftExportJSON",
-                display: "Export JSON",
-                icon: <FileJson2 className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftClear",
-                display: "Clear Table",
-                icon: <Trash className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftVLM",
-                display: "Add Feature: Vision-Language Model",
-                icon: <SearchCode className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftGeoClip",
-                display: "Add Feature: GeoCLIP",
-                icon: <MapPin className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftStreetview",
-                display: "Add Feature: Streetview",
-                icon: <CarFront className="size-5" />,
-                disabled: !items.length,
-              },
-              {
-                type: "CommandItemData",
-                event: "SiftSatellite",
-                display: "Add Feature: Satellite",
-                icon: <Satellite className="size-5" />,
-                disabled: !items.length,
-              },
-            ],
-          },
-        ]}
-      />
+              ))}
+            </TableHeader>
+            <TableBody className="h-full">
+              {items.length == 0 ? (
+                <TableRow className="hover:bg-muted/0">
+                  <TableCell colSpan={cols.length} className="p-4">
+                    <GetStarted />
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row, dispIdx) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={
+                      (row.getIsSelected() || row.index === idx) && "selected"
+                    }
+                    onMouseDown={() => {
+                      setSelectedIdx(dispIdx);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={cols.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <CommandBar
+          commands={[
+            {
+              type: "CommandGroupData",
+              heading: "Sift Table Actions",
+              children: [
+                {
+                  type: "CommandItemData",
+                  event: "SiftImport",
+                  display: "Import File",
+                  icon: <FileInput className="size-5" />,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftExportCSV",
+                  display: "Export CSV",
+                  icon: <FileDown className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftExportGeoJSON",
+                  display: "Export GeoJSON",
+                  icon: <Globe className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftExportJSON",
+                  display: "Export JSON",
+                  icon: <FileJson2 className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftClear",
+                  display: "Clear Table",
+                  icon: <Trash className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftVLM",
+                  display: "Add Feature: Vision-Language Model",
+                  icon: <SearchCode className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftGeoClip",
+                  display: "Add Feature: GeoCLIP",
+                  icon: <MapPin className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftStreetview",
+                  display: "Add Feature: Streetview",
+                  icon: <CarFront className="size-5" />,
+                  disabled: !items.length,
+                },
+                {
+                  type: "CommandItemData",
+                  event: "SiftSatellite",
+                  display: "Add Feature: Satellite",
+                  icon: <Satellite className="size-5" />,
+                  disabled: !items.length,
+                },
+              ],
+            },
+          ]}
+        />
+      </TooltipProvider>
     </div>
   );
 }
