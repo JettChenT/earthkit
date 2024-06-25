@@ -41,6 +41,7 @@ import { downloadContent } from "@/lib/utils";
 import ky from "ky";
 import {
   CarFront,
+  CircleIcon,
   DotIcon,
   FileDown,
   FileInput,
@@ -203,6 +204,7 @@ export default function SiftTable() {
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="">
+                  <TableHead />
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead key={header.id}>
@@ -237,6 +239,16 @@ export default function SiftTable() {
                     }}
                     className="cursor-pointer"
                   >
+                    <TableCell colSpan={0.5} className="w-3 p-0 pl-3 -mr-1">
+                      {row.index == idx ? (
+                        <DotIcon
+                          className="size-4 text-blue-600 shadow-sm drop-shadow-md -mr-3"
+                          strokeWidth={17}
+                        />
+                      ) : (
+                        <div className="size-4" />
+                      )}
+                    </TableCell>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
