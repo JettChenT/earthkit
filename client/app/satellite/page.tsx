@@ -27,6 +27,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
 });
 import "mapbox-gl/dist/mapbox-gl.css";
 import { getHeaders } from "@/lib/supabase/client";
+import { useSWRConfig } from "swr";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -93,6 +94,8 @@ export default function Satellite() {
       : null;
   }, []);
 
+  const { mutate } = useSWRConfig();
+
   const onLocate = async () => {
     setLocating(true);
     setSelected(true);
@@ -127,6 +130,7 @@ export default function Satellite() {
         console.log(data);
         setResults(data);
         setLocating(false);
+        mutate("/api/usage");
       });
   };
 

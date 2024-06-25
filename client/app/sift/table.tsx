@@ -71,6 +71,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CommandBar, Listener, useListeners } from "@/components/kbar";
 import { useKy } from "@/lib/api";
+import { useSWRConfig } from "swr";
 
 export const columnHelper = createColumnHelper<TableItem>();
 
@@ -444,6 +445,7 @@ const ExportFormats: { name: string; ext: FormatType; icon: JSX.Element }[] = [
 function ActionBtn() {
   const { target_image, cols, setCols, items, updateItemResults } = useSift();
   const getKyInst = useKy();
+  const { mutate } = useSWRConfig();
   const similarityAction = async (
     actionName: "geoclip" | "streetview" | "satellite"
   ) => {
@@ -491,6 +493,8 @@ function ActionBtn() {
       toast.error("Failed to get results");
       return;
     }
+
+    mutate("/api/usage");
 
     for await (const chunk of ingestStream(res)) {
       if (chunk.type == "ResultsUpdate") {

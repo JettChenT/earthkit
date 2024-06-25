@@ -1,7 +1,7 @@
 "use client";
 import ky from "ky";
 import { API_URL } from "./constants";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useAuth } from "@clerk/nextjs";
 
 export function useKy() {

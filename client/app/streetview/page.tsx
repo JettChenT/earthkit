@@ -38,6 +38,7 @@ import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
 import { getHeaders } from "@/lib/supabase/client";
 import { useKy } from "@/lib/api";
+import { useSWRConfig } from "swr";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -178,6 +179,8 @@ export default function StreetView() {
       });
   };
 
+  const { mutate } = useSWRConfig();
+
   const onLocate = async () => {
     const payload = {
       image_url: image,
@@ -199,6 +202,8 @@ export default function StreetView() {
     if (!response.body) {
       throw new Error("Failed to start locate: API returned no response body");
     }
+
+    mutate("/api/usage");
 
     for await (const msg of ingestStream(response)) {
       console.log("got message! ", msg);

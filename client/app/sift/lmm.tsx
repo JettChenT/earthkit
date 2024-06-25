@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { ingestStream } from "@/lib/rpc";
 import { getHeaders } from "@/lib/supabase/client";
 import { useKy } from "@/lib/api";
+import { useSWRConfig } from "swr";
 
 export type Dependency = {
   satellite: boolean;
@@ -37,6 +38,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
       target_image: false,
     });
     const [outputFormat, setOutputFormat] = useState<OutputFormat>("text");
+    const { mutate } = useSWRConfig();
     let { target_image, getCoords, setCols, updateItemResults } = useSift();
 
     const toggleDependency = (key: keyof Dependency) => {
@@ -84,6 +86,7 @@ export const CustomExtraction = forwardRef<HTMLDivElement>(
         toast.error("Failed to get results");
         return;
       }
+      mutate("/api/usage");
 
       for await (const chunk of ingestStream(res)) {
         if (chunk.type == "ResultsUpdate") {

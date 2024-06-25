@@ -37,6 +37,7 @@ import { parseGeoJsonImport } from "../sift/inout";
 import { AI, ClientMessage, Model } from "./actions";
 import { useOsmGlobs } from "./osmState";
 import { initializeDb, schema } from "./searchSuggestions";
+import { useSWRConfig } from "swr";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -59,6 +60,7 @@ export default function OSM() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
   const { setLatestGeneration, model } = useOsmGlobs();
+  const { mutate } = useSWRConfig();
 
   const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
     setConversation((prevConversation) =>
@@ -183,6 +185,7 @@ export default function OSM() {
             transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
             transitionDuration: "auto",
           });
+          mutate("/api/usage");
         }
       }
     }
