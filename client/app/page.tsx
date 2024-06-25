@@ -13,13 +13,13 @@ export default function Home() {
         </h1>
         <div className="space-x-4 flex items-center">
           <Link
-            href="https://discord.com"
+            href="https://discord.gg/X3YRuwZBNn"
             className="underline text-sm variant-ghost"
           >
             Discord
           </Link>
           <Link
-            href="https://github.com"
+            href="https://github.com/JettChenT/earthkit"
             className="underline text-sm variant-ghost"
           >
             GitHub
@@ -47,7 +47,7 @@ export default function Home() {
         </p>
         <iframe
           className="w-full h-[300px] rounded-md mb-5"
-          src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?si=m3zu3VYFTJFIIEkh&amp;rel=0&amp;modestbranding=1"
+          src="https://www.youtube-nocookie.com/embed/9gNDOzRzFww?si=m3zu3VYFTJFIIEkh&amp;rel=0&amp;modestbranding=1"
           title="YouTube video player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"

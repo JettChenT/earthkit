@@ -1,3 +1,5 @@
-# ml
+# ML
 
-Describe your project here.
+Codebase for backend API based on Modal
+
+Use rye for package management.
