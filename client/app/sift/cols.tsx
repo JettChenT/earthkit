@@ -1,20 +1,4 @@
-import { TableItem, useSift } from "@/app/sift/siftStore";
-import {
-  CellContext,
-  ColumnDef,
-  StringOrTemplateHeader,
-} from "@tanstack/react-table";
-import {
-  ArrowDown01,
-  ArrowDown10,
-  ArrowDownAZ,
-  ArrowDownZA,
-  ArrowUp01,
-  ArrowUpAZ,
-  ArrowUpDown,
-  DotIcon,
-} from "lucide-react";
-import { columnHelper } from "./table";
+import { TableItem } from "@/app/sift/siftStore";
 import Pill, {
   LoadingIfNull,
   NumberPill,
@@ -22,10 +6,19 @@ import Pill, {
   StatusCell,
   StatusNumberMap,
 } from "@/components/pill";
-import { formatValue, isnil } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { formatValue, isnil } from "@/lib/utils";
+import { ColumnDef, StringOrTemplateHeader } from "@tanstack/react-table";
+import {
+  ArrowDown10,
+  ArrowDownZA,
+  ArrowUp01,
+  ArrowUpAZ,
+  ArrowUpDown,
+} from "lucide-react";
 import { toast } from "sonner";
 import { accessProperty } from "./inout";
+import { columnHelper } from "./table";
 
 // hard-coded columns
 export type CoordCol = {
@@ -141,6 +134,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
       case "NumericalCol":
         return columnHelper.accessor(`aux.${col.accessor}`, {
           header: sortableHeader(col.header, "num"),
+          sortUndefined: -1,
           cell: (props) => {
             const val = props.getValue();
             console.log(props);
@@ -165,6 +159,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
       case "TextCol":
         return columnHelper.accessor(`aux.${col.accessor}`, {
           header: sortableHeader(col.header, "text"),
+          sortUndefined: -1,
           cell: (props) => {
             const val = props.getValue();
             let tooltip = col.tooltipAccessor
@@ -183,6 +178,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
       case "BoolCol":
         return columnHelper.accessor(`aux.${col.accessor}`, {
           header: sortableHeader(col.header, "text"),
+          sortUndefined: -1,
           cell: (props) => {
             const val = props.getValue();
             let tooltip = col.tooltipAccessor
@@ -194,7 +190,7 @@ export function compileColDefs(cols: Col[]): ColumnDef<TableItem, any>[] {
                 tooltip={tooltip}
               >
                 <LoadingIfNull
-                  displayOverride={val ? "yes" : "no"}
+                  displayOverride={val ? "Yes" : "No"}
                   value={val}
                   activated={col.isFunCall}
                 />

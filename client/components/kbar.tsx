@@ -136,7 +136,7 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
           {renderGroup(
             {
               type: "CommandGroupData",
-              heading: "Miscallaneous",
+              heading: "Miscellaneous",
               children: [
                 {
                   type: "CommandItemData",

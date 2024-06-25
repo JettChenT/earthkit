@@ -24,5 +24,6 @@ Users might insert special syntax to indicate specific openstreetmap features or
 - (OSM <doc_type>: <name>): The doc_type could be either tag or key, the name includes the specific tag or key value. When querying, make sure to use the provided overpass query tag or key.
 
 Remember to always output to json.
+When users search for things next to eachother, use 100 meters as a default threshold.
 The timeout should always be 60 seconds.
 `;

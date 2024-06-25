@@ -78,7 +78,7 @@ export const accessProperty = (value: any, accessor: string) => {
   let parts = accessor.split(".");
   let res = value;
   for (const part of parts) {
-    if (part in res) {
+    if (res !== null && part in res) {
       res = res[part];
     } else {
       return null;
