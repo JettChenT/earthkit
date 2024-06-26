@@ -45,7 +45,7 @@ export default function RootLayout({
             fontSans.variable
           )}
         >
-          <main className="h-screen w-screen flex overflow-hidden">
+          <main className="h-screen w-screen flex">
             <Sidebar />
             <div className="h-full flex-1 relative"> {children}</div>
             <DefaultKBar />
