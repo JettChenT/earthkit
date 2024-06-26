@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import Sidebar from "@/components/sidebar";
 import { DefaultKBar } from "@/components/kbar";
+import { Analytics } from "@vercel/analytics/react";
 import {
   ClerkProvider,
   SignInButton,
@@ -49,6 +50,7 @@ export default function RootLayout({
             <Sidebar />
             <div className="h-full flex-1 relative"> {children}</div>
             <DefaultKBar />
+            <Analytics />
           </main>
           <Toaster />
         </body>
