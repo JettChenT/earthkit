@@ -184,10 +184,7 @@ export function Chatbox({
   }, [isSignedIn, setModel]);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex-none p-2 bg-white border rounded-md w-full mb-3"
-    >
+    <div className="flex-none p-2 bg-white border rounded-md w-full mb-3">
       <div className="flex-row gap-1 pl-3">
         {images.map((image, idx) => (
           <CancellableImage
@@ -275,10 +272,20 @@ export function Chatbox({
             </SelectContent>
           </Select>
         </div>
-        <Button type="submit" variant="secondary" className="py-0" size={"sm"}>
+        <Button
+          type="button"
+          variant="secondary"
+          className="py-0"
+          size={"sm"}
+          onClick={() => {
+            if (input.length > 0) {
+              handleSubmit();
+            }
+          }}
+        >
           <CornerDownLeft className="size-3 font-bold h-3 w-3" />
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
