@@ -261,7 +261,7 @@ export function Chatbox({
               }
             }}
           >
-            <SelectTrigger className="w-[100px] py-0 h-6 focus:ring-0 text-[12px]">
+            <SelectTrigger className="w-[100px] min-w-24 py-0 h-6 focus:ring-0 text-[12px]">
               {model == "gpt-3.5-turbo" ? "GPT-3.5" : "GPT-4o"}
             </SelectTrigger>
             <SelectContent>
@@ -271,6 +271,11 @@ export function Chatbox({
               </SelectItem>
             </SelectContent>
           </Select>
+          {!isSignedIn && (
+            <span className="text-xs text-gray-500 ml-2 inline-block">
+              Sign up / Log in to use GPT-4o for better performance!
+            </span>
+          )}
         </div>
         <Button
           type="button"
