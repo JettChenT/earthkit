@@ -4,7 +4,6 @@ import inspect
 import modal
 from modal.app import FunctionInfo
 import modal.client
-import modal_proto.api_pb2
 from opentelemetry.propagate import inject, extract
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 from opentelemetry.trace import SpanKind, TracerProvider, get_tracer

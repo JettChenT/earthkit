@@ -8,6 +8,8 @@ from typing import List, Type, TypeVar
 from . import schema, geo
 from .utils import json_encode, proc_im_url, proc_im_url_async
 from .rpc import ResultsUpdate, encode_msg, sse_encode
+from .otel import tracer_provider, meter_provider, OTEL_DEPS
+from .cfig import ENVS
 from . import lmm
 from .auth import get_current_user
 import math
@@ -15,6 +17,7 @@ from .db import verify_cost, get_usage
 import cattrs
 from fastapi.responses import StreamingResponse
 from typing import Any
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geopy==2.4.1", 
@@ -26,8 +29,10 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "pillow==10.2.0", 
     "pyjwt[crypto]==2.8.0",
     "supabase==2.5.1",
-    "redis==5.0.6"
-)
+    "redis==5.0.6",
+    "opentelemetry-instrumentation-fastapi",
+    *OTEL_DEPS
+).env(ENVS)
 
 web_app = FastAPI()
 
@@ -38,6 +43,8 @@ web_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+FastAPIInstrumentor.instrument_app(web_app, tracer_provider=tracer_provider, meter_provider=meter_provider)
 
 app = App("ek-endpoint")
 
