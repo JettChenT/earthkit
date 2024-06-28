@@ -21,7 +21,7 @@ export function UsageBar() {
   data = data as UsageData;
   if (isLoading) return <Skeleton className="h-5 w-full px-6" />;
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger>
           <div className="flex flex-col gap-1 mx-6 bg-muted/60 rounded-md p-3">
@@ -29,7 +29,7 @@ export function UsageBar() {
               {data.remaining} Usage Units Left
             </div>
             <Progress
-              className="h-[10px]"
+              className="h-[10px] bg-gray-100 border border-gray-700 drop-shadow-sm"
               value={(data.remaining / data.quota) * 100}
             />
           </div>
