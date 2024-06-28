@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { FileUploader } from "react-drag-drop-files";
 import { TableEncapsulation, importData } from "./inout";
-import { TableItem, useSift } from "./siftStore";
+import { useSift } from "./siftStore";
 import { MiniDisplayTable } from "./table";
-import { FileInput } from "lucide-react";
 import { compileColDefs, defaultColDefs, defaultCols, mergeCols } from "./cols";
+import { toast } from "sonner";
+import * as Sentry from "@sentry/browser";
 
 function tryParse(content: string, fileName: string) {
   if (fileName.endsWith(".csv")) {
@@ -45,7 +46,14 @@ export function GeoImport({ setOpen }: { setOpen: (open: boolean) => void }) {
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
-        processFileContent(result, file.name);
+        try {
+          processFileContent(result, file.name);
+        } catch (e) {
+          Sentry.captureException(e, { level: "debug" });
+          toast.error(
+            "Invalid Format! Only valid CSV, JSON, and GeoJSON exports are supported."
+          );
+        }
       };
       reader.readAsText(file);
     }
