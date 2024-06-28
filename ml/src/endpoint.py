@@ -18,6 +18,8 @@ import cattrs
 from fastapi.responses import StreamingResponse
 from typing import Any
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+import os
+import sentry_sdk
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geopy==2.4.1", 
@@ -31,8 +33,12 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "supabase==2.5.1",
     "redis==5.0.6",
     "opentelemetry-instrumentation-fastapi",
+    "sentry-sdk[fastapi]",
     *OTEL_DEPS
 ).env(ENVS)
+
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"))
 
 web_app = FastAPI()
 
@@ -175,6 +181,10 @@ async def test_simulate_cost(cost:int=1, user: str = Depends(get_current_user)):
     await verify_cost(user, cost)
     t1 = time.time()
     return {"ok": True, "duration": t1-t0}
+
+@web_app.post("/test/simulate_error")
+async def test_simulate_error():
+    x = 1/0
 
 @app.function(image=image, secrets=[Secret.from_name("oai"), Secret.from_name("earthkit-backend")])
 @asgi_app()

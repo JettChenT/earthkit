@@ -40,6 +40,7 @@ certifi==2022.12.7
     # via modal
     # via pinecone-client
     # via requests
+    # via sentry-sdk
 cffi==1.16.0
     # via cryptography
 charset-normalizer==2.1.1
@@ -74,6 +75,7 @@ executing==2.0.1
 fastapi==0.110.3
     # via ml
     # via modal
+    # via sentry-sdk
 filelock==3.9.0
     # via huggingface-hub
     # via torch
@@ -345,6 +347,8 @@ scikit-learn==1.4.2
     # via pytorch-metric-learning
 scipy==1.13.0
     # via scikit-learn
+sentry-sdk==2.7.1
+    # via ml
 setuptools==69.5.1
     # via lightning-utilities
     # via opentelemetry-instrumentation
@@ -449,6 +453,7 @@ tzdata==2024.1
 urllib3==1.26.13
     # via pinecone-client
     # via requests
+    # via sentry-sdk
 watchfiles==0.21.0
     # via modal
 wcwidth==0.2.13
