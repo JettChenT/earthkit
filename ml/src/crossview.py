@@ -1,5 +1,5 @@
 import modal
-from modal import Secret, Stub, gpu, build, enter, method
+from modal import Secret, App, gpu, build, enter, method
 import torch
 from torchvision import transforms
 from .timmod import TimmModel
@@ -8,7 +8,7 @@ from PIL import Image
 from io import BytesIO
 from typing import List
 
-stub = Stub("crossview")
+app = App("crossview")
 
 image = (
     modal.Image
@@ -26,7 +26,7 @@ image = (
     .copy_local_dir("./weights", "/weights")
 )
 
-@stub.cls(gpu=gpu.A10G(), image=image)
+@app.cls(gpu=gpu.A10G(), image=image)
 class CrossViewModel:
     @build()
     def build(self):
@@ -64,7 +64,7 @@ class CrossViewModel:
 
         return similarity.tolist()
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main():
     from glob import glob
     import pickle
