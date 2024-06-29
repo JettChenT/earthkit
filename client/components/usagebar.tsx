@@ -24,7 +24,7 @@ export function UsageBar() {
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger>
-          <div className="flex flex-col gap-1 bg-muted/60 rounded-md p-3">
+          <div className="flex flex-col gap-1 bg-background border border-input border-gray-300 rounded-md p-3">
             <div className="text-sm w-full text-left">
               {data.remaining} Usage Units Left
             </div>

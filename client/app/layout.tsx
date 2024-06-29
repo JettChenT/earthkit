@@ -48,7 +48,7 @@ export default function RootLayout({
         >
           <main className="h-screen w-screen flex">
             <Sidebar />
-            <div className="h-full flex-1 relative"> {children}</div>
+            <div className="h-full ml-3 flex-1 relative"> {children}</div>
             <DefaultKBar />
             <Analytics />
           </main>
