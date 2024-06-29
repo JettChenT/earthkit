@@ -20,6 +20,7 @@ import { useEKGlobals } from "@/lib/globals";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "./ui/tooltip";
+import { SiDiscord } from "@icons-pack/react-simple-icons";
 
 export type SideBarItem = {
   tool: Tool;
@@ -136,7 +137,12 @@ export default function Sidebar() {
             </Button>
           ))}
         </nav>
-        <div className={cn("flex flex-col gap-2", !sidebarExpanded && "ml-2")}>
+        <div
+          className={cn(
+            "flex flex-col gap-2",
+            sidebarExpanded ? "px-2" : "ml-2"
+          )}
+        >
           {!sidebarExpanded && (
             <Button
               variant={"ghost"}
@@ -148,6 +154,16 @@ export default function Sidebar() {
               <PanelRightIcon className="size-4" />
             </Button>
           )}
+          <Button
+            variant={sidebarExpanded ? "outline" : "ghost"}
+            className={`flex items-center gap-2 hover:text-[#5865F2]`}
+            asChild
+          >
+            <Link href="https://discord.gg/X3YRuwZBNn">
+              <SiDiscord className="size-4" />
+              {sidebarExpanded && "Discord Community"}
+            </Link>
+          </Button>
           <UsageBar />
           <Profile />
         </div>

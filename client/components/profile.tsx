@@ -6,7 +6,7 @@ import { useEKGlobals } from "@/lib/globals";
 export default function Profile() {
   let { sidebarExpanded } = useEKGlobals();
   return (
-    <div className={sidebarExpanded ? "px-6 py-2" : ""}>
+    <div className={sidebarExpanded ? "px-2 py-2" : ""}>
       <SignedIn>
         <div className={sidebarExpanded ? "" : "flex w-full justify-center"}>
           <UserButton
