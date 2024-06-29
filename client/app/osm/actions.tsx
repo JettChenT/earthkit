@@ -20,6 +20,15 @@ import { SYSTEM_PROMPT } from "@/lib/prompting";
 import { auth } from "@clerk/nextjs/server";
 import { Redis } from "@upstash/redis";
 import { verifyCost } from "@/lib/db";
+import { Ratelimit } from "@upstash/ratelimit";
+import { verify } from "crypto";
+import { headers } from "next/headers";
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(3, "1 h"), // Rate limit of 3 LM calls per hour
+  prefix: "osm-anon",
+});
 
 const redis = Redis.fromEnv();
 
@@ -78,12 +87,13 @@ async function sendMessage(
   console.log("images", images.length);
   const { userId } = auth();
 
-  if (!["gpt-3.5-turbo", "gpt-4o"].includes(model)) {
-    throw new Error(`Invalid model: ${model}`);
-  }
-  if (!userId && model === "gpt-4o") {
-    throw new Error("Unauthorized");
-  }
+  // if (!["gpt-3.5-turbo", "gpt-4o"].includes(model)) {
+  //   throw new Error(`Invalid model: ${model}`);
+  // }
+  // if (!userId && model === "gpt-4o") {
+  //   throw new Error("Unauthorized");
+  // }
+  // if (model === "gpt-4o") await verifyCost(redis, userId!, 1);
 
   (async () => {
     if (model === "gpt-4o") await verifyCost(redis, userId!, 1);
@@ -109,6 +119,34 @@ async function sendMessage(
         ],
       },
     ]);
+    upperIndicatorStream.update(<div>Validating...</div>);
+    try {
+      if (userId) {
+        await verifyCost(redis, userId, 1);
+      } else {
+        const ip =
+          headers().get("x-forwarded-for") ||
+          headers().get("x-real-ip") ||
+          headers().get("cf-connecting-ip") ||
+          "unknown";
+        let res = await ratelimit.limit(`anon-${ip}`);
+        if (!res.success) {
+          throw new Error(
+            "Rate limit exceeded. Please create an account to remove the limit."
+          );
+        }
+      }
+    } catch (e) {
+      upperIndicatorStream.done(
+        <div className="text-red-500">
+          {e instanceof Error ? e.message : "Rate limit exceeded"}
+        </div>
+      );
+      progressStream.done({ kind: "done", value: "Rate limit exceeded" });
+      textStream.done();
+      return;
+    }
+
     upperIndicatorStream.update(<div>Embedding...</div>);
     const embd_results = await embed({
       model: openai.embedding("text-embedding-3-small"),

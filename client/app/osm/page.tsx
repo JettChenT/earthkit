@@ -59,7 +59,7 @@ export default function OSM() {
   const { sendMessage } = useActions<typeof AI>();
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
-  const { setLatestGeneration, model } = useOsmGlobs();
+  const { setLatestGeneration } = useOsmGlobs();
   const { mutate } = useSWRConfig();
 
   const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
@@ -80,8 +80,7 @@ export default function OSM() {
   const handleSubmit = async (
     user_input: string,
     sys_results: string[] = [],
-    images: string[] = [],
-    model: Model = "gpt-3.5-turbo"
+    images: string[] = []
   ) => {
     const image_content: ImagePart[] = images.map((image) => ({
       type: "image",
@@ -99,7 +98,7 @@ export default function OSM() {
       user_input,
       sys_results,
       images,
-      model
+      "gpt-4o"
     );
     const generation_id = nanoid();
     setConversation((prev: ClientMessage[]) => [
@@ -214,7 +213,7 @@ export default function OSM() {
         <ChatMessages />
         <Chatbox
           handleSubmit={() => {
-            handleSubmit(input, [], images, model);
+            handleSubmit(input, [], images);
             setInput("");
             setImages([]);
           }}

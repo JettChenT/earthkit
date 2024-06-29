@@ -174,14 +174,12 @@ export function Chatbox({
     }
   };
 
-  let { model, setModel } = useOsmGlobs();
+  let { setModel } = useOsmGlobs();
 
   let { isSignedIn } = useUser();
   useEffect(() => {
-    if (isSignedIn) {
-      setModel("gpt-4o");
-    }
-  }, [isSignedIn, setModel]);
+    setModel("gpt-4o");
+  }, [setModel]);
 
   return (
     <div className="flex-none p-2 bg-white border rounded-md w-full mb-3">
@@ -253,27 +251,9 @@ export function Chatbox({
           >
             @ Locations
           </Button>
-          <Select
-            value={model}
-            onValueChange={(value) => {
-              if (["gpt-3.5-turbo", "gpt-4o"].includes(value)) {
-                setModel(value as Model);
-              }
-            }}
-          >
-            <SelectTrigger className="w-[100px] min-w-24 py-0 h-6 focus:ring-0 text-[12px]">
-              {model == "gpt-3.5-turbo" ? "GPT-3.5" : "GPT-4o"}
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="gpt-3.5-turbo">GPT-3.5</SelectItem>
-              <SelectItem value="gpt-4o" disabled={!isSignedIn}>
-                GPT-4o {!isSignedIn && "(requires sign-in)"}
-              </SelectItem>
-            </SelectContent>
-          </Select>
           {!isSignedIn && (
             <span className="text-xs text-gray-500 ml-2 inline-block">
-              Sign up / Log in to use GPT-4o for better performance!
+              Not signed in; limited to 3 queries per hour.
             </span>
           )}
         </div>
