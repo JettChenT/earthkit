@@ -36,7 +36,7 @@ import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
-import { useKy } from "@/lib/api";
+import { useKy } from "@/lib/api-client/api";
 import { useSWRConfig } from "swr";
 
 const selectedFeatureIndexes: number[] = [];

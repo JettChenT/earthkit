@@ -1,6 +1,6 @@
 "use client";
 
-import useClerkSWR from "@/lib/api";
+import useClerkSWR from "@/lib/api-client/api";
 import { Skeleton } from "./ui/skeleton";
 import { Progress } from "./ui/progress";
 import { UsageData } from "@/lib/db";

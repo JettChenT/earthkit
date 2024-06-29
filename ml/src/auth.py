@@ -1,4 +1,5 @@
-from fastapi import HTTPException, status, Depends
+from typing import Optional
+from fastapi import HTTPException, Request, status, Depends
 import jwt
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from pydantic import BaseModel
@@ -8,7 +9,7 @@ import os
 PUB_KEY = base64.b64decode(os.getenv("JWT_PK") or "")
 ALGORITHM = "RS256"
 
-oauth2_scheme = OAuth2AuthorizationCodeBearer(authorizationUrl="foo", tokenUrl="token")
+oauth2_scheme = OAuth2AuthorizationCodeBearer(authorizationUrl="foo", tokenUrl="token", auto_error=False)
 
 class Token(BaseModel):
     access_token: str
@@ -32,5 +33,7 @@ def decode_access_token(token: str):
         raise credentials_exception
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: Optional[str] = Depends(oauth2_scheme, use_cache=False)):
+    if token is None:
+        return None
     return decode_access_token(token)

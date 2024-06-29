@@ -1,0 +1,2 @@
+gen-api:
+    dotenvy -f .env.local bun run generate-api-client

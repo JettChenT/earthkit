@@ -1,22 +1,37 @@
 "use client";
 import ky from "ky";
-import { API_URL } from "./constants";
+import { API_URL } from "../constants";
 import useSWR, { useSWRConfig } from "swr";
 import { useAuth } from "@clerk/nextjs";
+import createClient, { Middleware } from "openapi-fetch";
+import type { paths } from "./schema";
 
 export function useKy() {
   const { getToken } = useAuth();
   const getKyInst = async () => {
+    const token = await getToken();
     let kyInst = ky.create({
       prefixUrl: API_URL,
       timeout: 1000 * 60 * 5, // 5 minutes
-      headers: {
-        Authorization: `Bearer ${await getToken()}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     return kyInst;
   };
   return getKyInst;
+}
+
+export function useAPIClient() {
+  const { getToken } = useAuth();
+  const getClient = async () => {
+    const token = await getToken();
+    console.debug("token", token);
+    let client = createClient<paths>({
+      baseUrl: API_URL,
+      headers: token !== null ? { Authorization: `Bearer ${token}` } : {},
+    });
+    return client;
+  };
+  return getClient;
 }
 
 export default function useClerkSWR(url: string) {

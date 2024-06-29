@@ -1,10 +1,11 @@
 from modal import App, asgi_app, Secret
-from fastapi import Depends, FastAPI, WebSocket
-from fastapi.encoders import jsonable_encoder
+from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import modal
-from typing import List, Type, TypeVar
+from typing import List, Optional
 from . import schema, geo
 from .utils import json_encode, proc_im_url, proc_im_url_async
 from .rpc import ResultsUpdate, encode_msg, sse_encode
@@ -13,17 +14,18 @@ from .cfig import ENVS
 from . import lmm
 from .auth import get_current_user
 import math
-from .db import verify_cost, get_usage
+from .db import verify_cost, get_usage, ratelimit
 import cattrs
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from typing import Any
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from fastapi.openapi.utils import get_openapi
 import os
 import sentry_sdk
 
 image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geopy==2.4.1", 
-    "requests==2.28.1", 
+    "requests==2.32.3", 
     "websockets==12.0", 
     "cattrs==23.2.3", 
     "openai==1.30.4", 
@@ -32,8 +34,11 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "pyjwt[crypto]==2.8.0",
     "supabase==2.5.1",
     "redis==5.0.6",
+    "fastapi==0.111.0",
     "opentelemetry-instrumentation-fastapi",
     "sentry-sdk[fastapi]",
+    "upstash-ratelimit==1.1.0",
+    "upstash-redis==1.1.0",
     *OTEL_DEPS
 ).env(ENVS)
 
@@ -51,6 +56,10 @@ web_app.add_middleware(
 )
 
 FastAPIInstrumentor.instrument_app(web_app, tracer_provider=tracer_provider, meter_provider=meter_provider)
+
+
+def get_ip(request: Request):
+    return request.client.host
 
 app = App("ek-endpoint")
 
@@ -89,8 +98,11 @@ class GeoclipRequest(BaseModel):
     top_k: int = 100
 
 @web_app.post('/geoclip')
-async def geoclip_inference(request: GeoclipRequest, user: str = Depends(get_current_user)):
-    await verify_cost(user, 1)
+async def geoclip_inference(request: GeoclipRequest, user: Optional[str] = Depends(get_current_user), request_ip: str = Depends(get_ip)) -> list[schema.Point]:
+    if user is None:
+        await ratelimit(request_ip)
+    else:
+        await verify_cost(user, 1)
     c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
     print("downloading image...")
     img = await proc_im_url_async(request.image_url)
@@ -166,7 +178,10 @@ async def lmm_streaming(request: lmm.LmmRequest, user: str = Depends(get_current
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @web_app.get("/test/echo-user")
-async def test_user(user: str = Depends(get_current_user)):
+async def test_user(user: Optional[str] = Depends(get_current_user), ip=Depends(get_ip)):
+    if user is None:
+        await ratelimit(ip)
+        return {"user": None}
     import time
     t0 = time.time()
     usage = await get_usage(user)
@@ -185,6 +200,19 @@ async def test_simulate_cost(cost:int=1, user: str = Depends(get_current_user)):
 @web_app.post("/test/simulate_error")
 async def test_simulate_error():
     x = 1/0
+
+@web_app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(content={"detail": str(exc)}, status_code=422)
+
+def custom_openapi():
+    if web_app.openapi_schema:return web_app.openapi_schema
+    openapi_schema = get_openapi(title="Earthkit API", version="0.1.0", routes=web_app.routes)
+    openapi_schema["components"]["schemas"]["HTTPValidationError"] = {"title": "HTTPValidationError", "type": "object", "properties": {"detail": {"type": "string"}}}
+    web_app.openapi_schema = openapi_schema
+    return web_app.openapi_schema
+
+web_app.openapi = custom_openapi
 
 @app.function(image=image, secrets=[Secret.from_name("oai"), Secret.from_name("earthkit-backend")])
 @asgi_app()

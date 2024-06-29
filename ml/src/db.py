@@ -1,16 +1,20 @@
 import os
 from attr import define
 from fastapi import HTTPException
-import redis.asyncio as redis
+from .auth import credentials_exception
+from upstash_redis.asyncio import Redis
+from upstash_ratelimit.asyncio import Ratelimit, FixedWindow
 
 DEFAULT_CREDIT=500
 
 async def get_client():
-    return await redis.Redis(
-        host=os.getenv("REDIS_HOST") or "localhost",
-        port=int(os.getenv("REDIS_PORT") or 6379),
-        password=os.getenv("REDIS_PASSWORD"),
-        ssl=True
+    return Redis.from_env()
+
+async def get_anon_ratelimit():
+    return Ratelimit(
+        await get_client(),
+        FixedWindow(20, 60*60),
+        prefix="earthkit-anon-ratelimit"
     )
 
 @define
@@ -19,6 +23,8 @@ class UsageData:
     remaining: int
 
 async def get_usage(user:str):
+    if user is None:
+        raise credentials_exception
     client = await get_client()
     remaining, quota = await client.hmget(user, "remaining", "quota") 
     if remaining is None:
@@ -27,6 +33,8 @@ async def get_usage(user:str):
     return UsageData(quota=int(quota), remaining=int(remaining))
 
 async def verify_cost(user:str, cost:int):
+    if user is None:
+        raise credentials_exception
     assert cost >= 0
     client = await get_client()
     remaining = await client.hincrby(user, "remaining", -cost)
@@ -43,3 +51,12 @@ async def verify_cost(user:str, cost:int):
             detail=f"Quota exceeded. This operation requires a credit of at least {cost}. You have {remaining + cost} credits remaining."
         )
     return remaining
+
+async def ratelimit(ip:str):
+    ratelimit = await get_anon_ratelimit()
+    res = await ratelimit.limit(ip)
+    if not res.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit reached! Please sign up for an account to continue. Free usage units will be granted on sign-up."
+        )

@@ -17,7 +17,8 @@ import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useKy } from "@/lib/api";
+import { useAPIClient, useKy } from "@/lib/api-client/api";
+import { toast } from "sonner";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -25,49 +26,55 @@ export default function GeoCLIP() {
   const [predictions, setPredictions] = useState<Coords | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
   const getKyInst = useKy();
+  const getClient = useAPIClient();
 
   const onInference = async () => {
     setIsRunning(true);
     setPredictions(null);
-    let kyInst = await getKyInst();
-    kyInst
-      .post(`geoclip`, {
-        json: {
-          image_url: image,
-          top_k: 100,
-        },
-      })
-      .then((res) => res.json())
-      .then((data: any) => {
-        console.log(data);
-        const max_conf = Math.max(...data.map((d: any) => d.aux.pred));
-        const adjusted_data: Coords = {
-          coords: data.map((d: any) => {
-            d.aux.conf = Math.sqrt(d.aux.pred / max_conf);
-            return d;
-          }),
-        };
-        setPredictions(adjusted_data);
-        setIsRunning(false);
-        const vp = layer.context.viewport as WebMercatorViewport;
-        const bounds = getbbox(adjusted_data);
-        console.log(adjusted_data);
-        console.log(bounds);
-        const { longitude, latitude, zoom } = vp.fitBounds(
-          [
-            [bounds.lo.lat, bounds.lo.lon],
-            [bounds.hi.lat, bounds.hi.lon],
-          ],
-          { padding: 100 }
-        );
-        setViewState({
-          longitude,
-          latitude,
-          zoom: Math.max(zoom - 2, 2),
-          transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
-          transitionDuration: "auto",
-        });
-      });
+    let apiClient = await getClient();
+    if (!image) {
+      toast.error("Please upload an image");
+      setIsRunning(false);
+      return;
+    }
+    const { data, error } = await apiClient.POST("/geoclip", {
+      body: {
+        image_url: image,
+        top_k: 100,
+      },
+    });
+    if (error) {
+      toast.error(error.detail);
+      setIsRunning(false);
+      return;
+    }
+    const max_conf = Math.max(...data.map((d: any) => d.aux.pred));
+    const adjusted_data: Coords = {
+      coords: data.map((d: any) => {
+        d.aux.conf = Math.sqrt(d.aux.pred / max_conf);
+        return d;
+      }),
+    };
+    setPredictions(adjusted_data);
+    setIsRunning(false);
+    const vp = layer.context.viewport as WebMercatorViewport;
+    const bounds = getbbox(adjusted_data);
+    console.log(adjusted_data);
+    console.log(bounds);
+    const { longitude, latitude, zoom } = vp.fitBounds(
+      [
+        [bounds.lo.lat, bounds.lo.lon],
+        [bounds.hi.lat, bounds.hi.lon],
+      ],
+      { padding: 100 }
+    );
+    setViewState({
+      longitude,
+      latitude,
+      zoom: Math.max(zoom - 2, 2),
+      transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
+      transitionDuration: "auto",
+    });
   };
 
   const onCancel = () => {
@@ -130,7 +137,6 @@ export default function GeoCLIP() {
           <Button
             className={`mt-3 w-full`}
             disabled={!image || isRunning}
-            requireLogin
             onClick={onInference}
           >
             {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}

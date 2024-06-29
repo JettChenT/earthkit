@@ -27,7 +27,7 @@ const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
 });
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useSWRConfig } from "swr";
-import { useKy } from "@/lib/api";
+import { useKy } from "@/lib/api-client/api";
 import { toast } from "sonner";
 
 const selectedFeatureIndexes: number[] = [];

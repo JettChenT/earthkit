@@ -12,7 +12,7 @@ import ky from "ky";
 import { API_URL } from "@/lib/constants";
 import { toast } from "sonner";
 import { ingestStream } from "@/lib/rpc";
-import { useKy } from "@/lib/api";
+import { useKy } from "@/lib/api-client/api";
 import { useSWRConfig } from "swr";
 
 export type Dependency = {

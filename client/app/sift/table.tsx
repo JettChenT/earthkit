@@ -71,7 +71,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CommandBar, Listener, useListeners } from "@/components/kbar";
-import { useKy } from "@/lib/api";
+import { useKy } from "@/lib/api-client/api";
 import { useSWRConfig } from "swr";
 
 export const columnHelper = createColumnHelper<TableItem>();
@@ -357,8 +357,8 @@ function GetStarted() {
         <Dialog open={importOpen} onOpenChange={setImportOpen}>
           <DialogTrigger asChild>
             <GSCard
-              title="Import File"
-              description="Import geojson, csv, json..."
+              title="Import Coordinates"
+              description="Import coordinates from file (geojson, csv, json...)"
               icon={<FileInput className="size-5" />}
             />
           </DialogTrigger>
