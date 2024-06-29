@@ -38,6 +38,7 @@ import { AI, ClientMessage, Model } from "./actions";
 import { useOsmGlobs } from "./osmState";
 import { initializeDb, schema } from "./searchSuggestions";
 import { useSWRConfig } from "swr";
+import { useAuth } from "@clerk/nextjs";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -61,6 +62,7 @@ export default function OSM() {
   const [db, setDb] = useState<Orama<typeof schema> | null>(null);
   const { setLatestGeneration } = useOsmGlobs();
   const { mutate } = useSWRConfig();
+  const { isLoaded, isSignedIn } = useAuth();
 
   const updateConversation = (id: string, newData: Partial<ClientMessage>) => {
     setConversation((prevConversation) =>
@@ -184,7 +186,7 @@ export default function OSM() {
             transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
             transitionDuration: "auto",
           });
-          mutate("/api/usage");
+          if (isLoaded && isSignedIn) mutate("/api/usage");
         }
       }
     }

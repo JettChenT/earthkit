@@ -9,7 +9,8 @@ APP_NAMES = [
     "satellite",
     "streetview_dl",
     "vpr",
-    "crossview"
+    "crossview",
+    "satellite"
 ]
 
 @app.command()

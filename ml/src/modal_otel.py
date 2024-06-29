@@ -88,13 +88,13 @@ class _InstrumentedApp(App):
         serialized = kwargs.get("serialized", False)
         name_override = kwargs.get("name_override", None)
         @wraps(in_wrapped)
-        def wr_wrapped(f, _cls=None):
+        def wr_wrapped(f):
             f_info = FunctionInfo(
-                f, serialized=serialized, name_override=name_override, cls=_cls
+                f, serialized=serialized, name_override=name_override
             )
             span_name = f"{self.name}.{f_info.get_tag()}"
             wrapped_f = wrap_function_span(f, tracer, span_name)
-            return in_wrapped(wrapped_f, _cls)
+            return in_wrapped(wrapped_f)
         return wr_wrapped
 
 def patched_method(*args, **kwargs):

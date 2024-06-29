@@ -1,7 +1,14 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { API_URL, MAPBOX_TOKEN, RAW_API_URL } from "@/lib/constants";
-import { Bounds, Coords, Point, applyResultsUpdate } from "@/lib/geo";
+import {
+  Bounds,
+  Coords,
+  Point,
+  applyResultsUpdate,
+  getGridSample,
+  getbbox,
+} from "@/lib/geo";
 import {
   DrawRectangleMode,
   EditableGeoJsonLayer,
@@ -36,9 +43,17 @@ import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
-import { useKy } from "@/lib/api-client/api";
+import { useAPIClient, useKy } from "@/lib/api-client/api";
 import { useSWRConfig } from "swr";
+import { toast } from "sonner";
+import {
+  AlertCircle,
+  CircleAlertIcon,
+  MessageCircleWarningIcon,
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const SAMPLE_UPPER_LIMIT = 1000;
 const selectedFeatureIndexes: number[] = [];
 
 export default function StreetView() {
@@ -48,7 +63,7 @@ export default function StreetView() {
   const [sampling, setSampling] = useState(false);
   const [locating, setLocating] = useState(false);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
-  const getKyInst = useKy();
+  const getApiClient = useAPIClient();
   const [distKm, setDistKm] = useState(0.05);
   const deckRef = useRef<DeckGLRef>(null);
   const [featCollection, setFeatCollection] = useState<FeatureCollection>({
@@ -66,6 +81,7 @@ export default function StreetView() {
   const [topN, setTopN] = useState(20);
   const router = useRouter();
   const mapRef = useRef<MapRef>(null);
+
   const viewMode = useMemo(() => {
     let vm = selecting ? DrawRectangleMode : ViewMode;
     vm.prototype.handlePointerMove = ({ mapCoords }) => {
@@ -77,6 +93,7 @@ export default function StreetView() {
     };
     return vm;
   }, [selecting]);
+
   const viewedLocated = useMemo(() => {
     return located
       ? locating
@@ -84,6 +101,37 @@ export default function StreetView() {
         : located.coords.slice(0, topN)
       : null;
   }, [located, topN, locating]);
+
+  const getBounds = useCallback(() => {
+    if (featCollection.features.length === 0) return null;
+    const coordinates = (
+      featCollection.features[0].geometry.coordinates[0] as any as [
+        number,
+        number
+      ][]
+    ).map((coord: [number, number]) => ({ lon: coord[0], lat: coord[1] }));
+    const bbox = getbbox(coordinates);
+    const bounds: Bounds = {
+      lo: { ...bbox.lo, aux: {} },
+      hi: { ...bbox.hi, aux: {} },
+    };
+    return bounds;
+  }, [featCollection]);
+
+  const { samplePreview, sampleIsOverflowed } = useMemo(() => {
+    const bounds = getBounds();
+    if (!bounds || featCollection.features.length === 0 || distKm == 0)
+      return { samplePreview: null, sampleIsOverflowed: false };
+    try {
+      let res = getGridSample(bounds, distKm);
+      return {
+        samplePreview: res,
+        sampleIsOverflowed: res.length > SAMPLE_UPPER_LIMIT,
+      };
+    } catch (e) {
+      return { samplePreview: null, sampleIsOverflowed: true };
+    }
+  }, [featCollection, distKm]);
 
   const layer = new EditableGeoJsonLayer({
     id: "geojson-layer",
@@ -109,6 +157,17 @@ export default function StreetView() {
     radiusMinPixels: 2,
     radiusMaxPixels: 100,
     visible: !!sampled && !located,
+  });
+
+  const samplePreviewLayer = new ScatterplotLayer({
+    id: "sample-preview-layer",
+    data: samplePreview,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d) => 1,
+    getFillColor: (d) => (sampleIsOverflowed ? [255, 0, 0] : [171, 157, 120]),
+    radiusScale: 1,
+    radiusMinPixels: 2,
+    radiusMaxPixels: 100,
   });
 
   const locateResultsLayer = new ScatterplotLayer<Point>({
@@ -145,58 +204,53 @@ export default function StreetView() {
     setSelected(true);
     setSelecting(false);
     console.log(featCollection);
-    const bounds: Bounds = {
-      lo: {
-        // @ts-ignore
-        lat: featCollection.features[0].geometry.coordinates[0][0][1],
-        // @ts-ignore
-        lon: featCollection.features[0].geometry.coordinates[0][0][0],
-        aux: {},
+    const bounds = getBounds();
+    if (!bounds) {
+      toast.error("No sample boundary found");
+      return;
+    }
+    const apiClient = await getApiClient();
+    let { data, error } = await apiClient.POST("/streetview/sample", {
+      body: {
+        bounds: bounds,
+        dist_km: distKm,
       },
-      hi: {
-        // @ts-ignore
-        lat: featCollection.features[0].geometry.coordinates[0][2][1],
-        // @ts-ignore
-        lon: featCollection.features[0].geometry.coordinates[0][2][0],
-        aux: {},
-      },
-    };
-    const kyInst = await getKyInst();
-    kyInst
-      .post(`streetview/sample`, {
-        timeout: false,
-        json: {
-          bounds,
-          dist_km: distKm,
-        },
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setSampled(data as Coords);
-        setSampling(false);
-      });
+    });
+    if (error) {
+      toast.error(error.detail);
+      return;
+    }
+    setSampled(data as Coords);
+    setSampling(false);
   };
 
   const { mutate } = useSWRConfig();
 
   const onLocate = async () => {
+    if (!image) {
+      throw new Error("No image provided");
+    }
     const payload = {
       image_url: image,
       coords: { coords: sampled!.coords },
     };
 
-    const kyInst = await getKyInst();
-    const response = await kyInst.post(`streetview/locate/streaming`, {
-      timeout: false,
-      json: payload,
-    });
+    const apiClient = await getApiClient();
+    const { response, error } = await apiClient.POST(
+      "/streetview/locate/streaming",
+      {
+        body: payload,
+      }
+    );
+
+    if (error) {
+      toast.error(error.detail);
+      return;
+    }
 
     if (!response.ok) {
-      throw new Error(`Failed to start locate: ${response.statusText}`);
-    }
-    if (!response.body) {
-      throw new Error("Failed to start locate: API returned no response body");
+      toast.error(`Failed to start locate: STATUS ${response.statusText}`);
+      return;
     }
 
     mutate("/api/usage");
@@ -246,10 +300,19 @@ export default function StreetView() {
   const activeLayers = useMemo(() => {
     if (located) {
       return [layer, locateResultsLayer];
-    } else {
+    } else if (sampled?.coords.length && sampled.coords.length > 0) {
       return [layer, sampledLayer];
+    } else {
+      return [layer, samplePreviewLayer];
     }
-  }, [located, sampled, layer, locateResultsLayer, sampledLayer]);
+  }, [
+    located,
+    sampled,
+    layer,
+    locateResultsLayer,
+    sampledLayer,
+    samplePreviewLayer,
+  ]);
 
   return (
     <div>
@@ -289,7 +352,7 @@ export default function StreetView() {
             image={image}
             className="border-stone-400"
           />
-          <Label htmlFor="dist-slider">Sample Density: {distKm * 1000} m</Label>
+          <Label htmlFor="dist-slider">Sample Gap: {distKm * 1000} m</Label>
           <Slider
             id="dist-slider"
             value={[distKm]}
@@ -301,7 +364,11 @@ export default function StreetView() {
           {selecting || selected ? (
             <div className="flex flex-row gap-2">
               <Button
-                disabled={featCollection.features.length === 0 || sampling}
+                disabled={
+                  featCollection.features.length === 0 ||
+                  sampling ||
+                  sampleIsOverflowed === true
+                }
                 onClick={() => {
                   console.log(featCollection);
                   onSample();
@@ -326,6 +393,15 @@ export default function StreetView() {
             <Button onClick={() => setSelecting(true)}>
               Select Search Range
             </Button>
+          )}
+          {sampleIsOverflowed && (
+            <Alert variant="destructive" className="bg-white bg-opacity-75">
+              <AlertCircle className="size-4" />
+              <AlertTitle>Too many samples!</AlertTitle>
+              <AlertDescription>
+                Please increase the sample gap or decrease the search area.
+              </AlertDescription>
+            </Alert>
           )}
           <Button
             onClick={locateWrapper}

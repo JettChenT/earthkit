@@ -58,7 +58,7 @@ export default function GeoCLIP() {
     setPredictions(adjusted_data);
     setIsRunning(false);
     const vp = layer.context.viewport as WebMercatorViewport;
-    const bounds = getbbox(adjusted_data);
+    const bounds = getbbox(adjusted_data.coords);
     console.log(adjusted_data);
     console.log(bounds);
     const { longitude, latitude, zoom } = vp.fitBounds(

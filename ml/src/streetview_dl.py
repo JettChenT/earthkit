@@ -3,7 +3,7 @@ from .otel import instrument, OTEL_DEPS, get_tracer, ENVS
 instrument()
 
 import modal
-from modal import Stub
+from modal import App
 from typing import List
 from .streetview import search_panoramas, get_panorama_async, search_panoramas_async, fetch_single_pano
 from .geo import Coords, Point, Bounds, Distance
@@ -11,9 +11,8 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from aiostream import stream, pipe, streamcontext
 from .rpc import MsgType, ProgressUpdate, ResultsUpdate
-import time
 
-stub = Stub("streetview-locate")
+app = App("streetview-locate")
 
 sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
     "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0", "cattrs==23.2.3", *OTEL_DEPS
@@ -35,7 +34,7 @@ def fetch_panoramas(coord: Point):
         )
     return res
 
-@stub.function(image=sv_image)
+@app.function(image=sv_image)
 def sample_streetviews(bounds: Bounds, interval: Distance):
     sampled = bounds.sample(interval)
     pnts = {}
@@ -93,7 +92,7 @@ def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
     return cropped_images
 
 
-@stub.function(image=sv_image)
+@app.function(image=sv_image)
 async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
     # TODO: clarify flow & dedup based on panoid
     tracer = get_tracer()
@@ -181,7 +180,7 @@ async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=36
     
 
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 async def main():
     import dotenv
     import pickle
