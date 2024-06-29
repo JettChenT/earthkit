@@ -11,6 +11,7 @@ import {
   Glasses,
   ArrowLeftToLineIcon,
   PanelRightIcon,
+  KeyboardIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,6 +22,7 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "./ui/tooltip";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
+import Kbd, { KbdContainer, MetaKey } from "./keyboard";
 
 export type SideBarItem = {
   tool: Tool;
@@ -154,6 +156,23 @@ export default function Sidebar() {
               <PanelRightIcon className="size-4" />
             </Button>
           )}
+          <Button
+            variant={sidebarExpanded ? "outline" : "ghost"}
+            onClick={() => {
+              document.dispatchEvent(new CustomEvent("OpenKbar"));
+            }}
+            className="flex items-center gap-2"
+            toolTip={
+              <KbdContainer>
+                <MetaKey />
+                <Kbd>K</Kbd>
+              </KbdContainer>
+            }
+            side="right"
+          >
+            <KeyboardIcon className="size-4" />
+            {sidebarExpanded && "Command Palette"}
+          </Button>
           <Button
             variant={sidebarExpanded ? "outline" : "ghost"}
             className={`flex items-center gap-2 hover:text-[#5865F2]`}

@@ -14,14 +14,7 @@ import ImageUpload from "@/components/widgets/imageUpload";
 import { cn } from "@/lib/utils";
 import { getPillColorCn, statusToPillColor } from "@/components/pill";
 import { Label } from "@/components/ui/label";
-
-const Kbd = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <span className="inline-block shadow-sm bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2 py-1 rounded">
-      {children}
-    </span>
-  );
-};
+import Kbd from "@/components/keyboard";
 
 const LabelButton = ({
   status,

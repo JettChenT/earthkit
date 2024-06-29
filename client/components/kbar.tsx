@@ -61,8 +61,15 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
         setOpen((open) => !open);
       }
     };
+    const openBar = () => {
+      setOpen(true);
+    };
     document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener("OpenKbar", openBar);
+    return () => {
+      document.removeEventListener("keydown", down);
+      document.removeEventListener("OpenKbar", openBar);
+    };
   }, []);
   const runCommand = (fnc: () => unknown) => {
     setOpen(false);
