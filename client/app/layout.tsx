@@ -52,7 +52,7 @@ export default function RootLayout({
             <DefaultKBar />
             <Analytics />
           </main>
-          <Toaster />
+          <Toaster richColors />
         </body>
       </html>
     </ClerkProvider>
