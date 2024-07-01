@@ -54,7 +54,7 @@ export default function RootLayout({
             <Analytics />
             <SpeedInsights />
           </main>
-          <Toaster richColors />
+          <Toaster richColors theme="light" />
         </body>
       </html>
     </ClerkProvider>

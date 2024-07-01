@@ -29,8 +29,11 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useHotkeys } from "react-hotkeys-hook";
+import Kbd, { MetaKey } from "../keyboard";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -144,6 +147,13 @@ export default function GeoCLIP() {
       : null;
   }, []);
 
+  const copyCoords = useCallback(() => {
+    navigator.clipboard.writeText(`${cursorCoords.lat}, ${cursorCoords.lon}`);
+    toast.success("Copied coordinates to clipboard");
+  }, [cursorCoords]);
+
+  useHotkeys("Meta+C", copyCoords);
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -153,6 +163,7 @@ export default function GeoCLIP() {
             controller
             layers={[layer, trackingLayer]}
             getTooltip={getTooltip}
+            getCursor={(st) => (st.isDragging ? "grabbing" : "crosshair")}
           >
             <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
             <OperationContainer className="w-64">
@@ -196,18 +207,20 @@ export default function GeoCLIP() {
               </div>
             </OperationContainer>
           </DeckGL>
-          <LatLngDisplay cursorCoords={cursorCoords} />
+          <LatLngDisplay
+            className="bottom-10"
+            showShortcuts
+            cursorCoords={cursorCoords}
+          />
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem
-          onSelect={() => {
-            navigator.clipboard.writeText(
-              `${cursorCoords.lat}, ${cursorCoords.lon}`
-            );
-          }}
-        >
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem onSelect={copyCoords}>
           <CopyIcon className="w-4 h-4 mr-2" /> Copy Coordinates
+          <ContextMenuShortcut>
+            <MetaKey noWrap />
+            +C
+          </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
