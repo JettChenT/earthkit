@@ -11,7 +11,7 @@ import {
   PickingInfo,
   WebMercatorViewport,
 } from "deck.gl";
-import { Loader2 } from "lucide-react";
+import { CopyIcon, Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Map } from "react-map-gl/maplibre";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
@@ -25,6 +25,12 @@ import {
   ViewMode,
 } from "@deck.gl-community/editable-layers";
 import LatLngDisplay from "../widgets/InfoBar";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -139,56 +145,71 @@ export default function GeoCLIP() {
   }, []);
 
   return (
-    <div className="w-full h-full relative p-2 overflow-hidden">
-      <DeckGL
-        initialViewState={viewState}
-        controller
-        layers={[layer, trackingLayer]}
-        getTooltip={getTooltip}
-      >
-        <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
-        <OperationContainer className="w-64">
-          <article className="prose prose-sm leading-5 mb-2">
-            <h3>GeoCLIP Geoestimation</h3>
-            <a
-              className="text-primary"
-              href="https://github.com/VicenteVivan/geo-clip"
-            >
-              GeoCLIP
-            </a>{" "}
-            predicts the location of an image based on its visual features.
-          </article>
-          <ImageUpload
-            onSetImage={(img) => {
-              setImage(img);
-            }}
-            // onUploadBegin={() => {
-            //   fetch(`${API_URL}/geoclip/poke`);
-            // }}
-            image={image}
-          />
-          <div className="flex flex-col items-center">
-            <Button
-              className={`mt-3 w-full`}
-              disabled={!image || isRunning}
-              onClick={onInference}
-            >
-              {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
-              {isRunning ? "Predicting..." : "Predict"}
-            </Button>
-            {image && (
-              <Button
-                className={`mt-3 w-full`}
-                variant="secondary"
-                onClick={onCancel}
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
-        </OperationContainer>
-      </DeckGL>
-      <LatLngDisplay cursorCoords={cursorCoords} />
-    </div>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div className="w-full h-full relative p-2 overflow-hidden">
+          <DeckGL
+            initialViewState={viewState}
+            controller
+            layers={[layer, trackingLayer]}
+            getTooltip={getTooltip}
+          >
+            <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
+            <OperationContainer className="w-64">
+              <article className="prose prose-sm leading-5 mb-2">
+                <h3>GeoCLIP Geoestimation</h3>
+                <a
+                  className="text-primary"
+                  href="https://github.com/VicenteVivan/geo-clip"
+                >
+                  GeoCLIP
+                </a>{" "}
+                predicts the location of an image based on its visual features.
+              </article>
+              <ImageUpload
+                onSetImage={(img) => {
+                  setImage(img);
+                }}
+                // onUploadBegin={() => {
+                //   fetch(`${API_URL}/geoclip/poke`);
+                // }}
+                image={image}
+              />
+              <div className="flex flex-col items-center">
+                <Button
+                  className={`mt-3 w-full`}
+                  disabled={!image || isRunning}
+                  onClick={onInference}
+                >
+                  {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
+                  {isRunning ? "Predicting..." : "Predict"}
+                </Button>
+                {image && (
+                  <Button
+                    className={`mt-3 w-full`}
+                    variant="secondary"
+                    onClick={onCancel}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </OperationContainer>
+          </DeckGL>
+          <LatLngDisplay cursorCoords={cursorCoords} />
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem
+          onSelect={() => {
+            navigator.clipboard.writeText(
+              `${cursorCoords.lat}, ${cursorCoords.lon}`
+            );
+          }}
+        >
+          <CopyIcon className="w-4 h-4 mr-2" /> Copy Coordinates
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
