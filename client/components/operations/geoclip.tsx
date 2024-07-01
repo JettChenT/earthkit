@@ -6,12 +6,13 @@ import {
   DeckGL,
   FlyToInterpolator,
   HeatmapLayer,
+  Layer,
   MapViewState,
   PickingInfo,
   WebMercatorViewport,
 } from "deck.gl";
 import { Loader2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Map } from "react-map-gl/maplibre";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
@@ -19,6 +20,11 @@ import OperationContainer from "@/components/widgets/ops";
 import { useAPIClient, useKy } from "@/lib/api-client/api";
 import { toast } from "sonner";
 import "maplibre-gl/dist/maplibre-gl.css";
+import {
+  EditableGeoJsonLayer,
+  ViewMode,
+} from "@deck.gl-community/editable-layers";
+import LatLngDisplay from "../widgets/InfoBar";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -97,6 +103,33 @@ export default function GeoCLIP() {
     radiusPixels: 25,
   });
 
+  // HACK: uses editable layers when it's probably not necessary
+  // TODO: make this a useCursorCoords thing
+  const [cursorCoords, setCursorCoords] = useState<Point>({
+    lat: 0,
+    lon: 0,
+    aux: null,
+  });
+  const trackingVm = useMemo(() => {
+    let vm = ViewMode;
+    vm.prototype.handlePointerMove = ({ mapCoords }) => {
+      setCursorCoords({
+        lon: mapCoords[0],
+        lat: mapCoords[1],
+        aux: null,
+      });
+    };
+    return vm;
+  }, []);
+  const trackingLayer = new EditableGeoJsonLayer({
+    id: "tracking-layer",
+    data: {
+      type: "FeatureCollection",
+      features: [],
+    },
+    mode: trackingVm,
+  });
+
   const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
     return object
       ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
@@ -110,7 +143,7 @@ export default function GeoCLIP() {
       <DeckGL
         initialViewState={viewState}
         controller
-        layers={[layer]}
+        layers={[layer, trackingLayer]}
         getTooltip={getTooltip}
       >
         <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
@@ -155,6 +188,7 @@ export default function GeoCLIP() {
           </div>
         </OperationContainer>
       </DeckGL>
+      <LatLngDisplay cursorCoords={cursorCoords} />
     </div>
   );
 }
