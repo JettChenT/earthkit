@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Sidebar from "@/components/sidebar";
 import { DefaultKBar } from "@/components/kbar";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import {
   ClerkProvider,
   SignInButton,
@@ -51,6 +52,7 @@ export default function RootLayout({
             <div className="h-full flex-1 relative"> {children}</div>
             <DefaultKBar />
             <Analytics />
+            <SpeedInsights />
           </main>
           <Toaster richColors />
         </body>
