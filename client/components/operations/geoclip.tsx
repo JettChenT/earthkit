@@ -16,9 +16,9 @@ import { Map } from "react-map-gl/maplibre";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
-import "mapbox-gl/dist/mapbox-gl.css";
 import { useAPIClient, useKy } from "@/lib/api-client/api";
 import { toast } from "sonner";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -106,53 +106,55 @@ export default function GeoCLIP() {
   }, []);
 
   return (
-    <DeckGL
-      initialViewState={viewState}
-      controller
-      layers={[layer]}
-      getTooltip={getTooltip}
-    >
-      <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
-      <OperationContainer className="w-64">
-        <article className="prose prose-sm leading-5 mb-2">
-          <h3>GeoCLIP Geoestimation</h3>
-          <a
-            className="text-primary"
-            href="https://github.com/VicenteVivan/geo-clip"
-          >
-            GeoCLIP
-          </a>{" "}
-          predicts the location of an image based on its visual features.
-        </article>
-        <ImageUpload
-          onSetImage={(img) => {
-            setImage(img);
-          }}
-          // onUploadBegin={() => {
-          //   fetch(`${API_URL}/geoclip/poke`);
-          // }}
-          image={image}
-        />
-        <div className="flex flex-col items-center">
-          <Button
-            className={`mt-3 w-full`}
-            disabled={!image || isRunning}
-            onClick={onInference}
-          >
-            {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
-            {isRunning ? "Predicting..." : "Predict"}
-          </Button>
-          {image && (
+    <div className="w-full h-full relative p-2 overflow-hidden">
+      <DeckGL
+        initialViewState={viewState}
+        controller
+        layers={[layer]}
+        getTooltip={getTooltip}
+      >
+        <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
+        <OperationContainer className="w-64">
+          <article className="prose prose-sm leading-5 mb-2">
+            <h3>GeoCLIP Geoestimation</h3>
+            <a
+              className="text-primary"
+              href="https://github.com/VicenteVivan/geo-clip"
+            >
+              GeoCLIP
+            </a>{" "}
+            predicts the location of an image based on its visual features.
+          </article>
+          <ImageUpload
+            onSetImage={(img) => {
+              setImage(img);
+            }}
+            // onUploadBegin={() => {
+            //   fetch(`${API_URL}/geoclip/poke`);
+            // }}
+            image={image}
+          />
+          <div className="flex flex-col items-center">
             <Button
               className={`mt-3 w-full`}
-              variant="secondary"
-              onClick={onCancel}
+              disabled={!image || isRunning}
+              onClick={onInference}
             >
-              Cancel
+              {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
+              {isRunning ? "Predicting..." : "Predict"}
             </Button>
-          )}
-        </div>
-      </OperationContainer>
-    </DeckGL>
+            {image && (
+              <Button
+                className={`mt-3 w-full`}
+                variant="secondary"
+                onClick={onCancel}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </OperationContainer>
+      </DeckGL>
+    </div>
   );
 }

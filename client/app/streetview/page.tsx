@@ -315,7 +315,7 @@ export default function StreetView() {
   ]);
 
   return (
-    <div>
+    <div className="relative h-screen w-full overflow-hidden">
       <div
         className={`absolute w-full h-full ${
           selecting ? "cursor-crosshair" : ""

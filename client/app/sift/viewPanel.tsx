@@ -19,7 +19,7 @@ export default function ViewPanel() {
     <Tabs
       value={viewPanelState}
       onValueChange={(value) => setViewPanelState(value as ViewPanelType)}
-      className="h-full flex flex-col gap-1 mt-4"
+      className="h-full flex flex-col gap-1 mt-4 ml-2"
     >
       <div>
         <TabsList>

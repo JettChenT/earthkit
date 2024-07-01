@@ -84,9 +84,9 @@ export default function Sidebar() {
   }
   return (
     <TooltipProvider>
-      <div
+      <aside
         className={cn(
-          "flex-initial py-5 flex flex-col justify-between h-full bg-muted/40 border-2 border-white/20",
+          "flex-initial py-5 flex flex-col justify-between h-full border-r",
           sidebarExpanded ? "w-56" : "w-16 pr-2 mr-2"
         )}
       >
@@ -118,7 +118,7 @@ export default function Sidebar() {
               variant="ghost"
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start ${
                 pathname === `/${item.tool}`
-                  ? "bg-background border border-gray-200 text-primary ring-1 ring-input"
+                  ? "bg-muted/20 border border-gray-200 text-primary ring-1 ring-input"
                   : ""
               }`}
               toolTip={!sidebarExpanded ? item.display : undefined}
@@ -186,7 +186,7 @@ export default function Sidebar() {
           <UsageBar />
           <Profile />
         </div>
-      </div>
+      </aside>
     </TooltipProvider>
   );
 }

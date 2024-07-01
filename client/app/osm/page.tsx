@@ -210,7 +210,7 @@ export default function OSM() {
   });
 
   return (
-    <div className="w-full h-screen flex flex-row gap-3">
+    <div className="w-full h-screen flex flex-row gap-3 pl-2">
       <div className="flex-1 flex flex-col overflow-hidden justify-start">
         <ChatMessages />
         <Chatbox
