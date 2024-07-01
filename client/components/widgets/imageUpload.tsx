@@ -37,7 +37,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   return image ? (
-    <img src={imgCache!} className={twMerge("rounded-md", imgClassName)} />
+    <img
+      src={imgCache || image}
+      className={twMerge("rounded-md", imgClassName)}
+    />
   ) : (
     <FileUploader handleChange={handleFileUpload} name="file" types={fileTypes}>
       <div

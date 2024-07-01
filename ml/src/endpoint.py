@@ -109,7 +109,7 @@ async def geoclip_inference(request: GeoclipRequest, user: Optional[str] = Depen
     print("running inference...")
     res_gps, res_pred = await c.inference.remote.aio(img, request.top_k)
     pnts : List[schema.Point] = [
-        schema.Point(lon=gps[0], lat=gps[1], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
+        schema.Point(lon=gps[1], lat=gps[0], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
     ]
     return pnts
 

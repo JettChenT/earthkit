@@ -34,6 +34,11 @@ import {
 } from "@/components/ui/context-menu";
 import { useHotkeys } from "react-hotkeys-hook";
 import Kbd, { MetaKey } from "../keyboard";
+import { parseGeoJsonImport } from "@/app/sift/inout";
+import { FeatureCollection, Point as GeoJSONPoint } from "geojson";
+import { useSift } from "@/app/sift/siftStore";
+import { useRouter } from "next/navigation";
+import { TableItemsFromCoord, downloadContent, getStats } from "@/lib/utils";
 
 export default function GeoCLIP() {
   const [image, setImage] = useState<string | null>(null);
@@ -78,8 +83,8 @@ export default function GeoCLIP() {
     console.log(bounds);
     const { longitude, latitude, zoom } = vp.fitBounds(
       [
-        [bounds.lo.lat, bounds.lo.lon],
-        [bounds.hi.lat, bounds.hi.lon],
+        [bounds.lo.lon, bounds.lo.lat],
+        [bounds.hi.lon, bounds.hi.lat],
       ],
       { padding: 100 }
     );
@@ -106,7 +111,7 @@ export default function GeoCLIP() {
   const layer = new HeatmapLayer<Point>({
     id: "geoclip_pred",
     data: predictions?.coords,
-    getPosition: (d) => [d.lat, d.lon],
+    getPosition: (d) => [d.lon, d.lat],
     getWeight: (d) => d.aux.conf,
     pickable: true,
     radiusPixels: 25,
@@ -152,6 +157,46 @@ export default function GeoCLIP() {
     toast.success("Copied coordinates to clipboard");
   }, [cursorCoords]);
 
+  const getFeats = useCallback(() => {
+    if (!predictions) return;
+    const feats: FeatureCollection = {
+      type: "FeatureCollection",
+      features: predictions.coords.map((c) => ({
+        type: "Feature",
+        properties: { geoclip_score: c.aux.conf },
+        geometry: { type: "Point", coordinates: [c.lon, c.lat] },
+      })),
+    };
+    return feats;
+  }, [predictions]);
+
+  const { addItems, setCols, setTargetImage } = useSift();
+  const router = useRouter();
+
+  const toSift = useCallback(() => {
+    if (!predictions) return;
+    const res = TableItemsFromCoord(predictions);
+    const stats = getStats(predictions.coords.map((c) => c.aux.conf));
+    setCols((cols) => [
+      ...cols,
+      {
+        type: "NumericalCol",
+        accessor: "conf",
+        header: "Geoclip Score",
+        ...stats,
+      },
+    ]);
+    addItems(res);
+    router.push("/sift");
+    console.debug("current image", image);
+    setTargetImage(image);
+  }, [getFeats]);
+
+  const toExport = useCallback(() => {
+    const feats = getFeats();
+    downloadContent(JSON.stringify(feats), "geojson");
+  }, [getFeats]);
+
   useHotkeys("Meta+C", copyCoords);
 
   return (
@@ -181,9 +226,6 @@ export default function GeoCLIP() {
                 onSetImage={(img) => {
                   setImage(img);
                 }}
-                // onUploadBegin={() => {
-                //   fetch(`${API_URL}/geoclip/poke`);
-                // }}
                 image={image}
               />
               <div className="flex flex-col items-center">
@@ -203,6 +245,19 @@ export default function GeoCLIP() {
                   >
                     Cancel
                   </Button>
+                )}
+                {predictions && (
+                  <div className="mt-3 w-full px-1">
+                    <div className="flex flex-col gap-2 rounded-md border p-2">
+                      <h2 className="text-md font-bold">More Actions</h2>
+                      <Button variant="outline" onClick={toSift}>
+                        Sift Top 100 Coords
+                      </Button>
+                      <Button variant="outline" onClick={toExport}>
+                        Export Top 100 Coords
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             </OperationContainer>
