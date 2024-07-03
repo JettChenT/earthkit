@@ -8,6 +8,7 @@ type EmbedMapProps = {
   coord: PurePoint;
   viewType: ViewPanelType;
   panoId?: string;
+  autofocus?: boolean;
 };
 
 const DEFAULT_ZOOM = 20;
@@ -33,6 +34,7 @@ const EmbedMap: React.FC<EmbedMapProps> = (props) => {
       src={src}
       className="w-full h-full relative"
       loading="lazy"
+      autoFocus={props.autofocus}
     ></iframe>
   );
 };

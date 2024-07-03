@@ -43,6 +43,7 @@ import { useSift } from "@/app/sift/siftStore";
 import { columnHelper } from "../sift/table";
 import { TableItemsFromCoord, formatValue, getStats, zVal } from "@/lib/utils";
 import { NumberPill } from "@/components/pill";
+import ReactDOMServer from "react-dom/server";
 import { useAPIClient, useKy } from "@/lib/api-client/api";
 import { useSWRConfig } from "swr";
 import { toast } from "sonner";
@@ -52,6 +53,7 @@ import {
   MessageCircleWarningIcon,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import EmbedMap from "@/components/embed-map";
 
 const SAMPLE_UPPER_LIMIT = 1000;
 const selectedFeatureIndexes: number[] = [];
@@ -146,19 +148,6 @@ export default function StreetView() {
     },
   });
 
-  const sampledLayer = new ScatterplotLayer({
-    id: "results-layer",
-    data: sampled?.coords,
-    getPosition: (d) => [d.lon, d.lat],
-    getRadius: (d) => 1,
-    getFillColor: (d) => [255, 140, 0],
-    pickable: true,
-    radiusScale: 1,
-    radiusMinPixels: 2,
-    radiusMaxPixels: 100,
-    visible: !!sampled && !located,
-  });
-
   const samplePreviewLayer = new ScatterplotLayer({
     id: "sample-preview-layer",
     data: samplePreview,
@@ -168,6 +157,22 @@ export default function StreetView() {
     radiusScale: 1,
     radiusMinPixels: 2,
     radiusMaxPixels: 100,
+  });
+
+  const sampledLayer = new ScatterplotLayer({
+    id: "results-layer",
+    data: sampled?.coords,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: (d) => 1,
+    getFillColor: (d) => [255, 140, 0],
+    onClick: (info, event) => {
+      navigator.clipboard.writeText(`${info.object.lat}, ${info.object.lon}`);
+    },
+    pickable: true,
+    radiusScale: 1,
+    radiusMinPixels: 2,
+    radiusMaxPixels: 100,
+    visible: !!sampled && !located,
   });
 
   const locateResultsLayer = new ScatterplotLayer<Point>({
@@ -181,6 +186,9 @@ export default function StreetView() {
         140,
         0,
       ] as Color,
+    onClick: (info, event) => {
+      navigator.clipboard.writeText(`${info.object.lat}, ${info.object.lon}`);
+    },
     pickable: true,
     radiusMinPixels: 2,
     radiusMaxPixels: 100,
@@ -188,14 +196,37 @@ export default function StreetView() {
 
   const getTooltip = useCallback(({ object }: PickingInfo<Point>) => {
     if (!object?.lat) return null;
+    const html = ReactDOMServer.renderToStaticMarkup(
+      <div className="p-2 bg-white rounded shadow-md">
+        <div className="text-sm font-medium text-gray-700">
+          Coordinates: {object.lat.toFixed(4)}, {object.lon.toFixed(4)}
+        </div>
+        <div className="text-xs text-gray-500">
+          Click to copy full coordinates
+        </div>
+        {object.aux.streetview_res && (
+          <div className="text-sm font-medium text-gray-700">
+            Similarity: {object.aux.streetview_res.max_sim}
+          </div>
+        )}
+        {object.aux.pano_id && (
+          <EmbedMap
+            panoId={object.aux.pano_id}
+            coord={{
+              lat: object.lat,
+              lon: object.lon,
+            }}
+            viewType="streetview"
+            autofocus
+          />
+        )}
+      </div>
+    );
+
     return object
-      ? `Coordinates: ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
-      Click to copy full coordinates
-      ${
-        object.aux.streetview_res
-          ? `Similarity: ${object.aux.streetview_res.max_sim}`
-          : ""
-      }`
+      ? {
+          html: html,
+        }
       : null;
   }, []);
 
@@ -405,10 +436,10 @@ export default function StreetView() {
           )}
           <Button
             onClick={locateWrapper}
-            disabled={!sampled || locating}
+            disabled={!sampled || locating || !image}
             requireLogin
           >
-            {locating ? "Locating..." : "Run Geolocalizaion"}
+            {locating ? "Locating..." : "Run Similarity Search"}
           </Button>
           <Label htmlFor="topn-slider">Top {topN} Results</Label>
           <Slider
@@ -421,25 +452,37 @@ export default function StreetView() {
           />
           <Button
             onClick={() => {
-              const stats = getStats(
-                located!.coords.map((c) => c.aux.streetview_res.max_sim)
-              );
-              setTargetImage(image!);
-              setCols((cols) => [
-                ...cols,
-                {
-                  type: "NumericalCol",
-                  accessor: "streetview_res.max_sim",
-                  header: "Streetview Similarity",
-                  ...stats,
-                },
-              ]);
-              addItems(TableItemsFromCoord(located!));
+              if (located) {
+                const stats = getStats(
+                  located!.coords.map((c) => c.aux.streetview_res.max_sim)
+                );
+                setCols((cols) => [
+                  ...cols,
+                  {
+                    type: "NumericalCol",
+                    accessor: "streetview_res.max_sim",
+                    header: "Streetview Similarity",
+                    ...stats,
+                  },
+                ]);
+                addItems(TableItemsFromCoord(located!));
+              } else if (sampled) {
+                addItems(TableItemsFromCoord(sampled!));
+              }
+              if (image) {
+                setTargetImage(image);
+              }
               router.push("/sift");
             }}
-            disabled={!located || !image}
+            disabled={!located && !sampled}
           >
-            Sift Through Results
+            Sift{" "}
+            {located
+              ? located.coords.length
+              : sampled
+              ? sampled.coords.length
+              : ""}{" "}
+            Streetviews
           </Button>
         </div>
       </OperationContainer>
