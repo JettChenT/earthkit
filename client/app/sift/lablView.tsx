@@ -120,13 +120,13 @@ export default function LablView() {
             <LabelButton
               disabled={!cur}
               status="Not Match"
-              hotkey={["h", "n", "3"]}
+              hotkey={["h", "n", "1"]}
             />
             <LabelButton disabled={!cur} status="Keep" hotkey={["p", "2"]} />
             <LabelButton
               disabled={!cur}
               status="Match"
-              hotkey={["l", "m", "1"]}
+              hotkey={["l", "m", "3"]}
             />
           </div>
         </TooltipProvider>

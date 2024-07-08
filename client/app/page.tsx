@@ -64,7 +64,7 @@ export default function Home() {
           </Link>
         </Button>
         <h2 className="font-bold text-lg mt-10">EarthKit Features:</h2>
-        <div className="w-full grid grid-cols-2 gap-2 justify-between mb-4">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 justify-between mb-4">
           <FeatCard
             title="Sift Through Coordinates with Ease"
             description="Browse and annotate coordinates, streetview, satellite, and more"
