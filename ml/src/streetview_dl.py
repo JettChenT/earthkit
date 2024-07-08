@@ -46,7 +46,7 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
     print("getting panoramas done")
     coords = Coords([Point(pnt["lon"], pnt["lat"], pnt) for pnt in pnts.values()])
     w, h = bounds.get_wh()
-    w_len, h_len = int(w.km / interval.km), int(h.km / interval.km)
+    w_len, h_len = max(int(w.km / interval.km), 1), max(int(h.km / interval.km), 1)
     w_co, h_co = (
         (bounds.hi.lon - bounds.lo.lon) / w_len,
         (bounds.hi.lat - bounds.lo.lat) / h_len,
