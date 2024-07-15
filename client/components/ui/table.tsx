@@ -19,6 +19,20 @@ const Table = React.forwardRef<
 ));
 Table.displayName = "Table";
 
+const NormalTable = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
+    <table
+      ref={ref}
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  </div>
+));
+NormalTable.displayName = "NormalTable";
+
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
@@ -109,6 +123,7 @@ const TableCaption = React.forwardRef<
 TableCaption.displayName = "TableCaption";
 
 export {
+  NormalTable,
   Table,
   TableHeader,
   TableBody,

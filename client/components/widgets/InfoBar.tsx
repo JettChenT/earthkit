@@ -23,11 +23,6 @@ const LatLngDisplay: React.FC<LatLngDisplayProps> = ({
     >
       <div>Lat: {cursorCoords.lat.toFixed(8)}</div>
       <div>Lon: {cursorCoords.lon.toFixed(8)}</div>
-      {showShortcuts && (
-        <div className="flex items-center gap-2 text-sm">
-          Copy Coords <MetaKey /> <Kbd>C</Kbd>
-        </div>
-      )}
     </div>
   );
 };
