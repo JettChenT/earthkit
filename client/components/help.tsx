@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { usePathname } from "next/navigation";
 import { ReactNode, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import Kbd, { MetaKey } from "./keyboard";
 import { sideBarData } from "./sidebar";
 
@@ -40,7 +41,11 @@ const shortCuts: Record<string, KeyboardShortcutItem[]> = {
       description: "Command Bar",
     },
     {
-      key: <Kbd>?</Kbd>,
+      key: (
+        <>
+          <MetaKey /> + <Kbd>/</Kbd>
+        </>
+      ),
       description: "Show Keyboard Shortcuts",
     },
   ],
@@ -113,7 +118,10 @@ const shortCuts: Record<string, KeyboardShortcutItem[]> = {
 };
 
 export default function Help() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [shortcutOpen, setShortcutOpen] = useState(false);
+  useHotkeys("Meta + /", () => {
+    setShortcutOpen((prev) => !prev);
+  });
   return (
     <div>
       <DropdownMenu>
@@ -123,13 +131,13 @@ export default function Help() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]" align="end">
-          <DropdownMenuItem onClick={() => setIsOpen(true)}>
+          <DropdownMenuItem onClick={() => setShortcutOpen(true)}>
             Keyboard Shortcuts
             <DropdownMenuShortcut>?</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={shortcutOpen} onOpenChange={setShortcutOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-xl">Keyboard Shortcuts</DialogTitle>
