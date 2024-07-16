@@ -5,7 +5,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +21,14 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { usePathname } from "next/navigation";
 import { ReactNode, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import Kbd, { MetaKey } from "./keyboard";
 import { sideBarData } from "./sidebar";
+import ky from "ky";
+import { toast } from "sonner";
 
 type KeyboardShortcutItem = {
   key: ReactNode;
@@ -119,6 +124,7 @@ const shortCuts: Record<string, KeyboardShortcutItem[]> = {
 
 export default function Help() {
   const [shortcutOpen, setShortcutOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   useHotkeys("Meta + /", () => {
     setShortcutOpen((prev) => !prev);
   });
@@ -135,18 +141,13 @@ export default function Help() {
             Keyboard Shortcuts
             <DropdownMenuShortcut>?</DropdownMenuShortcut>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setFeedbackOpen(true)}>
+            Send Feedback
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={shortcutOpen} onOpenChange={setShortcutOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-xl">Keyboard Shortcuts</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            <KeyboardCheetSheet />
-          </DialogDescription>
-        </DialogContent>
-      </Dialog>
+      <KeyboardCheetSheet open={shortcutOpen} onOpenChange={setShortcutOpen} />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </div>
   );
 }
@@ -156,7 +157,13 @@ type Section = {
   items: KeyboardShortcutItem[];
 };
 
-function KeyboardCheetSheet() {
+function KeyboardCheetSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const pathname = usePathname();
   const sections = useMemo(() => {
     let res = [
@@ -178,27 +185,81 @@ function KeyboardCheetSheet() {
   }, [pathname]);
   console.log(sections);
   return (
-    <div>
-      {sections.map((section) => {
-        return (
-          <div key={section.title}>
-            <h3 className="text-md text-black font-bold">{section.title}</h3>
-            <hr className="my-2 -mb-1" />
-            <NormalTable>
-              <TableBody>
-                {section.items.map((item, idx) => {
-                  return (
-                    <TableRow key={idx}>
-                      <TableCell className="w-40">{item.key}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </NormalTable>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-xl">Keyboard Shortcuts</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          <div>
+            {sections.map((section) => {
+              return (
+                <div key={section.title}>
+                  <h3 className="text-md text-black font-bold">
+                    {section.title}
+                  </h3>
+                  <hr className="my-2 -mb-1" />
+                  <NormalTable>
+                    <TableBody>
+                      {section.items.map((item, idx) => {
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell className="w-40">{item.key}</TableCell>
+                            <TableCell>{item.description}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </NormalTable>
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
+        </DialogDescription>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FeedbackDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  let [feedback, setFeedback] = useState("");
+  const [loading, setLoading] = useState(false);
+  const onSubmit = async () => {
+    setLoading(true);
+    await ky.post("/api/feedback", { json: { feedback } });
+    toast.success("Feedback submitted");
+    setLoading(false);
+    setFeedback("");
+    onOpenChange(false);
+  };
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Feedback</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          EarthKit is still in active development and have lots of areas to
+          improve! Send anonymized feedback to help us make it better.
+          <Textarea
+            className="mt-3"
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="How can EarthKit improve? Notice any annoying bugs? "
+          />
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={onSubmit} disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
