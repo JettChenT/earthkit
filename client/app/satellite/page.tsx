@@ -29,6 +29,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useSWRConfig } from "swr";
 import { useKy } from "@/lib/api-client/api";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import * as turf from "@turf/turf";
 
 const selectedFeatureIndexes: number[] = [];
 
@@ -61,16 +64,52 @@ export default function Satellite() {
     return vm;
   }, [selecting]);
 
+  const [isAreaExceeded, setIsAreaExceeded] = useState(false);
+  const getBounds = useCallback(
+    (collection: FeatureCollection | null = null) => {
+      let feats = collection ?? featCollection;
+      const bounds: Bounds = {
+        lo: {
+          // @ts-ignore
+          lat: feats.features[0].geometry.coordinates[0][0][1],
+          // @ts-ignore
+          lon: feats.features[0].geometry.coordinates[0][0][0],
+          aux: {},
+        },
+        hi: {
+          // @ts-ignore
+          lat: feats.features[0].geometry.coordinates[0][2][1],
+          // @ts-ignore
+          lon: feats.features[0].geometry.coordinates[0][2][0],
+          aux: {},
+        },
+      };
+      return bounds;
+    },
+    [featCollection]
+  );
+
   const layer = new EditableGeoJsonLayer({
     id: "geojson-layer",
     data: featCollection,
     mode: viewMode,
     selectedFeatureIndexes,
+    getLineColor: (d) => {
+      if (isAreaExceeded) return [255, 0, 0, 90];
+      return [0, 0, 0, 90];
+    },
+    getFillColor: (d) => {
+      if (isAreaExceeded) return [255, 0, 0, 50];
+      return [0, 0, 0, 90];
+    },
     onEdit: ({ updatedData }) => {
-      setFeatCollection({
+      let newFeatures: FeatureCollection = {
         type: "FeatureCollection",
         features: updatedData.features.slice(-1),
-      });
+      };
+      setFeatCollection(newFeatures);
+      let area = turf.area(newFeatures as any);
+      setIsAreaExceeded(area > 2_000_000);
     },
   });
 
@@ -103,22 +142,7 @@ export default function Satellite() {
     setSelected(true);
     setSelecting(false);
     console.log(featCollection);
-    const bounds: Bounds = {
-      lo: {
-        // @ts-ignore
-        lat: featCollection.features[0].geometry.coordinates[0][0][1],
-        // @ts-ignore
-        lon: featCollection.features[0].geometry.coordinates[0][0][0],
-        aux: {},
-      },
-      hi: {
-        // @ts-ignore
-        lat: featCollection.features[0].geometry.coordinates[0][2][1],
-        // @ts-ignore
-        lon: featCollection.features[0].geometry.coordinates[0][2][0],
-        aux: {},
-      },
-    };
+    const bounds: Bounds = getBounds();
     const ky = await getKyInst();
     ky.post(`satellite/locate`, {
       json: {
@@ -182,10 +206,25 @@ export default function Satellite() {
             image={image}
             className="border-stone-400"
           />
+          <div>
+            {isAreaExceeded && (
+              <Alert variant="destructive" className="bg-white bg-opacity-75">
+                <AlertCircle className="size-4" />
+                <AlertTitle>Area exceeded</AlertTitle>
+                <AlertDescription>
+                  Please select a smaller area.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
           {selecting || selected ? (
             <div className="flex flex-row gap-2">
               <Button
-                disabled={featCollection.features.length === 0 || locating}
+                disabled={
+                  featCollection.features.length === 0 ||
+                  locating ||
+                  isAreaExceeded
+                }
                 onClick={() => {
                   console.log(featCollection);
                   onLocate();
