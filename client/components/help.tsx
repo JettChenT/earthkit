@@ -144,6 +144,13 @@ export default function Help() {
           <DropdownMenuItem onClick={() => setFeedbackOpen(true)}>
             Send Feedback
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              window.open("https://cal.com/jettchent/30min");
+            }}
+          >
+            Schedule a Call
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <KeyboardCheetSheet open={shortcutOpen} onOpenChange={setShortcutOpen} />
