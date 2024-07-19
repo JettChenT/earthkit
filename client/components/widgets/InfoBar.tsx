@@ -3,13 +3,13 @@ import { Point } from "@/lib/geo";
 import Kbd, { MetaKey } from "../keyboard";
 import { cn } from "@/lib/utils";
 
-interface LatLngDisplayProps {
+interface InfoBarProps {
   cursorCoords: Point;
   showShortcuts?: boolean;
   className?: string;
 }
 
-const LatLngDisplay: React.FC<LatLngDisplayProps> = ({
+const InfoBar: React.FC<InfoBarProps> = ({
   cursorCoords,
   showShortcuts,
   className,
@@ -17,7 +17,7 @@ const LatLngDisplay: React.FC<LatLngDisplayProps> = ({
   return (
     <div
       className={cn(
-        "absolute bottom-8 right-3 bg-white p-3 rounded-md bg-opacity-70 font-mono border",
+        "absolute bottom-12 right-4 bg-white p-3 rounded-md bg-opacity-70 font-mono border",
         className
       )}
     >
@@ -27,4 +27,4 @@ const LatLngDisplay: React.FC<LatLngDisplayProps> = ({
   );
 };
 
-export default LatLngDisplay;
+export default InfoBar;

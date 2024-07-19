@@ -13,7 +13,7 @@ import {
 } from "deck.gl";
 import { CopyIcon, Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Map } from "react-map-gl/maplibre";
+import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
@@ -24,7 +24,7 @@ import {
   EditableGeoJsonLayer,
   ViewMode,
 } from "@deck.gl-community/editable-layers";
-import LatLngDisplay from "../widgets/InfoBar";
+import InfoBar from "../widgets/InfoBar";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -210,7 +210,9 @@ export default function GeoCLIP() {
             getTooltip={getTooltip}
             getCursor={(st) => (st.isDragging ? "grabbing" : "crosshair")}
           >
-            <Map mapStyle={DEFAULT_MAP_STYLE}></Map>
+            <Map mapStyle={DEFAULT_MAP_STYLE} attributionControl={false}>
+              <AttributionControl position="bottom-left" />
+            </Map>
             <OperationContainer className="w-64">
               <article className="prose prose-sm leading-5 mb-2">
                 <h3>GeoCLIP Geoestimation</h3>
@@ -262,8 +264,8 @@ export default function GeoCLIP() {
               </div>
             </OperationContainer>
           </DeckGL>
-          <LatLngDisplay
-            className="bottom-10"
+          <InfoBar
+            className="bottom-12"
             showShortcuts
             cursorCoords={cursorCoords}
           />

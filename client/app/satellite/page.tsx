@@ -16,9 +16,9 @@ import {
   ScatterplotLayer,
 } from "deck.gl";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Map, MapRef } from "react-map-gl";
+import { AttributionControl, Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
-import LatLngDisplay from "@/components/widgets/InfoBar";
+import InfoBar from "@/components/widgets/InfoBar";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
 import dynamic from "next/dynamic";
@@ -187,7 +187,10 @@ export default function Satellite() {
             mapboxAccessToken={MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
             ref={mapRef}
-          ></Map>
+            attributionControl={false}
+          >
+            <AttributionControl position="bottom-left" />
+          </Map>
         </DeckGL>
       </div>
       <OperationContainer className="bg-opacity-85">
@@ -253,7 +256,7 @@ export default function Satellite() {
           )}
         </div>
       </OperationContainer>
-      <LatLngDisplay cursorCoords={cursorCoords} />
+      <InfoBar cursorCoords={cursorCoords} />
       <ESearchBox setViewState={setViewState} dglref={deckRef} />
     </div>
   );

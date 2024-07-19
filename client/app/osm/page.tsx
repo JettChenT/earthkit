@@ -32,7 +32,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { useRouter } from "next/navigation";
 import osmtogeojson from "osmtogeojson";
 import { useEffect, useState } from "react";
-import { Map } from "react-map-gl";
+import { AttributionControl, Map } from "react-map-gl";
 import { parseGeoJsonImport } from "../sift/inout";
 import { AI, ClientMessage, Model } from "./actions";
 import { useOsmGlobs } from "./osmState";
@@ -234,7 +234,10 @@ export default function OSM() {
             <Map
               mapStyle={DEFAULT_MAP_STYLE}
               mapboxAccessToken={MAPBOX_TOKEN}
-            ></Map>
+              attributionControl={false}
+            >
+              <AttributionControl position="bottom-left" />
+            </Map>
           </DeckGL>
         </div>
       </div>

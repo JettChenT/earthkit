@@ -14,6 +14,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import Help from "@/components/help";
 
 export const metadata: Metadata = {
   title: "EarthKit",
@@ -49,7 +50,10 @@ export default function RootLayout({
         >
           <main className="h-screen w-screen flex">
             <Sidebar />
-            <div className="h-full flex-1 relative"> {children}</div>
+            <div className="h-full flex-1 relative">
+              {children}
+              <Help />
+            </div>
             <DefaultKBar />
             <Analytics />
             <SpeedInsights />

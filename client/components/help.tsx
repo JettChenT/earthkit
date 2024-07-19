@@ -129,17 +129,16 @@ export default function Help() {
     setShortcutOpen((prev) => !prev);
   });
   return (
-    <div>
+    <div className="absolute right-4 bottom-4 z-40">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="bg-slate-900 rounded-full size-6 text-white">
+          <button className="bg-slate-900 rounded-full size-6 text-white border border-slate-600">
             ?
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]" align="end">
           <DropdownMenuItem onClick={() => setShortcutOpen(true)}>
             Keyboard Shortcuts
-            <DropdownMenuShortcut>?</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setFeedbackOpen(true)}>
             Send Feedback

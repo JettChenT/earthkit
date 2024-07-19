@@ -24,9 +24,9 @@ import {
   ScatterplotLayer,
 } from "deck.gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Map, MapRef } from "react-map-gl";
+import { AttributionControl, Map, MapRef } from "react-map-gl";
 import { INITIAL_VIEW_STATE } from "@/lib/constants";
-import LatLngDisplay from "@/components/widgets/InfoBar";
+import InfoBar from "@/components/widgets/InfoBar";
 import ImageUpload from "@/components/widgets/imageUpload";
 import OperationContainer from "@/components/widgets/ops";
 import ky from "ky";
@@ -368,7 +368,10 @@ export default function StreetView() {
             mapboxAccessToken={MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
             ref={mapRef}
-          ></Map>
+            attributionControl={false}
+          >
+            <AttributionControl position="bottom-left" />
+          </Map>
         </DeckGL>
       </div>
       <OperationContainer className="bg-opacity-85">
@@ -487,7 +490,7 @@ export default function StreetView() {
         </div>
       </OperationContainer>
       <ESearchBox setViewState={setViewState} dglref={deckRef} />
-      <LatLngDisplay cursorCoords={cursorCoords} />
+      <InfoBar cursorCoords={cursorCoords} />
     </div>
   );
 }

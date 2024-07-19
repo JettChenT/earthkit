@@ -23,8 +23,6 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "./ui/tooltip";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
 import Kbd, { KbdContainer, MetaKey } from "./keyboard";
-import { useUser } from "@clerk/nextjs";
-import Help from "./help";
 
 export type SideBarItem = {
   tool: Tool;
@@ -80,7 +78,6 @@ export function EKLogo({ expanded }: { expanded: boolean }) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isSignedIn, isLoaded } = useUser();
   let { sidebarExpanded, setSidebarExpanded } = useEKGlobals();
   if (pathname === "/") {
     return null;
@@ -90,7 +87,7 @@ export default function Sidebar() {
       <aside
         className={cn(
           "flex-initial py-5 flex flex-col justify-between h-full border-r",
-          sidebarExpanded ? "w-56" : "w-16 pr-2 mr-2"
+          sidebarExpanded ? "w-56" : "w-20 pr-2"
         )}
       >
         <nav className="grid gap-1 items-start px-2 text-sm font-medium lg:px-4">
@@ -187,15 +184,7 @@ export default function Sidebar() {
             </Link>
           </Button>
           <UsageBar />
-          <div
-            className={cn(
-              "flex flex-row justify-between mt-2",
-              isLoaded && isSignedIn ? "items-start" : "items-center"
-            )}
-          >
-            <Profile />
-            <Help />
-          </div>
+          <Profile />
         </div>
       </aside>
     </TooltipProvider>

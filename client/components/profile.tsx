@@ -8,7 +8,9 @@ export default function Profile() {
   return (
     <div className="h-full flex items-center">
       <SignedIn>
-        <div className={sidebarExpanded ? "" : "flex w-full justify-center"}>
+        <div
+          className={sidebarExpanded ? "ml-1" : "flex w-full justify-center"}
+        >
           <UserButton
             appearance={{
               elements: {
