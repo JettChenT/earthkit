@@ -173,16 +173,6 @@ export default function Sidebar() {
             <KeyboardIcon className="size-4" />
             {sidebarExpanded && "Command Palette"}
           </Button>
-          <Button
-            variant={sidebarExpanded ? "outline" : "ghost"}
-            className={`flex items-center gap-2 hover:text-[#5865F2]`}
-            asChild
-          >
-            <Link href="https://discord.gg/X3YRuwZBNn">
-              <SiDiscord className="size-4" />
-              {sidebarExpanded && "Discord Community"}
-            </Link>
-          </Button>
           <UsageBar />
           <Profile />
         </div>

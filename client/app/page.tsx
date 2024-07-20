@@ -24,6 +24,12 @@ export default function Home() {
             Discord
           </Link>
           <Link
+            href="https://t.me/+FUm4YxEAfX8yZTA9"
+            className="underline text-sm variant-ghost"
+          >
+            Telegram
+          </Link>
+          <Link
             href="https://github.com/JettChenT/earthkit"
             className="underline text-sm variant-ghost"
           >

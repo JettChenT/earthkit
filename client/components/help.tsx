@@ -13,6 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuShortcut,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -21,6 +22,12 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { KeyboardIcon, LifeBuoyIcon, HeadsetIcon } from "lucide-react";
+import {
+  SiDiscord,
+  SiGithub,
+  SiTelegram,
+} from "@icons-pack/react-simple-icons";
 import { Textarea } from "@/components/ui/textarea";
 import { usePathname } from "next/navigation";
 import { ReactNode, useMemo, useState } from "react";
@@ -29,6 +36,7 @@ import Kbd, { MetaKey } from "./keyboard";
 import { sideBarData } from "./sidebar";
 import ky from "ky";
 import { toast } from "sonner";
+import Link from "next/link";
 
 type KeyboardShortcutItem = {
   key: ReactNode;
@@ -128,6 +136,10 @@ export default function Help() {
   useHotkeys("Meta + /", () => {
     setShortcutOpen((prev) => !prev);
   });
+  const pathname = usePathname();
+  if (pathname === "/") {
+    return null;
+  }
   return (
     <div className="absolute right-4 bottom-4 z-40">
       <DropdownMenu>
@@ -138,17 +150,53 @@ export default function Help() {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]" align="end">
           <DropdownMenuItem onClick={() => setShortcutOpen(true)}>
+            <KeyboardIcon className="size-4 mr-2" />
             Keyboard Shortcuts
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setFeedbackOpen(true)}>
+            <LifeBuoyIcon className="size-4 mr-2" />
             Send Feedback
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              window.open("https://cal.com/jettchent/30min");
-            }}
-          >
-            Schedule a Call
+          <DropdownMenuItem asChild>
+            <Link
+              href="https://cal.com/jettchent/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <HeadsetIcon className="size-4 mr-2" />
+              Schedule a Call
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link
+              href="https://discord.gg/X3YRuwZBNn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <SiDiscord className="size-4 mr-2" />
+              Discord
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href="https://t.me/+FUm4YxEAfX8yZTA9"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <SiTelegram className="size-4 mr-2" />
+              Telegram
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href="https://github.com/jettchent/earthkit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <SiGithub className="size-4 mr-2" />
+              Github
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
