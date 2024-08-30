@@ -1,6 +1,6 @@
 "use client";
 import ky from "ky";
-import { API_URL } from "../constants";
+import { API_URL, AI_API_URL } from "../constants";
 import useSWR, { useSWRConfig } from "swr";
 import { useAuth } from "@clerk/nextjs";
 import createClient, { Middleware } from "openapi-fetch";
@@ -20,13 +20,14 @@ export function useKy() {
   return getKyInst;
 }
 
-export function useAPIClient() {
+export function useAPIClient(kind: "api" | "ai" = "api") {
   const { getToken } = useAuth();
+  const baseUrl = kind === "api" ? API_URL : AI_API_URL;
   const getClient = async () => {
     const token = await getToken();
     console.debug("token", token);
     let client = createClient<paths>({
-      baseUrl: API_URL,
+      baseUrl,
       headers: token !== null ? { Authorization: `Bearer ${token}` } : {},
     });
     return client;

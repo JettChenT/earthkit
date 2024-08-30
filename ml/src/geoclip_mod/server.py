@@ -6,10 +6,23 @@ from src.auth import get_current_user
 from src.db import verify_cost, ratelimit
 from src import schema
 from typing import Optional, List
-import httpx
 import time
 import io
 import os
+
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.resources import Resource
+
+resource = Resource(attributes={
+    "service.name": "geoclip-api"
+})
+
+tracer_provider = TracerProvider(
+    resource=resource
+)
+meter_provider = MeterProvider(resource=resource)
 
 app = FastAPI()
 
@@ -27,6 +40,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider, meter_provider=meter_provider)
 
 print("Starting server... loading GeoCLIP model")
 t_start = time.time()
@@ -63,6 +78,9 @@ async def geoclip_inference(
 
     return pnts
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -46,7 +46,7 @@ export default function GeoCLIP() {
   const [predictions, setPredictions] = useState<Coords | null>(null);
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
   const getKyInst = useKy();
-  const getClient = useAPIClient();
+  const getClient = useAPIClient("ai");
 
   const onInference = async () => {
     setIsRunning(true);
