@@ -26,6 +26,7 @@ async def proc_im_url_async(image_url: str) -> bytes:
             image_data = base64.b64decode(image_url[base64_str_start:])
             return image_data
         else:
+            print(f"Downloading image from {image_url}")
             response = await aclient.get(image_url)
             response.raise_for_status() 
             return response.content

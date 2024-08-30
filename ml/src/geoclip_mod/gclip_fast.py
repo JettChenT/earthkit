@@ -9,20 +9,22 @@ from geoclip.model.misc import load_gps_data, file_dir
 
 from PIL import Image
 
-class GeoCLIP(nn.Module):
+class FastGeoCLIP(nn.Module):
     def __init__(self, from_pretrained=True, queue_size=4096):
         super().__init__()
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        self.device = "cpu"
-        self.image_encoder = ImageEncoder().to(self.device)
-        self.location_encoder = LocationEncoder().to(self.device)
-        self.gps_gallery = load_gps_data(os.path.join(file_dir, "gps_gallery", "coordinates_100K.csv")).to(self.device)
+        self.image_encoder = ImageEncoder()
+        self.location_encoder = LocationEncoder()
+
+        self.gps_gallery = load_gps_data(os.path.join(file_dir, "gps_gallery", "coordinates_100K.csv"))
         self._initialize_gps_queue(queue_size)
-        self.weights_folder = os.path.join(file_dir, "weights")
-        self._load_weights()
-        self.location_feats = F.normalize(self.location_encoder(self.gps_gallery), dim=1)
-        self.logit_scale_exp = self.logit_scale.exp()
-        
+
+        if from_pretrained:
+            self.weights_folder = os.path.join(file_dir, "weights")
+            self._load_weights()
+
+        self.device = "cpu"
+
     def to(self, device):
         self.device = device
         self.image_encoder.to(device)
@@ -85,20 +87,6 @@ class GeoCLIP(nn.Module):
         logits_per_image = logit_scale * (image_features @ location_features.t())
 
         return logits_per_image
-    
-    def forward_cached(self, image):
-        """ Forward pass with cached GPS gallery
-
-        Args:
-            image_features (torch.Tensor): Image features of shape (n, 512)
-
-        Returns:
-            logits_per_image (torch.Tensor): Logits per image of shape (n, m)
-        """
-        img_features = self.image_encoder(image)
-        img_feat_norm = F.normalize(img_features, dim=1)
-        logits_per_image = self.logit_scale_exp * (img_feat_norm @ self.location_feats.t())
-        return logits_per_image
 
     @torch.no_grad()
     def predict(self, image_path, top_k):
@@ -116,7 +104,9 @@ class GeoCLIP(nn.Module):
         image = self.image_encoder.preprocess_image(image)
         image = image.to(self.device)
 
-        logits_per_image = self.forward_cached(image)
+        gps_gallery = self.gps_gallery.to(self.device)
+
+        logits_per_image = self.forward(image, gps_gallery)
         probs_per_image = logits_per_image.softmax(dim=-1).cpu()
 
         # Get top k predictions
@@ -136,10 +126,3 @@ class GeoCLIP(nn.Module):
         logits_per_image = self.forward(image, gps_gallary)
         probs_per_image = logits_per_image.softmax(dim=-1).cpu()
         return probs_per_image
-
-def _main():
-    gclip = GeoCLIP()
-    gclip.predict("images/sf_test.png", 10)
-
-if __name__ == "__main__":
-    _main()

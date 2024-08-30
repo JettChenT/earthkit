@@ -61,6 +61,9 @@ FastAPIInstrumentor.instrument_app(web_app, tracer_provider=tracer_provider, met
 def get_ip(request: Request):
     return request.client.host
 
+def get_api_key(request: Request):
+    return request.headers.get("X-API-Key")
+
 app = App("ek-endpoint")
 
 class SampleStreetviewsRequest(BaseModel):
