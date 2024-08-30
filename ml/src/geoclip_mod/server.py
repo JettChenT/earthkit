@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from .gclip import GeoCLIP
 from src.endpoint import GeoclipRequest, get_ip, proc_im_url_async, get_api_key
 from src.auth import get_current_user
@@ -11,6 +12,22 @@ import io
 import os
 
 app = FastAPI()
+
+# Enable CORS
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "https://earthkit.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 print("Starting server... loading GeoCLIP model")
 t_start = time.time()
 model = GeoCLIP()

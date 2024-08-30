@@ -11,7 +11,7 @@ a_client = httpx.AsyncClient()
 load_dotenv()
 REMOTE_URL = "http://localhost:8000/geoclip"
 IMG_URL = "https://jld59we6hmprlla0.public.blob.vercel-storage.com/f5452a97-b698-4fac-a92f-6555a270287b-rppzqvZ4jKCgMqm5LMOd6hhcp3FfAz.jpeg"
-CONCURRENT_REQUESTS = 4
+CONCURRENT_REQUESTS = 1
 
 async def download_and_encode_image(url):
     image_data = await proc_im_url_async(url)
