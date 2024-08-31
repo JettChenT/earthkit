@@ -3,7 +3,8 @@ import { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import { twMerge } from "tailwind-merge";
 import { Button } from "@/components/ui/button";
-import { Image as ImageICN, X } from "lucide-react";
+import { Image as ImageICN, X, LoaderCircleIcon } from "lucide-react";
+import { type PutBlobResult } from "@vercel/blob";
 
 interface ImageUploadProps {
   onSetImage: (image: string) => void;
@@ -11,29 +12,66 @@ interface ImageUploadProps {
   fileTypes?: string[];
   className?: string;
   imgClassName?: string;
+  uploaderClassname?: string;
   image?: string | null;
   content?: string | null;
+  id?: string;
 }
 
 const fileTypes = ["JPG", "PNG", "GIF"];
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
+  id,
   onSetImage,
   className,
   imgClassName,
+  uploaderClassname,
   content,
   image,
+  onUploadBegin,
 }) => {
   const [imgCache, setImgCache] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
+    console.log("file", file);
+    if (onUploadBegin) onUploadBegin();
+    setUploading(true);
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
       const result = reader.result as string;
       setImgCache(result);
-      onSetImage(result);
     };
+
+    try {
+      const response = await fetch(
+        `/api/image/upload?type=${file.type.split("/")[1]}`,
+        {
+          method: "POST",
+          body: file,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      console.log("response", response);
+      const blob: PutBlobResult = await response.json();
+      onSetImage(blob.url);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setImgCache(null);
+    onSetImage("");
   };
 
   return image ? (
@@ -49,7 +87,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           className
         )}
       >
-        <div className="text-lg font-bold">{content || "Import Image"}</div>
+        {uploading ? (
+          <div className="flex items-center">
+            <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+            <span>Uploading...</span>
+          </div>
+        ) : (
+          <div className="text-lg font-bold">{content || "Import Image"}</div>
+        )}
       </div>
     </FileUploader>
   );
