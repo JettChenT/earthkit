@@ -139,7 +139,8 @@ class GeoCLIP(nn.Module):
 
 def _main():
     gclip = GeoCLIP()
-    gclip.predict("images/sf_test.png", 10)
+    res = gclip.predict(".images/sf_test.png", 40)
+    print(res)
 
 if __name__ == "__main__":
     _main()

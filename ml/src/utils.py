@@ -6,6 +6,9 @@ from PIL import Image
 from io import BytesIO
 from httpx import AsyncClient
 import json
+from .vercel_blob import put
+from uuid import uuid4
+import filetype
 
 aclient = AsyncClient()
 
@@ -30,6 +33,25 @@ async def proc_im_url_async(image_url: str) -> bytes:
             response = await aclient.get(image_url)
             response.raise_for_status() 
             return response.content
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+async def enforce_im_url(image_url: str) -> str:
+    try:
+        if image_url.startswith('data:'):
+            data = proc_im_url(image_url)
+            kind = filetype.guess(data)
+            if kind is None:
+                ext = "bin"
+                mime = "application/octet-stream"
+            else:
+                ext = kind.extension
+                mime = kind.mime
+            url = f'earthkit_uploads/{uuid4()}.{ext}'
+            resp = await put(url, data, mime)
+            return resp['url']
+        else:
+            return image_url
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
 

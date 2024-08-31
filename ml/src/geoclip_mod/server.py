@@ -1,13 +1,15 @@
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from .gclip import GeoCLIP
-from src.endpoint import GeoclipRequest, get_ip, proc_im_url_async, get_api_key
+from .gclip_fast import GeoCLIP
+from src.endpoint import GeoclipRequest, get_ip, get_api_key
+from src.utils import enforce_im_url
 from src.auth import get_current_user
 from src.db import verify_cost, ratelimit
 from src import schema
 from typing import Optional, List
+import replicate
 import time
-import io
+import torch
 import os
 
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -64,13 +66,20 @@ async def geoclip_inference(
     else:
         await verify_cost(user, 1)
 
-    img = await proc_im_url_async(request.image_url)
+    img = await enforce_im_url(request.image_url)
+    assert len(img) < 1000000, "Image url too long"
 
     t_start_inference = time.time()
-    res_gps, res_pred = model.predict(io.BytesIO(img), request.top_k)
+    clip_embs = await replicate.async_run(
+        "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a",
+        input={"inputs": img}
+    )
+    emb_tensor = torch.tensor(clip_embs[0]['embedding']).unsqueeze(0)
+    t_start_model = time.time()
+    res_gps, res_pred = model.predict(emb_tensor, request.top_k)
     t_end_inference = time.time()
     print(f"Inference took {t_end_inference - t_start_inference:.4f} seconds")
-
+    print(f"Model took {t_end_inference - t_start_model:.4f} seconds")
     res_gps, res_pred = res_gps.tolist(), res_pred.tolist()
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[1], lat=gps[0], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)

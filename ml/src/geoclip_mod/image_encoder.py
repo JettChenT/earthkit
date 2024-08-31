@@ -33,6 +33,7 @@ class ImageEncoder(nn.Module):
 
     def forward(self, x):
         x = self.CLIP.get_image_features(pixel_values=x)
+        print(x)
         x = self.mlp(x)
         return x
 
@@ -79,5 +80,6 @@ def _main():
         print(f"Output shape: {out.shape}")
         print(f"Output: {out}")
         print(f"Total time: {time.time() - start_time:.4f} seconds")
+
 if __name__ == "__main__":
     _main()

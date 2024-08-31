@@ -3,28 +3,26 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
-from .image_encoder import ImageEncoder
+from .tsfm import Tsfm
 from geoclip.model.location_encoder import LocationEncoder
 from geoclip.model.misc import load_gps_data, file_dir
 
 from PIL import Image
 
-class FastGeoCLIP(nn.Module):
+class GeoCLIP(nn.Module):
     def __init__(self, from_pretrained=True, queue_size=4096):
         super().__init__()
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        self.image_encoder = ImageEncoder()
-        self.location_encoder = LocationEncoder()
-
-        self.gps_gallery = load_gps_data(os.path.join(file_dir, "gps_gallery", "coordinates_100K.csv"))
-        self._initialize_gps_queue(queue_size)
-
-        if from_pretrained:
-            self.weights_folder = os.path.join(file_dir, "weights")
-            self._load_weights()
-
         self.device = "cpu"
-
+        self.location_encoder = LocationEncoder().to(self.device)
+        self.tsfm = Tsfm().to(self.device)
+        self.gps_gallery = load_gps_data(os.path.join(file_dir, "gps_gallery", "coordinates_100K.csv")).to(self.device)
+        self._initialize_gps_queue(queue_size)
+        self.weights_folder = os.path.join(file_dir, "weights")
+        self._load_weights()
+        self.location_feats = F.normalize(self.location_encoder(self.gps_gallery), dim=1)
+        self.logit_scale_exp = self.logit_scale.exp()
+        
     def to(self, device):
         self.device = device
         self.image_encoder.to(device)
@@ -33,7 +31,7 @@ class FastGeoCLIP(nn.Module):
         return super().to(device)
 
     def _load_weights(self):
-        self.image_encoder.mlp.load_state_dict(torch.load(f"{self.weights_folder}/image_encoder_mlp_weights.pth"))
+        self.tsfm.mlp.load_state_dict(torch.load(f"{self.weights_folder}/image_encoder_mlp_weights.pth"))
         self.location_encoder.load_state_dict(torch.load(f"{self.weights_folder}/location_encoder_weights.pth"))
         self.logit_scale = nn.Parameter(torch.load(f"{self.weights_folder}/logit_scale_weights.pth"))
 
@@ -62,34 +60,25 @@ class FastGeoCLIP(nn.Module):
 
     def get_gps_queue(self):
         return self.gps_queue.t()
-                                             
-    def forward(self, image, location):
-        """ GeoCLIP's forward pass
+                                            
+    
+    @torch.no_grad()
+    def forward_cached(self, img_feats):
+        """ Forward pass with cached GPS gallery
 
         Args:
-            image (torch.Tensor): Image tensor of shape (n, 3, 224, 224)
-            location (torch.Tensor): GPS location tensor of shape (m, 2)
+            image_features (torch.Tensor): Image features of shape (n, 512)
 
         Returns:
             logits_per_image (torch.Tensor): Logits per image of shape (n, m)
         """
-
-        # Compute Features
-        image_features = self.image_encoder(image)
-        location_features = self.location_encoder(location)
-        logit_scale = self.logit_scale.exp()
-        
-        # Normalize features
-        image_features = F.normalize(image_features, dim=1)
-        location_features = F.normalize(location_features, dim=1)
-        
-        # Cosine similarity (Image Features & Location Features)
-        logits_per_image = logit_scale * (image_features @ location_features.t())
-
+        img_features = self.tsfm(img_feats)
+        img_feat_norm = F.normalize(img_features, dim=1)
+        logits_per_image = self.logit_scale_exp * (img_feat_norm @ self.location_feats.t())
         return logits_per_image
 
     @torch.no_grad()
-    def predict(self, image_path, top_k):
+    def predict(self, img_feats, top_k):
         """ Given an image, predict the top k GPS coordinates
 
         Args:
@@ -100,13 +89,7 @@ class FastGeoCLIP(nn.Module):
             top_pred_gps (torch.Tensor): Top k GPS coordinates of shape (k, 2)
             top_pred_prob (torch.Tensor): Top k GPS probabilities of shape (k,)
         """
-        image = Image.open(image_path)
-        image = self.image_encoder.preprocess_image(image)
-        image = image.to(self.device)
-
-        gps_gallery = self.gps_gallery.to(self.device)
-
-        logits_per_image = self.forward(image, gps_gallery)
+        logits_per_image = self.forward_cached(img_feats)
         probs_per_image = logits_per_image.softmax(dim=-1).cpu()
 
         # Get top k predictions
@@ -115,14 +98,28 @@ class FastGeoCLIP(nn.Module):
         top_pred_prob = top_pred.values[0]
 
         return top_pred_gps, top_pred_prob
-    
-    @torch.no_grad()
-    def predict_coords(self, image_path, gps_gallary: torch.Tensor):
-        image = Image.open(image_path)
-        image = self.image_encoder.preprocess_image(image)
-        image = image.to(self.device)
-        gps_gallary = gps_gallary.to(self.device)
 
-        logits_per_image = self.forward(image, gps_gallary)
-        probs_per_image = logits_per_image.softmax(dim=-1).cpu()
-        return probs_per_image
+def _main():
+    from dotenv import load_dotenv
+    from time import time
+    load_dotenv()
+    import replicate
+    gclip = GeoCLIP()
+    src_img = "https://jld59we6hmprlla0.public.blob.vercel-storage.com/1d43cbec-f01c-4e21-bf17-4d455a69974e-l1HNRCEvZQ2nDDgc36cUTmiNGGeCms.png"
+    print('Getting embeddings...')
+    embedding_start = time()
+    src_img_embeddings = replicate.run("andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a", input={"inputs": src_img})
+    embs = torch.tensor(src_img_embeddings[0]['embedding']).unsqueeze(0)  # Add batch dimension
+    embedding_time = time() - embedding_start
+    print(f"Embedding generation time: {embedding_time:.2f} seconds")
+    print(f"Embedding shape: {embs.shape}")
+    
+    print('Running inference...')
+    print(embs.shape)
+    tst = time()
+    res = gclip.predict(embs, 40)
+    print(f"Inference time: {time() - tst:.2f} seconds")
+    print(res)
+
+if __name__ == "__main__":
+    _main()
