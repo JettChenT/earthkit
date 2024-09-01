@@ -46,6 +46,7 @@ dependencies = [
     "replicate>=0.32.1",
     "tenacity>=9.0.0",
     "filetype>=1.2.0",
+    "upstash-vector>=0.5.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
@@ -57,7 +58,9 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 virtual = true
-dev-dependencies = []
+dev-dependencies = [
+    "memray>=1.13.4",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true

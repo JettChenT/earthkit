@@ -7,9 +7,8 @@ from src.auth import get_current_user
 from src.db import verify_cost, ratelimit
 from src import schema
 from typing import Optional, List
-import replicate
+from .gclip_retr import infer_image
 import time
-import torch
 import os
 
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -45,11 +44,6 @@ app.add_middleware(
 
 FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider, meter_provider=meter_provider)
 
-print("Starting server... loading GeoCLIP model")
-t_start = time.time()
-model = GeoCLIP()
-t_end = time.time()
-print(f"Server started in {t_end - t_start} seconds")
 
 @app.post("/geoclip")
 async def geoclip_inference(
@@ -70,23 +64,15 @@ async def geoclip_inference(
     assert len(img) < 1000000, "Image url too long"
 
     t_start_inference = time.time()
-    clip_embs = await replicate.async_run(
-        "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a",
-        input={"inputs": img}
-    )
-    emb_tensor = torch.tensor(clip_embs[0]['embedding']).unsqueeze(0)
-    t_start_model = time.time()
-    res_gps, res_pred = model.predict(emb_tensor, request.top_k)
+    coords, probs = await infer_image(img, request.top_k)
     t_end_inference = time.time()
     print(f"Inference took {t_end_inference - t_start_inference:.4f} seconds")
-    print(f"Model took {t_end_inference - t_start_model:.4f} seconds")
-    res_gps, res_pred = res_gps.tolist(), res_pred.tolist()
-    pnts : List[schema.Point] = [
-        schema.Point(lon=gps[1], lat=gps[0], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
+
+    pnts: List[schema.Point] = [
+        schema.Point(lon=coord[1], lat=coord[0], aux={'pred': prob}) for coord, prob in zip(coords, probs)
     ]
 
     return pnts
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}

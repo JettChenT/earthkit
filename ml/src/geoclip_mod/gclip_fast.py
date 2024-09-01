@@ -99,6 +99,16 @@ class GeoCLIP(nn.Module):
 
         return top_pred_gps, top_pred_prob
 
+def _dump_coordembeds():
+    gclip = GeoCLIP()
+    feats = gclip.location_feats.cpu()
+    coords = gclip.gps_gallery.cpu()
+    print(feats.shape)
+
+def _tst():
+    gclip = GeoCLIP()
+    print(gclip.logit_scale_exp)
+
 def _main():
     from dotenv import load_dotenv
     from time import time
@@ -122,4 +132,4 @@ def _main():
     print(res)
 
 if __name__ == "__main__":
-    _main()
+    _tst()
