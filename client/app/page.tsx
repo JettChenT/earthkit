@@ -1,3 +1,4 @@
+import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,37 +12,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="container max-w-3xl mx-auto my-10 flex flex-col items-start">
-      <header className="flex justify-between w-full items-center drop-shadow-sm bg-gray-50 border-gray-100 text-gray-700 rounded-xl py-2 px-4">
-        <h1 className="font-bold text-3xl font-mono drop-shadow-sm">
-          <span className="text-blue-700">E</span>
-          <span className="text-green-700">K</span>
-        </h1>
-        <div className="space-x-4 flex items-center">
-          <Link
-            href="https://discord.gg/X3YRuwZBNn"
-            className="underline text-sm variant-ghost"
-          >
-            Discord
-          </Link>
-          <Link
-            href="https://t.me/+FUm4YxEAfX8yZTA9"
-            className="underline text-sm variant-ghost"
-          >
-            Telegram
-          </Link>
-          <Link
-            href="https://github.com/JettChenT/earthkit"
-            className="underline text-sm variant-ghost"
-          >
-            GitHub
-          </Link>
-          <Button asChild size="sm">
-            <Link href="/sift" className="font-bold font-mono">
-              App
-            </Link>
-          </Button>
-        </div>
-      </header>
+      <Navbar />
       <article className="prose prose-neutral mt-10">
         <h2 className="font-mono">
           <span className="text-blue-700">E</span>
@@ -49,6 +20,15 @@ export default function Home() {
           <span className="text-green-700">K</span>
           <span>it</span>
         </h2>
+        <Button className="not-prose" variant="link" asChild>
+          <Link
+            href="/agent"
+            className="font-mono font-bold flex flex-row items-center bg-muted/70"
+          >
+            New: Introducing EarthKit Agent
+            <ArrowRight className="size-4 ml-2" />
+          </Link>
+        </Button>
         <p className="font-bold">
           A Nifty toolkit that helps you Geolocate faster with AI.
         </p>

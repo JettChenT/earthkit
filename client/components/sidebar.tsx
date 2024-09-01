@@ -31,6 +31,8 @@ export type SideBarItem = {
   icon: React.ReactNode;
 };
 
+const ignoreList = ["/", "/agent"];
+
 export const sideBarData: SideBarItem[] = [
   {
     tool: "sift",
@@ -79,7 +81,7 @@ export function EKLogo({ expanded }: { expanded: boolean }) {
 export default function Sidebar() {
   const pathname = usePathname();
   let { sidebarExpanded, setSidebarExpanded } = useEKGlobals();
-  if (pathname === "/") {
+  if (ignoreList.includes(pathname)) {
     return null;
   }
   return (
