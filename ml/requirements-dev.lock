@@ -33,7 +33,6 @@ asttokens==2.4.1
 attrs==24.2.0
     # via aiohttp
     # via cattrs
-    # via ek-geo
     # via sigtools
 cattrs==23.2.3
 certifi==2024.6.2
@@ -75,7 +74,7 @@ distro==1.9.0
     # via openai
 dnspython==2.6.1
     # via email-validator
-ek-geo==0.1.1
+ek-geo==0.2.1
 email-validator==2.2.0
     # via fastapi
 executing==2.0.1
@@ -301,13 +300,14 @@ pure-eval==0.2.2
     # via stack-data
 pycparser==2.22
     # via cffi
-pydantic==2.7.4
+pydantic==2.9.0
+    # via ek-geo
     # via fastapi
     # via gotrue
     # via openai
     # via postgrest
     # via replicate
-pydantic-core==2.18.4
+pydantic-core==2.23.2
     # via pydantic
 pyequilib==0.5.8
 pygments==2.18.0
@@ -468,6 +468,7 @@ typing-extensions==4.12.2
     # via typer
 tzdata==2024.1
     # via pandas
+    # via pydantic
 uc-micro-py==1.0.3
     # via linkify-it-py
 ujson==5.10.0

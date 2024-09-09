@@ -114,8 +114,8 @@ export default function StreetView() {
     ).map((coord: [number, number]) => ({ lon: coord[0], lat: coord[1] }));
     const bbox = getbbox(coordinates);
     const bounds: Bounds = {
-      lo: { ...bbox.lo, aux: {} },
-      hi: { ...bbox.hi, aux: {} },
+      lo: { ...bbox.lo, aux: null },
+      hi: { ...bbox.hi, aux: null },
     };
     return bounds;
   }, [featCollection]);

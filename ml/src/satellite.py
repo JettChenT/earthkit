@@ -9,7 +9,7 @@ app = App('satellite')
 
 image = (modal
          .Image.debian_slim(python_version="3.11")
-         .pip_install("pillow", "geopy", "tqdm", "httpx==0.27.0", "cattrs==23.2.3"))
+         .pip_install_from_pyproject("pyproject.toml"))
 
 @app.function(image=image)
 def satellite_locate(target: bytes, bounds: Bounds, zoom = 20):
@@ -18,8 +18,8 @@ def satellite_locate(target: bytes, bounds: Bounds, zoom = 20):
     CrossViewModel = modal.Cls.lookup("crossview", "CrossViewModel")
     prediction_res = CrossViewModel.predict.remote(images, target)
     for (i, r) in enumerate(prediction_res):
-        res[i].aux['sim'] = r
-        res[i].aux.pop('image', None)
+        res.coords[i].aux['sim'] = r
+        res.coords[i].aux.pop('image', None)
     res.coords.sort(key=lambda x: x.aux['sim'], reverse=True)
     return res
 
@@ -32,7 +32,7 @@ def satellite_sim(target:bytes, coords:Coords, zoom=20):
     prediction_res = CrossViewModel.predict.remote(images, target)
     coords.inject_idx()
     for (i, r) in enumerate(prediction_res):
-        res[i].aux['sim'] = r
+        res.coords[i].aux['sim'] = r
     return ResultsUpdate.from_coords(res, 'sim')
 
 @app.local_entrypoint()

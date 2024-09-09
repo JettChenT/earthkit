@@ -17,7 +17,7 @@ APP_NAMES = [
 def deploy(apps: str, env_name: str = "dev", prod:bool=False):
     if prod:
         env_name = "main"
-    app_list = apps.split(",") if apps else APP_NAMES
+    app_list = apps.split(",") if apps!="ALL" else APP_NAMES
 
     for app_name in app_list:
         if app_name in APP_NAMES:

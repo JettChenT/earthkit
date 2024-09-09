@@ -10,12 +10,7 @@ from modal import Secret, Stub, gpu, build, enter, method
 
 stub = Stub("vpr")
 
-inference_image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "torch==2.2.2",
-    "pillow==10.3.0",
-    "torchvision==0.17.2",
-    *OTEL_DEPS
-).env(ENVS)
+inference_image = modal.Image.debian_slim(python_version="3.10").pip_install_from_pyproject("pyproject.toml").env(ENVS)
 
 with inference_image.imports():
     import torch
@@ -27,7 +22,7 @@ with inference_image.imports():
 ImgType = bytes | np.ndarray | Image.Image
 
 @stub.cls(gpu=gpu.A10G(), image=inference_image, enable_memory_snapshot=True, allow_concurrent_inputs=3)
-class VPRModel:
+class VPRModel: 
     @build()
     def build(self):
         _ = torch.hub.load(

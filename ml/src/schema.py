@@ -10,7 +10,7 @@ class Point(BaseModel, Generic[AuxT]):
     aux: Optional[AuxT] = None
 
     def to_geo(self) -> 'geo.Point':
-        return geo.Point(lon=self.lon, lat=self.lat, aux=self.aux)
+        return geo.Point(lon=self.lon, lat=self.lat, aux=self.aux or {})
 
     @classmethod
     def from_geo(cls, point: 'geo.Point') -> 'Point':

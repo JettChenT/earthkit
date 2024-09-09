@@ -7,9 +7,7 @@ import urllib.request
 import torch
 import io
 
-image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "torch==2.2.2", "pandas==2.2.2", "geoclip==1.2.0", "cattrs==23.2.3"
-)
+image = modal.Image.debian_slim(python_version="3.11").pip_install_from_pyproject("pyproject.toml")
 app = modal.App("geoclip", image=image)
 
 @app.cls(
@@ -49,7 +47,7 @@ def main():
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/B%C3%B8rsen_1.jpg/242px-B%C3%B8rsen_1.jpg"
     ).read()
     print("image downloaded")
-    bounds = Bounds(
+    bounds = Bounds.from_points(
         Point(lat=37.789733, lon=-122.402614), Point(lat=37.784409, lon=-122.394974)
     )
     interval = Distance(kilometers=0.05)

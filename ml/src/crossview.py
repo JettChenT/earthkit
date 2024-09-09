@@ -13,16 +13,7 @@ app = App("crossview")
 image = (
     modal.Image
     .debian_slim(python_version="3.10")
-    .pip_install(
-        "torch>=1.13.1",
-        "timm>=0.8.8",
-        "scipy>=1.10.0",
-        "albumentations>=1.3.0",
-        "scikit-learn>=1.2.1",
-        "transformers>=4.27.0",
-        "pandas",
-        "tqdm"
-    )
+    .pip_install_from_pyproject("pyproject.toml")
     .copy_local_dir("./weights", "/weights")
 )
 

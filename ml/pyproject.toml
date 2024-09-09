@@ -42,7 +42,7 @@ dependencies = [
     "requests>=2.32.3",
     "upstash-ratelimit>=1.1.0",
     "upstash-redis>=1.1.0",
-    "ek-geo>=0.1.1",
+    "ek-geo>=0.2.1",
     "replicate>=0.32.1",
     "tenacity>=9.0.0",
     "filetype>=1.2.0",
@@ -58,9 +58,7 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 virtual = true
-dev-dependencies = [
-    "memray>=1.13.4",
-]
+dev-dependencies = ["memray>=1.13.4"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

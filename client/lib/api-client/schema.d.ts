@@ -208,14 +208,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ping */
+        get: operations["ping_ping_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** Bounds */
-        Bounds: {
-            lo: components["schemas"]["Point"];
-            hi: components["schemas"]["Point"];
+        /** Bounds[NoneType] */
+        Bounds_NoneType_: {
+            lo: components["schemas"]["Point_NoneType_"];
+            hi: components["schemas"]["Point_NoneType_"];
         };
         /** Coords */
         Coords: {
@@ -224,6 +241,14 @@ export interface components {
              * @default []
              */
             coords: components["schemas"]["Point"][];
+        };
+        /** Coords[Any] */
+        Coords_Any_: {
+            /**
+             * Coords
+             * @default []
+             */
+            coords: components["schemas"]["Point_Any_"][];
         };
         /** Dependency */
         Dependency: {
@@ -250,7 +275,7 @@ export interface components {
         GeoclipSimilarityRequest: {
             /** Image Url */
             image_url: string;
-            coords: components["schemas"]["Coords"];
+            coords: components["schemas"]["Coords_Any_"];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -272,12 +297,11 @@ export interface components {
             output_type: components["schemas"]["OutputEnum"];
             coords: components["schemas"]["Coords"];
             /** Target Image */
-            target_image?: string;
+            target_image?: string | null;
             config: components["schemas"]["LMMConfig"];
         };
         /**
          * OutputEnum
-         * @description An enumeration.
          * @enum {string}
          */
         OutputEnum: "text" | "number" | "boolean";
@@ -288,23 +312,41 @@ export interface components {
             /** Lat */
             lat: number;
             /** Aux */
-            aux?: unknown;
+            aux?: unknown | null;
+        };
+        /** Point[Any] */
+        Point_Any_: {
+            /** Lon */
+            lon: number;
+            /** Lat */
+            lat: number;
+            /** Aux */
+            aux?: unknown | null;
+        };
+        /** Point[NoneType] */
+        Point_NoneType_: {
+            /** Lon */
+            lon: number;
+            /** Lat */
+            lat: number;
+            /** Aux */
+            aux?: null;
         };
         /** SVLocateRequest */
         SVLocateRequest: {
-            coords: components["schemas"]["Coords"];
+            coords: components["schemas"]["Coords_Any_"];
             /** Image Url */
             image_url: string;
         };
         /** SampleStreetviewsRequest */
         SampleStreetviewsRequest: {
-            bounds: components["schemas"]["Bounds"];
+            bounds: components["schemas"]["Bounds_NoneType_"];
             /** Dist Km */
             dist_km: number;
         };
         /** SatelliteLocateRequest */
         SatelliteLocateRequest: {
-            bounds: components["schemas"]["Bounds"];
+            bounds: components["schemas"]["Bounds_NoneType_"];
             /** Image Url */
             image_url: string;
         };
@@ -312,7 +354,7 @@ export interface components {
         SatelliteSimRequest: {
             /** Image Url */
             image_url: string;
-            coords: components["schemas"]["Coords"];
+            coords: components["schemas"]["Coords_Any_"];
         };
         /** ValidationError */
         ValidationError: {
@@ -668,6 +710,26 @@ export interface operations {
         };
     };
     test_simulate_error_test_simulate_error_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    ping_ping_get: {
         parameters: {
             query?: never;
             header?: never;

@@ -14,9 +14,7 @@ from .rpc import MsgType, ProgressUpdate, ResultsUpdate
 
 app = App("streetview-locate")
 
-sv_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geojson==3.1.0", "streetview==0.0.6", "geopy==2.4.1", "aiostream==0.5.2", "httpx==0.27.0", "cattrs==23.2.3", *OTEL_DEPS
-).env(ENVS)
+sv_image = modal.Image.debian_slim(python_version="3.11").pip_install_from_pyproject("pyproject.toml").env(ENVS)
 
 
 def fetch_panoramas(coord: Point):
@@ -44,7 +42,7 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
     for pano in res:
         pnts.update(pano)
     print("getting panoramas done")
-    coords = Coords([Point(pnt["lon"], pnt["lat"], pnt) for pnt in pnts.values()])
+    coords = Coords.new([Point(lon=pnt["lon"], lat=pnt["lat"], aux=pnt) for pnt in pnts.values()])
     w, h = bounds.get_wh()
     w_len, h_len = max(int(w.km / interval.km), 1), max(int(h.km / interval.km), 1)
     w_co, h_co = (
@@ -70,7 +68,7 @@ def sample_streetviews(bounds: Bounds, interval: Distance):
             or parse_date(cur.aux["date"]) < parse_date(pnt.aux["date"])
         ):
             mtrix[x * w_len + y] = pnt
-    return Coords(list(filter(lambda x: x, mtrix)))
+    return Coords.new(list(filter(lambda x: x, mtrix)))
 
 M_TOP = 100
 M_BOTTOM = 180
@@ -197,7 +195,7 @@ async def main():
         sampled_views: Coords = sample_streetviews.remote(bounds, interval)
         pickle.dump(sampled_views, open("tmp/sampled_views.pkl", "wb"))
     if LIMIT_CNT is not None:
-        sampled_views = Coords(sampled_views.coords[:LIMIT_CNT])
+        sampled_views = Coords.new(sampled_views.coords[:LIMIT_CNT])
     print(f"sampled {len(sampled_views)} streetviews")
     print(sampled_views[:30])
     im = open("tmp/fsr.png", "rb").read()

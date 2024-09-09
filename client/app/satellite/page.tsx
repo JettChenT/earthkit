@@ -74,14 +74,14 @@ export default function Satellite() {
           lat: feats.features[0].geometry.coordinates[0][0][1],
           // @ts-ignore
           lon: feats.features[0].geometry.coordinates[0][0][0],
-          aux: {},
+          aux: null,
         },
         hi: {
           // @ts-ignore
           lat: feats.features[0].geometry.coordinates[0][2][1],
           // @ts-ignore
           lon: feats.features[0].geometry.coordinates[0][2][0],
-          aux: {},
+          aux: null,
         },
       };
       return bounds;

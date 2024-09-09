@@ -9,7 +9,7 @@ app = modal.App("tst")
 
 image = (modal.Image
          .debian_slim(python_version="3.11")
-         .pip_install(*OTEL_DEPS)
+         .pip_install_from_pyproject("pyproject.toml")
          .env(ENVS)
 )
 
