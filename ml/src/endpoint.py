@@ -213,3 +213,7 @@ web_app.openapi = custom_openapi
 @asgi_app()
 def fastapi_app():
     return web_app
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(web_app, host="0.0.0.0", port=8000)

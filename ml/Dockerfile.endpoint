@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+
+RUN pip install uv
+
+WORKDIR /app
+COPY requirements.lock ./
+RUN uv pip install --no-cache --system -r requirements.lock
+
+COPY src ./src
+
+EXPOSE 8000
+
+CMD ["python", "-m", "src.endpoint"]

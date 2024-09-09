@@ -77,6 +77,7 @@ async def geoclip_inference(
     ]
 
     return pnts
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
