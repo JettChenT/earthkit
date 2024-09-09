@@ -21,7 +21,13 @@ tracer_provider = TracerProvider(
 )
 meter_provider = MeterProvider(resource=resource)
 
-otlp_exporter = OTLPSpanExporter()
+otlp_exporter = OTLPSpanExporter(
+    endpoint="https://api.axiom.co/v1/traces",
+    headers={
+        "Authorization": f"Bearer {ENVS['AXIOM_API_KEY']}",
+        "X-Axiom-Dataset": ENVS["AXIOM_DATASET_NAME"]
+    }
+)
 span_processor = BatchSpanProcessor(otlp_exporter)
 tracer_provider.add_span_processor(span_processor)
 

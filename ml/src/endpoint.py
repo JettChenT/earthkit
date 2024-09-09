@@ -9,7 +9,7 @@ from typing import List, Optional
 from . import schema, geo
 from .utils import json_encode, proc_im_url, proc_im_url_async
 from .rpc import ResultsUpdate, encode_msg, sse_encode
-from .otel import tracer_provider, meter_provider, OTEL_DEPS
+from .otel import tracer_provider, meter_provider
 from .cfig import ENVS
 from . import lmm
 from .auth import get_current_user
@@ -23,24 +23,11 @@ from fastapi.openapi.utils import get_openapi
 import os
 import sentry_sdk
 
-image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "geopy==2.4.1", 
-    "requests==2.32.3", 
-    "websockets==12.0", 
-    "cattrs==23.2.3", 
-    "openai==1.30.4", 
-    "aiostream==0.5.2", 
-    "pillow==10.2.0", 
-    "pyjwt[crypto]==2.8.0",
-    "supabase==2.5.1",
-    "redis==5.0.6",
-    "fastapi==0.111.0",
-    "opentelemetry-instrumentation-fastapi",
-    "sentry-sdk[fastapi]",
-    "upstash-ratelimit==1.1.0",
-    "upstash-redis==1.1.0",
-    *OTEL_DEPS
-).env(ENVS)
+image = (modal
+         .Image
+         .debian_slim(python_version="3.11")
+         .pip_install_from_pyproject("pyproject.toml")
+         .env(ENVS))
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"))
@@ -203,6 +190,11 @@ async def test_simulate_cost(cost:int=1, user: str = Depends(get_current_user)):
 @web_app.post("/test/simulate_error")
 async def test_simulate_error():
     x = 1/0
+
+@web_app.get("/ping")
+async def ping():
+    return {"message": "pong"}
+
 
 @web_app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):

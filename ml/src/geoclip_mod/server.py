@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from .gclip_fast import GeoCLIP
 from src.endpoint import GeoclipRequest, get_ip, get_api_key
 from src.utils import enforce_im_url
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from src.auth import get_current_user
 from src.db import verify_cost, ratelimit
+from src.otel import otlp_exporter
 from src import schema
 from typing import Optional, List
 from .gclip_retr import infer_image
@@ -24,6 +26,8 @@ tracer_provider = TracerProvider(
     resource=resource
 )
 meter_provider = MeterProvider(resource=resource)
+span_processor = BatchSpanProcessor(otlp_exporter)
+tracer_provider.add_span_processor(span_processor)
 
 app = FastAPI()
 
