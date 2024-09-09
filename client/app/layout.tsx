@@ -7,13 +7,7 @@ import Sidebar from "@/components/sidebar";
 import { DefaultKBar } from "@/components/kbar";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import Help from "@/components/help";
 
 export const metadata: Metadata = {

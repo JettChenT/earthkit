@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const extension = type.toLowerCase();
-  const filename = `${uuidv4()}.${extension.toLowerCase()}`;
+  const filename = `earthkit_uploads/${uuidv4()}.${extension.toLowerCase()}`;
 
   const blob = await put(filename, request.body, {
     access: "public",
