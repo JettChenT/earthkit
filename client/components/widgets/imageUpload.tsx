@@ -18,7 +18,7 @@ interface ImageUploadProps {
   id?: string;
 }
 
-const fileTypes = ["JPG", "PNG", "GIF"];
+const fileTypes = ["JPG", "PNG", "GIF", "JPEG"];
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
   id,
