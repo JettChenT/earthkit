@@ -9,7 +9,7 @@ export type OsmGlobs = {
 };
 
 export const useOsmGlobs = create<OsmGlobs>((set) => ({
-  model: "gpt-3.5-turbo",
+  model: "gpt-4o",
   setModel: (model: Model) => set({ model }),
   latestGeneration: null,
   setLatestGeneration: (generation_id: string) =>

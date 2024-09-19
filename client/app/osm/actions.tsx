@@ -69,13 +69,13 @@ export type AIState = Array<ServerMessage>;
 
 export type UIState = Array<ClientMessage>;
 
-export type Model = "gpt-3.5-turbo" | "gpt-4o";
+export type Model = "gpt-4o";
 
 async function sendMessage(
   user_req: string,
   sys_results: string[] = [],
   images: string[] = [],
-  model: Model = "gpt-3.5-turbo"
+  model: Model = "gpt-4o"
 ) {
   "use server";
 
@@ -96,7 +96,19 @@ async function sendMessage(
   // if (model === "gpt-4o") await verifyCost(redis, userId!, 1);
 
   (async () => {
-    if (model === "gpt-4o") await verifyCost(redis, userId!, 1);
+    if (userId) {
+      await verifyCost(redis, userId!, 1);
+    } else {
+      const ip =
+        headers().get("x-forwarded-for") ||
+        headers().get("x-real-ip") ||
+        headers().get("cf-connecting-ip") ||
+        "unknown";
+      let res = await ratelimit.limit(`anon-${ip}`);
+      if (!res.success) {
+        throw new Error("Rate limit exceeded");
+      }
+    }
     const sysMessages = sys_results.map((result) => ({
       role: "system" as const,
       content: result,
