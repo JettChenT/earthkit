@@ -9,7 +9,10 @@ export default function Navbar() {
         <span className="text-green-700">K</span>
       </Link>
       <div className="space-x-4 flex items-center">
-        <Link href="/agent" className="underline text-sm variant-ghost">
+        <Link
+          href="https://agent.earthkit.app"
+          className="underline text-sm variant-ghost"
+        >
           Agent
         </Link>
         <Link

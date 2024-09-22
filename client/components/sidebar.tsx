@@ -12,6 +12,7 @@ import {
   ArrowLeftToLineIcon,
   PanelRightIcon,
   KeyboardIcon,
+  BotIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -140,6 +141,30 @@ export default function Sidebar() {
               </Link>
             </Button>
           ))}
+          <Button
+            asChild
+            variant="ghost"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start`}
+            toolTip="EarthKit Agent"
+            side="right"
+          >
+            <Link
+              href="https://agent.earthkit.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div
+                className={
+                  sidebarExpanded
+                    ? "size-4"
+                    : "size-6 w-6 h-6 flex items-center justify-center"
+                }
+              >
+                <BotIcon className="size-4" />
+              </div>
+              {sidebarExpanded && "Agent"}
+            </Link>
+          </Button>
         </nav>
         <div
           className={cn(

@@ -22,7 +22,7 @@ export default function Home() {
         </h2>
         <Button className="not-prose" variant="link" asChild>
           <Link
-            href="/agent"
+            href="https://agent.earthkit.app"
             className="font-mono font-bold flex flex-row items-center bg-muted/70"
           >
             New: Introducing EarthKit Agent
