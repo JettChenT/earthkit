@@ -20,6 +20,7 @@ import {
 import { feature } from "@turf/turf";
 import {
   DeckGL,
+  DeckGLRef,
   FlyToInterpolator,
   GeoJsonLayer,
   HeatmapLayer,
@@ -29,9 +30,13 @@ import {
   WebMercatorViewport,
 } from "deck.gl";
 import { Copy, Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
+  ssr: false,
+});
 
 export default function Calibrate() {
   const [image, setImage] = useState<string | null>(null);
@@ -42,6 +47,8 @@ export default function Calibrate() {
     features: [],
   });
   const getClient = useAPIClient("api");
+  const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
+  const deckRef = useRef<DeckGLRef>(null);
 
   const onInference = async () => {
     setIsRunning(true);
@@ -131,7 +138,8 @@ export default function Calibrate() {
   return (
     <div className="w-full h-full relative p-2 overflow-hidden">
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        ref={deckRef}
+        initialViewState={viewState}
         controller
         layers={[selectLayer, calibratedLayer]}
         getCursor={(st) => (st.isDragging ? "grabbing" : "crosshair")}
@@ -200,6 +208,7 @@ export default function Calibrate() {
           </Button>
         </div>
       </OperationContainer>
+      <ESearchBox setViewState={setViewState} dglref={deckRef} />
     </div>
   );
 }
