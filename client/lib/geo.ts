@@ -107,3 +107,18 @@ export function applyResultsUpdate(
 
   return { coords: updatedCoords };
 }
+
+export function getBoundingBox(point: Point, tileSize: number): number[][] {
+  const metersPerDegree = 111319.9;
+  const latDelta = tileSize / metersPerDegree;
+  const lonDelta =
+    tileSize / (metersPerDegree * Math.cos((point.lat * Math.PI) / 180));
+
+  return [
+    [point.lon - lonDelta, point.lat - latDelta],
+    [point.lon + lonDelta, point.lat - latDelta],
+    [point.lon + lonDelta, point.lat + latDelta],
+    [point.lon - lonDelta, point.lat + latDelta],
+    [point.lon - lonDelta, point.lat - latDelta],
+  ];
+}

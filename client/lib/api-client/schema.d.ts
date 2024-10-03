@@ -322,6 +322,11 @@ export interface components {
             /** Image Url */
             image_url: string;
             location_prior: components["schemas"]["Point_Any_"];
+            /**
+             * Tile Size
+             * @default 128
+             */
+            tile_size: number;
         };
         /**
          * OutputEnum
@@ -700,7 +705,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Point"];
                 };
             };
             /** @description Validation Error */

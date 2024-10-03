@@ -35,6 +35,9 @@ import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import InfoBar from "@/components/widgets/InfoBar";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { getBoundingBox } from "@/lib/geo"; // You may need to implement this function
 const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
@@ -57,6 +60,8 @@ export default function Calibrate() {
     aux: null,
   });
 
+  const [tileSize, setTileSize] = useState(128);
+
   const onInference = async () => {
     setIsRunning(true);
     setCalibrated(null);
@@ -70,6 +75,7 @@ export default function Calibrate() {
       body: {
         image_url: image,
         location_prior: curPoint,
+        tile_size: tileSize,
       },
     });
     if (error) {
@@ -77,7 +83,11 @@ export default function Calibrate() {
       setIsRunning(false);
       return;
     }
-    setCalibrated(data);
+    setCalibrated({
+      lon: data.lon,
+      lat: data.lat,
+      aux: null,
+    });
     setIsRunning(false);
   };
 
@@ -163,13 +173,34 @@ export default function Calibrate() {
     mode: trackingVm,
   });
 
+  const boundingBox = useMemo(() => {
+    if (!curPoint) return null;
+    return getBoundingBox(curPoint, tileSize);
+  }, [curPoint, tileSize]);
+
+  const boundingBoxLayer = new GeoJsonLayer({
+    id: "bounding-box-layer",
+    data: boundingBox
+      ? {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [boundingBox],
+          },
+        }
+      : null,
+    getLineColor: [0, 255, 0],
+    getFillColor: [0, 255, 0, 20],
+    lineWidthMinPixels: 2,
+  });
+
   return (
     <div className="w-full h-full relative p-2 overflow-hidden">
       <DeckGL
         ref={deckRef}
         initialViewState={viewState}
         controller
-        layers={[selectLayer, calibratedLayer, trackingLayer]}
+        layers={[selectLayer, calibratedLayer, trackingLayer, boundingBoxLayer]}
         getCursor={(st) => (st.isDragging ? "grabbing" : "crosshair")}
       >
         <Map mapStyle={DEFAULT_MAP_STYLE} attributionControl={false}>
@@ -226,6 +257,19 @@ export default function Calibrate() {
               </Button>
             </div>
           )}
+          <div className="w-full text-left">
+            <Label htmlFor="tile-size-slider" className="mb-2">
+              Tile Size: {tileSize} m
+            </Label>
+          </div>
+          <Slider
+            id="tile-size-slider"
+            value={[tileSize]}
+            onValueChange={(v) => setTileSize(v[0])}
+            min={64}
+            max={256}
+            step={16}
+          />
           <Button
             className={`mt-3 w-full`}
             disabled={!image || !curPoint || isRunning}
