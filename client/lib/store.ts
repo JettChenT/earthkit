@@ -2,7 +2,13 @@ import { create } from "zustand";
 import { Resource } from "./resource";
 import { Layer } from "./layers";
 
-export type Tool = "geoclip" | "satellite" | "streetview" | "osm" | "sift";
+export type Tool =
+  | "geoclip"
+  | "satellite"
+  | "streetview"
+  | "osm"
+  | "sift"
+  | "calibrate";
 
 export type AppState = {
   resources: Resource[];

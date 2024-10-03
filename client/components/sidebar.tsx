@@ -13,6 +13,7 @@ import {
   PanelRightIcon,
   KeyboardIcon,
   BotIcon,
+  Crosshair,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -59,6 +60,12 @@ export const sideBarData: SideBarItem[] = [
     display: "Street View",
     tooltip: "Locate a ground-level image based on street view imagery",
     icon: <CarTaxiFront className="size-4" />,
+  },
+  {
+    tool: "calibrate",
+    display: "Calibrate",
+    tooltip: "Calibrate a location using a map",
+    icon: <Crosshair className="size-4" />,
   },
   {
     tool: "satellite",

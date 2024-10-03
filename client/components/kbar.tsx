@@ -181,7 +181,7 @@ export function CommandBar({ commands }: { commands: CommandsData }) {
   );
 }
 
-const DefaultPathList = ["/streetview", "/satellite", "/geoclip"];
+const DefaultPathList = ["/streetview", "/satellite", "/geoclip", "/calibrate"];
 
 export function DefaultKBar() {
   const pathname = usePathname();
