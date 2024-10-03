@@ -30,10 +30,11 @@ import {
   WebMercatorViewport,
 } from "deck.gl";
 import { Copy, Loader2 } from "lucide-react";
-import { useMemo, useState, useRef } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import InfoBar from "@/components/widgets/InfoBar";
 const ESearchBox = dynamic(() => import("@/components/widgets/searchBox"), {
   ssr: false,
 });
@@ -49,6 +50,12 @@ export default function Calibrate() {
   const getClient = useAPIClient("api");
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
   const deckRef = useRef<DeckGLRef>(null);
+
+  const [cursorCoords, setCursorCoords] = useState<Point>({
+    lat: 0,
+    lon: 0,
+    aux: null,
+  });
 
   const onInference = async () => {
     setIsRunning(true);
@@ -135,13 +142,34 @@ export default function Calibrate() {
     getRadius: 10,
   });
 
+  const trackingVm = useMemo(() => {
+    let vm = ViewMode;
+    vm.prototype.handlePointerMove = ({ mapCoords }) => {
+      setCursorCoords({
+        lon: mapCoords[0],
+        lat: mapCoords[1],
+        aux: null,
+      });
+    };
+    return vm;
+  }, []);
+
+  const trackingLayer = new EditableGeoJsonLayer({
+    id: "tracking-layer",
+    data: {
+      type: "FeatureCollection",
+      features: [],
+    },
+    mode: trackingVm,
+  });
+
   return (
     <div className="w-full h-full relative p-2 overflow-hidden">
       <DeckGL
         ref={deckRef}
         initialViewState={viewState}
         controller
-        layers={[selectLayer, calibratedLayer]}
+        layers={[selectLayer, calibratedLayer, trackingLayer]}
         getCursor={(st) => (st.isDragging ? "grabbing" : "crosshair")}
       >
         <Map mapStyle={DEFAULT_MAP_STYLE} attributionControl={false}>
@@ -209,6 +237,11 @@ export default function Calibrate() {
         </div>
       </OperationContainer>
       <ESearchBox setViewState={setViewState} dglref={deckRef} />
+      <InfoBar
+        className="bottom-12"
+        showShortcuts
+        cursorCoords={cursorCoords}
+      />
     </div>
   );
 }
