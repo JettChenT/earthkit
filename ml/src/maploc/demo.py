@@ -94,7 +94,7 @@ def parse_location_prior(
 class Demo:
     def __init__(
         self,
-        experiment_or_path: Optional[str] = "OrienterNet_MGL",
+        experiment_or_path: str = "OrienterNet_MGL",
         device=None,
         **kwargs
     ):
@@ -194,3 +194,9 @@ class Demo:
         xyr = argmax_xyr(lp_xyr).cpu()
 
         return xyr[:2]
+
+    def to(self, device):
+        self.device = device
+        self.model = self.model.to(device)
+        self.calibrator = self.calibrator.to(device)
+        return self
