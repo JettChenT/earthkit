@@ -59,7 +59,6 @@ dependencies = [
     "scikit-learn",
     "exifread",
     "urllib3>=2",
-    "perspective2d @ git+https://github.com/jinlinyi/PerspectiveFields.git",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
@@ -71,7 +70,11 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 virtual = true
-dev-dependencies = ["memray>=1.13.4"]
+dev-dependencies = [
+    "memray>=1.13.4",
+    "py-spy>=0.3.14",
+    "perspective2d @ git+https://github.com/jinlinyi/PerspectiveFields.git",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true

@@ -339,6 +339,7 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
+py-spy==0.3.14
 pycparser==2.22
     # via cffi
 pydantic==2.9.0

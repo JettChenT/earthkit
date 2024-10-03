@@ -15,7 +15,9 @@ app = App("orienternet")
 
 image = (Image.debian_slim(python_version="3.11")
          .apt_install("git","libgl1-mesa-glx","libglib2.0-0")
-         .pip_install_from_pyproject("pyproject.toml"))
+         .pip_install_from_pyproject("pyproject.toml")
+         .pip_install("perspective2d @ git+https://github.com/jinlinyi/PerspectiveFields.git")
+    )
 
 NUM_ROTATIONS = 256
 
