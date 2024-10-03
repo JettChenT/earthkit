@@ -194,7 +194,7 @@ export default function Calibrate() {
         <div className="flex flex-col items-center">
           {curPoint ? (
             <div className="w-full p-2 bg-gray-100 rounded-md mb-2">
-              <p className="text-sm font-semibold">Selected Location:</p>
+              <p className="text-sm font-semibold">Location Prior:</p>
               <p className="text-xs">
                 Lat: {curPoint.lat.toFixed(6)}, Lon: {curPoint.lon.toFixed(6)}
               </p>
