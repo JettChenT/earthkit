@@ -171,7 +171,7 @@ async def lmm_streaming(request: lmm.LmmRequest, user: str = Depends(get_current
 class OrienterNetLocateRequest(BaseModel):
     image_url: str
     location_prior: schema.Point[Any]
-    tile_size: int = Field(default=128, lt=256, gt=0)
+    tile_size: int = Field(default=128, lt=280, gt=0)
 
 @web_app.post("/orienternet/locate")
 async def orienternet_locate(request: OrienterNetLocateRequest, user: Optional[str] = Depends(get_current_user), request_ip: str = Depends(get_ip))-> schema.Point:

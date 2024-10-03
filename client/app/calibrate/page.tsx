@@ -29,7 +29,7 @@ import {
   PickingInfo,
   WebMercatorViewport,
 } from "deck.gl";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Loader2, X } from "lucide-react"; // Add X icon import
 import { useCallback, useMemo, useState, useRef } from "react";
 import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { toast } from "sonner";
@@ -189,10 +189,25 @@ export default function Calibrate() {
           },
         }
       : null,
-    getLineColor: [0, 255, 0],
-    getFillColor: [0, 255, 0, 20],
+    getLineColor: [0, 0, 255, 90],
+    getFillColor: [0, 0, 255, 20],
     lineWidthMinPixels: 2,
   });
+
+  const onCancel = () => {
+    setIsRunning(false);
+    setImage(null);
+    setCalibrated(null);
+    setFeatCollection({
+      type: "FeatureCollection",
+      features: [],
+    });
+    setViewState({
+      ...INITIAL_VIEW_STATE,
+      transitionInterpolator: new FlyToInterpolator({ speed: 4 }),
+      transitionDuration: "auto",
+    });
+  };
 
   return (
     <div className="w-full h-full relative p-2 overflow-hidden">
@@ -239,7 +254,7 @@ export default function Calibrate() {
             </span>
           )}
           {calibrated && (
-            <div className="w-full p-2 bg-green-100 rounded-md mb-2">
+            <div className="w-full p-2 bg-secondary rounded-md mb-2">
               <p className="text-sm font-semibold">Calibrated Location:</p>
               <p className="text-xs">
                 Lat: {calibrated.lat.toFixed(6)}, Lon:{" "}
@@ -269,7 +284,7 @@ export default function Calibrate() {
             onValueChange={(v) => setTileSize(v[0])}
             min={64}
             max={256}
-            step={16}
+            step={1}
           />
           <Button
             className={`mt-3 w-full`}
@@ -279,6 +294,15 @@ export default function Calibrate() {
             {isRunning ? <Loader2 className="animate-spin mr-2" /> : null}
             {isRunning ? "Calibrating..." : "Calibrate"}
           </Button>
+          {image && (
+            <Button
+              className={`mt-3 w-full`}
+              variant="outline"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </OperationContainer>
       <ESearchBox setViewState={setViewState} dglref={deckRef} />
