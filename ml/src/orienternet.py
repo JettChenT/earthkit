@@ -83,6 +83,7 @@ class OrienterNetModel:
         print(f"Total processing time: {total_time:.2f} seconds")
 
         return Point(lat=calibrated_latlon[0], lon=calibrated_latlon[1])
+
 @app.local_entrypoint()
 def main():
     import time
@@ -95,6 +96,24 @@ def main():
 
     start = time.time()
     result = OrienterNetModel().locate.remote(image_url, Point(lat=lat, lon=lon), tile_size)
+    end = time.time()
+    print(f"Time taken: {end - start:.2f} seconds")
+    
+    print(f"Input coordinates: {lat}, {lon}")
+    print(f"Calibrated coordinates: {result.lat:.6f}, {result.lon:.6f}")
+
+if __name__ == "__main__":
+    import modal
+    
+    model = modal.Cls.lookup("orienternet", "OrienterNetModel")
+    
+    image_url = "https://jld59we6hmprlla0.public.blob.vercel-storage.com/earthkit_uploads/query_zurich_1-VDYr4Uaxlus9SpvTdvubPnMYEJ1iWh.JPG"
+    lat = 47.37849417235291
+    lon = 8.548809525913553
+    tile_size = 128
+
+    start = time.time()
+    result = model().locate.remote(image_url, Point(lat=lat, lon=lon), tile_size)
     end = time.time()
     print(f"Time taken: {end - start:.2f} seconds")
     
