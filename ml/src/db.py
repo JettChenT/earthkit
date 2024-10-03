@@ -10,12 +10,19 @@ DEFAULT_CREDIT=500
 async def get_client():
     return Redis.from_env()
 
-async def get_anon_ratelimit():
+async def get_anon_ratelimit(expensive:bool=False):
+    if expensive:
+        return Ratelimit(
+            await get_client(),
+            FixedWindow(5, 60*60),
+            prefix="earthkit-anon-ratelimit-expensive"
+        )
     return Ratelimit(
         await get_client(),
         FixedWindow(20, 60*60),
         prefix="earthkit-anon-ratelimit"
     )
+
 
 @define
 class UsageData:
@@ -52,8 +59,8 @@ async def verify_cost(user:str, cost:int):
         )
     return remaining
 
-async def ratelimit(ip:str):
-    ratelimit = await get_anon_ratelimit()
+async def ratelimit(ip:str, expensive:bool=False):
+    ratelimit = await get_anon_ratelimit(expensive)
     res = await ratelimit.limit(ip)
     if not res.allowed:
         raise HTTPException(

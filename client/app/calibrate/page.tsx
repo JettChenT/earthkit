@@ -215,6 +215,9 @@ export default function Calibrate() {
           </a>{" "}
           takes an image and a location prior and returns a calibrated
           coordinate.
+          <br />
+          <br />
+          NOTE: this feature is experimental and unstable.
         </article>
         <ImageUpload
           onSetImage={(img) => {
@@ -257,10 +260,8 @@ export default function Calibrate() {
               </Button>
             </div>
           )}
-          <div className="w-full text-left">
-            <Label htmlFor="tile-size-slider" className="mb-2">
-              Tile Size: {tileSize} m
-            </Label>
+          <div className="w-full text-left mb-2">
+            <Label htmlFor="tile-size-slider">Tile Size: {tileSize} m</Label>
           </div>
           <Slider
             id="tile-size-slider"

@@ -171,14 +171,14 @@ async def lmm_streaming(request: lmm.LmmRequest, user: str = Depends(get_current
 class OrienterNetLocateRequest(BaseModel):
     image_url: str
     location_prior: schema.Point[Any]
-    tile_size: int = Field(default=128, lt=1000, gt=0)
+    tile_size: int = Field(default=128, lt=256, gt=0)
 
 @web_app.post("/orienternet/locate")
 async def orienternet_locate(request: OrienterNetLocateRequest, user: Optional[str] = Depends(get_current_user), request_ip: str = Depends(get_ip))-> schema.Point:
     if user:
-        await verify_cost(user, 1)
+        await verify_cost(user, 4)
     else:
-        await ratelimit(request_ip)
+        await ratelimit(request_ip, expensive=True)
     c = modal.Cls.lookup("orienternet", "OrienterNetModel")
     res: geo.Point = await c.locate.remote.aio(request.image_url, request.location_prior.to_geo(), request.tile_size)
     return schema.Point.from_geo(res)

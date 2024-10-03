@@ -21,7 +21,7 @@ image = (Image.debian_slim(python_version="3.11")
 
 NUM_ROTATIONS = 256
 
-@app.cls(image=image, gpu=gpu.A100(), enable_memory_snapshot=True)
+@app.cls(image=image, gpu=gpu.A100(size="80GB"), enable_memory_snapshot=True)
 class OrienterNetModel:
     @build()
     def build(self):
@@ -94,7 +94,7 @@ def main():
 
     lat = 47.37849417235291
     lon = 8.548809525913553
-    tile_size = 128
+    tile_size = 256
 
     start = time.time()
     result = OrienterNetModel().locate.remote(image_url, Point(lat=lat, lon=lon), tile_size)
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     image_url = "https://jld59we6hmprlla0.public.blob.vercel-storage.com/earthkit_uploads/query_zurich_1-VDYr4Uaxlus9SpvTdvubPnMYEJ1iWh.JPG"
     lat = 47.37849417235291
     lon = 8.548809525913553
-    tile_size = 128
+    tile_size = 288 
 
     start = time.time()
     result = model().locate.remote(image_url, Point(lat=lat, lon=lon), tile_size)
