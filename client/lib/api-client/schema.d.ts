@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orienternet/locate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Orienternet Locate */
+        post: operations["orienternet_locate_orienternet_locate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/test/echo-user": {
         parameters: {
             query?: never;
@@ -299,6 +316,12 @@ export interface components {
             /** Target Image */
             target_image?: string | null;
             config: components["schemas"]["LMMConfig"];
+        };
+        /** OrienterNetLocateRequest */
+        OrienterNetLocateRequest: {
+            /** Image Url */
+            image_url: string;
+            location_prior: components["schemas"]["Point_Any_"];
         };
         /**
          * OutputEnum
@@ -635,6 +658,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["LmmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    orienternet_locate_orienternet_locate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrienterNetLocateRequest"];
             };
         };
         responses: {

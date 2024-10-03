@@ -173,7 +173,7 @@ class OrienterNetLocateRequest(BaseModel):
     location_prior: schema.Point[Any]
 
 @web_app.post("/orienternet/locate")
-async def orienternet_locate(request: OrienterNetLocateRequest, user: Optional[str] = Depends(get_current_user), request_ip: str = Depends(get_ip)):
+async def orienternet_locate(request: OrienterNetLocateRequest, user: Optional[str] = Depends(get_current_user), request_ip: str = Depends(get_ip))-> schema.Point:
     if user:
         await verify_cost(user, 1)
     else:
