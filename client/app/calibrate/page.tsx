@@ -28,7 +28,7 @@ import {
   PickingInfo,
   WebMercatorViewport,
 } from "deck.gl";
-import { Loader2 } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AttributionControl, Map } from "react-map-gl/maplibre";
 import { toast } from "sonner";
@@ -167,6 +167,28 @@ export default function Calibrate() {
             <span className="text-sm text-gray-500">
               Click on map to select location
             </span>
+          )}
+          {calibrated && (
+            <div className="w-full p-2 bg-green-100 rounded-md mb-2">
+              <p className="text-sm font-semibold">Calibrated Location:</p>
+              <p className="text-xs">
+                Lat: {calibrated.lat.toFixed(6)}, Lon:{" "}
+                {calibrated.lon.toFixed(6)}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 w-full"
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `${calibrated.lat.toFixed(6)},${calibrated.lon.toFixed(6)}`
+                  )
+                }
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy Coordinates
+              </Button>
+            </div>
           )}
           <Button
             className={`mt-3 w-full`}
