@@ -17,8 +17,14 @@ aiosignal==1.3.1
     # via aiohttp
 aiostream==0.5.2
     # via modal
+albucore==0.0.17
+    # via albumentations
+albumentations==1.4.17
+    # via perspective2d
 annotated-types==0.7.0
     # via pydantic
+antlr4-python3-runtime==4.9.3
+    # via omegaconf
 anyio==4.4.0
     # via httpx
     # via openai
@@ -77,8 +83,11 @@ dnspython==2.6.1
 ek-geo==0.2.1
 email-validator==2.2.0
     # via fastapi
+eval-type-backport==0.2.0
+    # via albumentations
 executing==2.0.1
     # via stack-data
+exifread==3.0.0
 fastapi==0.111.0
     # via modal
     # via sentry-sdk
@@ -147,6 +156,8 @@ idna==3.7
     # via httpx
     # via requests
     # via yarl
+imageio==2.35.1
+    # via scikit-image
 importlib-metadata==7.1.0
     # via opentelemetry-api
 ipykernel==6.29.4
@@ -167,11 +178,14 @@ jupyter-core==5.7.2
     # via jupyter-client
 kiwisolver==1.4.5
     # via matplotlib
+lazy-loader==0.4
+    # via scikit-image
 lightning-utilities==0.11.3.post0
     # via pytorch-lightning
     # via torchmetrics
 linkify-it-py==2.0.3
     # via markdown-it-py
+lxml==5.3.0
 markdown-it-py==3.0.0
     # via mdit-py-plugins
     # via rich
@@ -179,6 +193,7 @@ markdown-it-py==3.0.0
 markupsafe==2.1.5
     # via jinja2
 matplotlib==3.9.0
+    # via perspective2d
 matplotlib-inline==0.1.7
     # via ipykernel
     # via ipython
@@ -197,22 +212,40 @@ multidict==6.0.5
 nest-asyncio==1.6.0
     # via ipykernel
 networkx==3.3
+    # via scikit-image
     # via torch
 numpy==1.26.4
+    # via albucore
+    # via albumentations
     # via contourpy
     # via geoclip
+    # via imageio
     # via matplotlib
+    # via opencv-contrib-python
+    # via opencv-python
+    # via opencv-python-headless
     # via pandas
+    # via perspective2d
     # via pyequilib
     # via pytorch-lightning
     # via pytorch-metric-learning
+    # via scikit-image
     # via scikit-learn
     # via scipy
     # via shapely
+    # via tifffile
     # via torchmetrics
     # via torchvision
     # via transformers
+omegaconf==2.3.0
+    # via perspective2d
 openai==1.35.7
+opencv-contrib-python==4.10.0.84
+    # via perspective2d
+opencv-python==4.10.0.84
+opencv-python-headless==4.10.0.84
+    # via albucore
+    # via albumentations
 opentelemetry-api==1.25.0
     # via opentelemetry-distro
     # via opentelemetry-exporter-otlp-proto-grpc
@@ -259,10 +292,13 @@ packaging==24.1
     # via deprecation
     # via huggingface-hub
     # via ipykernel
+    # via lazy-loader
     # via lightning-utilities
     # via matplotlib
+    # via plotly
     # via pytorch-lightning
     # via replicate
+    # via scikit-image
     # via torchmetrics
     # via transformers
 pandarallel==1.6.5
@@ -271,11 +307,15 @@ pandas==2.2.2
     # via pandarallel
 parso==0.8.4
     # via jedi
+perspective2d @ git+https://github.com/jinlinyi/PerspectiveFields.git@d54be737d6eacfb9d39a2b7079a494924b45bb6c
 pexpect==4.9.0
     # via ipython
 pillow==10.3.0
     # via geoclip
+    # via imageio
     # via matplotlib
+    # via perspective2d
+    # via scikit-image
     # via torchvision
 pinecone-client==4.1.1
 pinecone-plugin-interface==0.0.7
@@ -283,6 +323,7 @@ pinecone-plugin-interface==0.0.7
 platformdirs==4.2.2
     # via jupyter-core
     # via textual
+plotly==5.24.1
 postgrest==0.16.8
     # via supabase
 prompt-toolkit==3.0.47
@@ -301,6 +342,7 @@ pure-eval==0.2.2
 pycparser==2.22
     # via cffi
 pydantic==2.9.0
+    # via albumentations
     # via ek-geo
     # via fastapi
     # via gotrue
@@ -309,7 +351,8 @@ pydantic==2.9.0
     # via replicate
 pydantic-core==2.23.2
     # via pydantic
-pyequilib==0.5.8
+pyequilib==0.3.0
+    # via perspective2d
 pygments==2.18.0
     # via ipython
     # via rich
@@ -332,11 +375,14 @@ pytorch-metric-learning==2.5.0
 pytz==2024.1
     # via pandas
 pyyaml==6.0.1
+    # via albumentations
     # via huggingface-hub
+    # via omegaconf
     # via pytorch-lightning
     # via timm
     # via transformers
     # via uvicorn
+    # via yacs
 pyzmq==26.0.3
     # via ipykernel
     # via jupyter-client
@@ -356,18 +402,26 @@ rich==13.7.1
     # via modal
     # via textual
     # via typer
+rtree==1.3.0
 ruff==0.5.0
 safetensors==0.4.3
     # via timm
     # via transformers
+scikit-image==0.24.0
+    # via albumentations
 scikit-learn==1.5.0
+    # via perspective2d
     # via pytorch-metric-learning
 scipy==1.14.0
+    # via albumentations
+    # via perspective2d
+    # via scikit-image
     # via scikit-learn
 sentry-sdk==2.7.1
 setuptools==70.1.1
     # via lightning-utilities
     # via opentelemetry-instrumentation
+    # via perspective2d
 shapely==2.0.4
 shellingham==1.5.4
     # via typer
@@ -399,17 +453,22 @@ sympy==1.12.1
 synchronicity==0.6.7
     # via modal
 tenacity==9.0.0
+    # via plotly
 textual==0.79.1
     # via memray
 threadpoolctl==3.5.0
     # via scikit-learn
+tifffile==2024.9.20
+    # via scikit-image
 timm==1.0.7
+    # via perspective2d
 tokenizers==0.19.1
     # via transformers
 toml==0.10.2
     # via modal
 torch==2.3.1
     # via geoclip
+    # via perspective2d
     # via pytorch-lightning
     # via pytorch-metric-learning
     # via timm
@@ -419,6 +478,7 @@ torchmetrics==1.4.0.post0
     # via pytorch-lightning
 torchvision==0.18.1
     # via geoclip
+    # via perspective2d
     # via timm
 tornado==6.4.1
     # via ipykernel
@@ -496,6 +556,8 @@ websockets==12.0
 wrapt==1.16.0
     # via deprecated
     # via opentelemetry-instrumentation
+yacs==0.1.8
+    # via perspective2d
 yarl==1.9.4
     # via aiohttp
 zipp==3.19.2
