@@ -258,16 +258,7 @@ export function Chatbox({
             onSetImage={(image) => {
               setImages([...images, image]);
             }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-secondary-foreground px-1"
-              type="button"
-            >
-              <ImageIcon className="size-3 inline-block mr-1" /> Image
-            </Button>
-          </ImageUploadButton>
+          />
           {!isSignedIn && (
             <span className="text-xs text-gray-500 ml-2 inline-block">
               Not signed in; limited to 3 queries per hour.
