@@ -71,6 +71,18 @@ export type UIState = Array<ClientMessage>;
 
 export type Model = "gpt-4o";
 
+function conv_content(content: AIContent) {
+  if (Array.isArray(content)) {
+    return content.map((item) => {
+      if (item.type === "image" && item.image) {
+        return { ...item, image: new URL(item.image as string) };
+      }
+      return item;
+    });
+  }
+  return content;
+}
+
 async function sendMessage(
   user_req: string,
   sys_results: string[] = [],
@@ -190,7 +202,7 @@ async function sendMessage(
       system: SYSTEM_PROMPT,
       messages: history.get().map((x) => ({
         role: x.role,
-        content: x.content as any,
+        content: conv_content(x.content) as any,
       })),
     });
 

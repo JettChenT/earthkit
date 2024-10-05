@@ -28,6 +28,9 @@ import { createRoot } from "react-dom/client";
 import { Model } from "./actions";
 import { location_placeholders, osm_placeholders } from "./cm_common";
 import { useOsmGlobs } from "./osmState";
+import { ImageUploadButton } from "@/components/widgets/imageUpload";
+import { Image as ImageIcon } from "lucide-react";
+
 const locationCompletion = async (
   context: CompletionContext
 ): Promise<CompletionResult | null> => {
@@ -183,7 +186,7 @@ export function Chatbox({
 
   return (
     <div className="flex-none p-2 bg-white border rounded-md w-full mb-3">
-      <div className="flex-row gap-1 pl-3">
+      <div className="flex flex-row justify-start gap-1 pl-3">
         {images.map((image, idx) => (
           <CancellableImage
             key={idx}
@@ -251,6 +254,20 @@ export function Chatbox({
           >
             @ Locations
           </Button>
+          <ImageUploadButton
+            onSetImage={(image) => {
+              setImages([...images, image]);
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-secondary-foreground px-1"
+              type="button"
+            >
+              <ImageIcon className="size-3 inline-block mr-1" /> Image
+            </Button>
+          </ImageUploadButton>
           {!isSignedIn && (
             <span className="text-xs text-gray-500 ml-2 inline-block">
               Not signed in; limited to 3 queries per hour.

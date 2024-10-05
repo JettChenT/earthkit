@@ -118,7 +118,7 @@ export function CancellableImage({
       />
       <button
         onClick={onCancel}
-        className="absolute -right-1 -top-1 size-5 bg-white text-slate-400 border-1 border-black rounded-full flex items-center justify-center shadow-lg hover:bg-slate-100 transition duration-200 opacity-0 group-hover:opacity-100"
+        className="absolute -right-1 -top-1 size-5 bg-white text-slate-400 border border-slate-300 rounded-full flex items-center justify-center shadow-lg hover:bg-slate-100 transition duration-200 opacity-0 group-hover:opacity-100"
       >
         <X className="size-3" />
       </button>
@@ -131,15 +131,38 @@ export const ImageUploadButton: React.FC<{
   children?: React.ReactNode;
 }> = ({ onSetImage, children }) => {
   const [imgCache, setImgCache] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
       const result = reader.result as string;
       setImgCache(result);
-      onSetImage(result);
     };
+
+    try {
+      const response = await fetch(
+        `/api/image/upload?type=${file.type.split("/")[1]}`,
+        {
+          method: "POST",
+          body: file,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const blob: PutBlobResult = await response.json();
+      onSetImage(blob.url);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -156,7 +179,12 @@ export const ImageUploadButton: React.FC<{
             className="text-xs text-secondary-foreground px-1"
             type="button"
           >
-            <ImageICN className="size-3 inline-block mr-1" /> Image
+            {uploading ? (
+              <LoaderCircleIcon className="size-3 animate-spin mr-1" />
+            ) : (
+              <ImageICN className="size-3 inline-block mr-1" />
+            )}
+            {uploading ? "Uploading..." : "Image"}
           </Button>
         )}
       </FileUploader>
