@@ -200,74 +200,75 @@ export default function SiftTable() {
           ref={tableContainerRef}
           className="h-full overflow-auto rounded-sm border"
         >
-          <Table className="h-full">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="">
-                  <TableHead />
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody className="h-full">
-              {items.length == 0 ? (
-                <TableRow className="hover:bg-muted/0">
-                  <TableCell colSpan={cols.length} className="p-4">
-                    <GetStarted />
-                  </TableCell>
-                </TableRow>
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row, dispIdx) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={
-                      (row.getIsSelected() || row.index === idx) && "selected"
-                    }
-                    onMouseDown={() => {
-                      setSelectedIdx(dispIdx);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <TableCell colSpan={0.5} className="w-3 p-0 pl-3 -mr-1">
-                      {row.index == idx ? (
-                        <DotIcon
-                          className="size-4 text-blue-600 shadow-sm drop-shadow-md -mr-3"
-                          strokeWidth={17}
-                        />
-                      ) : (
-                        <div className="size-4" />
-                      )}
-                    </TableCell>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+          {items.length === 0 ? (
+            <GetStarted />
+          ) : (
+            <Table className="h-full">
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="">
+                    <TableHead />
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody className="h-full">
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row, dispIdx) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={
+                        (row.getIsSelected() || row.index === idx) && "selected"
+                      }
+                      onMouseDown={() => {
+                        setSelectedIdx(dispIdx);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <TableCell colSpan={0.5} className="w-3 p-0 pl-3 -mr-1">
+                        {row.index == idx ? (
+                          <DotIcon
+                            className="size-4 text-blue-600 shadow-sm drop-shadow-md -mr-3"
+                            strokeWidth={17}
+                          />
+                        ) : (
+                          <div className="size-4" />
                         )}
                       </TableCell>
-                    ))}
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={cols.length}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={cols.length} className="h-24 text-center">
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
         <CommandBar
           commands={[
@@ -350,10 +351,10 @@ function GetStarted() {
   const router = useRouter();
   let [importOpen, setImportOpen] = useState(false);
   return (
-    <div className="w-full -mt-14 prose lg:prose-lg">
-      <p>No Coordinates to see yet!</p>
+    <div className="w-full prose lg:prose-lg p-5">
       <div className="flex flex-col gap-4 mx-auto not-prose w-full">
-        <p className="-mb-2">Get Started:</p>
+        <p className="text-lg font-bold">No Coordinates to Sift yet!</p>
+        <p className="text-lg font-bold">Get Started:</p>
         <Dialog open={importOpen} onOpenChange={setImportOpen}>
           <DialogTrigger asChild>
             <GSCard

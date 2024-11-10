@@ -130,5 +130,6 @@ export const useSift = create<SiftState>((set, get) => ({
       cols: defaultCols,
       sorting: [],
       filtering: [],
+      viewPanelState: "overview",
     })),
 }));
