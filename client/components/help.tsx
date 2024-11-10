@@ -22,7 +22,12 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { KeyboardIcon, LifeBuoyIcon, HeadsetIcon } from "lucide-react";
+import {
+  KeyboardIcon,
+  LifeBuoyIcon,
+  HeadsetIcon,
+  BookOpenIcon,
+} from "lucide-react";
 import {
   SiDiscord,
   SiGithub,
@@ -149,6 +154,16 @@ export default function Help() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]" align="end">
+          <DropdownMenuItem asChild>
+            <Link
+              href="https://docs.earthkit.app/toolkit/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <BookOpenIcon className="size-4 mr-2" />
+              Documentation
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShortcutOpen(true)}>
             <KeyboardIcon className="size-4 mr-2" />
             Keyboard Shortcuts
