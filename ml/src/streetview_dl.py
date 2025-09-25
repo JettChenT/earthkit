@@ -1,7 +1,4 @@
 import asyncio
-from .otel import instrument, OTEL_DEPS, get_tracer, ENVS
-instrument()
-
 import modal
 from modal import App
 from typing import List
@@ -14,7 +11,7 @@ from .rpc import MsgType, ProgressUpdate, ResultsUpdate
 
 app = App("streetview-locate")
 
-sv_image = modal.Image.debian_slim(python_version="3.11").pip_install_from_pyproject("pyproject.toml").env(ENVS)
+sv_image = modal.Image.debian_slim(python_version="3.11").pip_install_from_pyproject("pyproject.toml")
 
 
 def fetch_panoramas(coord: Point):
@@ -93,9 +90,7 @@ def crop_pano(pano: Image.Image, n_img=NUM_DIR) -> List[Image.Image]:
 @app.function(image=sv_image)
 async def streetview_locate(panos: Coords, image: bytes, inference_batch_size=360, download_only=False):
     # TODO: clarify flow & dedup based on panoid
-    tracer = get_tracer()
 
-    @tracer.start_as_current_span("fetch_image")
     async def fetch_image(idx:int, pano: Point):
         if "pano_id" not in pano.aux:
             pano.aux["pano_id"] = await fetch_single_pano(pano.lat, pano.lon)

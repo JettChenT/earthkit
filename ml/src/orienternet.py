@@ -1,5 +1,5 @@
 import modal
-from modal import Image, App, gpu, build, enter, method
+from modal import Image, App, enter, method
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,12 +21,8 @@ image = (Image.debian_slim(python_version="3.11")
 
 NUM_ROTATIONS = 256
 
-@app.cls(image=image, gpu=gpu.A100(size="80GB"), enable_memory_snapshot=True)
+@app.cls(image=image, gpu="A100-80GB", enable_memory_snapshot=True)
 class OrienterNetModel:
-    @build()
-    def build(self):
-        _ = Demo(num_rotations=NUM_ROTATIONS)
-
     @enter(snap=True)
     def load(self):
         self.demo = Demo(num_rotations=NUM_ROTATIONS)

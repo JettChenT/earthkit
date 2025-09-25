@@ -1,7 +1,3 @@
-from .otel import tracer_provider, instrument
-from .cfig import ENVS
-from .modal_otel import ModalInstrumentor, OTEL_DEPS
-instrument()
 import modal
 import time
 
@@ -10,7 +6,6 @@ app = modal.App("tst")
 image = (modal.Image
          .debian_slim(python_version="3.11")
          .pip_install_from_pyproject("pyproject.toml")
-         .env(ENVS)
 )
 
 @app.function(image=image)

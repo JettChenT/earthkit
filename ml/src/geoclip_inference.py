@@ -1,5 +1,5 @@
 import modal
-from modal import gpu, build, enter, method
+from modal import enter, method
 from .geoclip_mod.gclip import GeoCLIP
 from .geo import Coords
 from .rpc import ResultsUpdate, SiftResult
@@ -11,13 +11,9 @@ image = modal.Image.debian_slim(python_version="3.11").pip_install_from_pyprojec
 app = modal.App("geoclip", image=image)
 
 @app.cls(
-    gpu=gpu.A10G(),
+    gpu="A10G",
 )
 class GeoCLIPModel:
-    @build()
-    def build(self):
-        _ = GeoCLIP()
-    
     @enter()
     def setup(self):
         self.model = GeoCLIP()

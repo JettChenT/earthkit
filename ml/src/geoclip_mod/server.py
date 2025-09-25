@@ -3,31 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from .gclip_fast import GeoCLIP
 from src.endpoint import GeoclipRequest, get_ip, get_api_key
 from src.utils import enforce_im_url
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from src.auth import get_current_user
 from src.db import verify_cost, ratelimit
-from src.otel import otlp_exporter
 from src import schema
 from typing import Optional, List
 from .gclip_retr import infer_image
 import time
 import os
-
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.resources import Resource
-
-resource = Resource(attributes={
-    "service.name": "geoclip-api"
-})
-
-tracer_provider = TracerProvider(
-    resource=resource
-)
-meter_provider = MeterProvider(resource=resource)
-span_processor = BatchSpanProcessor(otlp_exporter)
-tracer_provider.add_span_processor(span_processor)
 
 app = FastAPI()
 
@@ -46,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider, meter_provider=meter_provider)
+
 
 
 @app.post("/geoclip")

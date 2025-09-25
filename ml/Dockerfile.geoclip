@@ -1,13 +1,26 @@
-FROM python:3.11-slim
+FROM python:3.12-slim-bookworm
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN pip install uv
+RUN apt-get update && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.lock ./
-RUN uv pip install --no-cache --system -r requirements.lock
 
-COPY src ./src
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+
+ADD ./README.md /app/
+ADD ./pyproject.toml /app/
+ADD ./.python-version /app/
+ADD ./uv.lock /app/
+
+RUN uv sync --locked --no-dev --no-install-project
+
+ADD ./src /app/src
+
+RUN uv sync --locked --no-dev
 
 EXPOSE 8000
 
-CMD ["python", "-m", "src.geoclip_mod.server"]
+CMD ["uv", "run", "--no-sync", "fastapi", "run", "src/geoclip_mod/server.py", "--port", "8000"]

@@ -1,5 +1,5 @@
 import modal
-from modal import Secret, App, gpu, build, enter, method
+from modal import Secret, App, enter, method
 import torch
 from torchvision import transforms
 from .timmod import TimmModel
@@ -14,15 +14,11 @@ image = (
     modal.Image
     .debian_slim(python_version="3.10")
     .pip_install_from_pyproject("pyproject.toml")
-    .copy_local_dir("./weights", "/weights")
+    .add_local_dir("./weights", "/weights", copy=True)
 )
 
-@app.cls(gpu=gpu.A10G(), image=image)
+@app.cls(gpu="A10G", image=image)
 class CrossViewModel:
-    @build()
-    def build(self):
-        self.model = TimmModel("convnext_base.fb_in22k_ft_in1k_384", pretrained=True, img_size=384)
-
     @enter()
     def enter(self):
         self.model = TimmModel("convnext_base.fb_in22k_ft_in1k_384", pretrained=True, img_size=384)

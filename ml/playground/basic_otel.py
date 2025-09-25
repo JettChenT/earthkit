@@ -1,15 +1,11 @@
 from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from dotenv import load_dotenv
 import asyncio
 import random
 
 load_dotenv()
-from .otel import tracer_provider
 
 app = FastAPI()
-
-FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider)
 
 @app.get("/")
 async def root():

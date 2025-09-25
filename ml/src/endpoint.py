@@ -9,8 +9,7 @@ from typing import List, Optional
 from . import schema, geo
 from .utils import json_encode, proc_im_url, proc_im_url_async
 from .rpc import ResultsUpdate, encode_msg, sse_encode
-from .otel import tracer_provider, meter_provider
-from .cfig import ENVS
+
 from . import lmm
 from .auth import get_current_user
 import math
@@ -18,7 +17,7 @@ from .db import verify_cost, get_usage, ratelimit
 import cattrs
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from typing import Any
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
 from fastapi.openapi.utils import get_openapi
 import os
 import sentry_sdk
@@ -26,8 +25,7 @@ import sentry_sdk
 image = (modal
          .Image
          .debian_slim(python_version="3.11")
-         .pip_install_from_pyproject("pyproject.toml")
-         .env(ENVS))
+         .pip_install_from_pyproject("pyproject.toml"))
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"))
@@ -42,7 +40,7 @@ web_app.add_middleware(
     allow_headers=["*"],
 )
 
-FastAPIInstrumentor.instrument_app(web_app, tracer_provider=tracer_provider, meter_provider=meter_provider)
+
 
 
 def get_ip(request: Request):
@@ -60,7 +58,7 @@ class SampleStreetviewsRequest(BaseModel):
 @web_app.post("/streetview/sample")
 def sample_streetviews(request: SampleStreetviewsRequest):
     from geopy.distance import Distance
-    f = modal.Function.lookup("streetview-locate", "sample_streetviews")
+    f = modal.Function.from_name("streetview-locate", "sample_streetviews")
     res: geo.Coords = f.remote(request.bounds.to_geo(), Distance(request.dist_km))
     return schema.Coords.from_geo(res)
 
@@ -75,7 +73,7 @@ class SVLocateRequest(BaseModel):
 async def streetview_locate_sse(request: SVLocateRequest, user: str = Depends(get_current_user)):
     await verify_cost(user, math.ceil(len(request.coords.coords)/60))
     async def event_generator():
-        f = modal.Function.lookup("streetview-locate", "streetview_locate")
+        f = modal.Function.from_name("streetview-locate", "streetview_locate")
         img = proc_im_url(request.image_url)
         cords_geo = request.coords.to_geo()
         async for res in f.remote_gen.aio(cords_geo, img):
@@ -93,11 +91,12 @@ async def geoclip_inference(request: GeoclipRequest, user: Optional[str] = Depen
         await ratelimit(request_ip)
     else:
         await verify_cost(user, 1)
-    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+    c = modal.Cls.from_name("geoclip", "GeoCLIPModel")
+    obj = c()
     print("downloading image...")
     img = await proc_im_url_async(request.image_url)
     print("running inference...")
-    res_gps, res_pred = await c.inference.remote.aio(img, request.top_k)
+    res_gps, res_pred = await obj.inference.remote.aio(img, request.top_k)
     pnts : List[schema.Point] = [
         schema.Point(lon=gps[1], lat=gps[0], aux={'pred':pred}) for gps, pred in zip(res_gps, res_pred)
     ]
@@ -110,27 +109,30 @@ class GeoclipSimilarityRequest(BaseModel):
 @web_app.post("/geoclip/similarity")
 async def geoclip_similarity(request: GeoclipSimilarityRequest, user: str = Depends(get_current_user)):
     await verify_cost(user, 1)
-    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+    c = modal.Cls.from_name("geoclip", "GeoCLIPModel")
+    obj = c()
     img = await proc_im_url_async(request.image_url)
-    res = await c.similarity.remote.aio(img, request.coords.to_geo())
+    res = await obj.similarity.remote.aio(img, request.coords.to_geo())
     return encode_msg(res)
 
 @web_app.post("/geoclip/similarity/streaming")
 async def geoclip_similarity_sse(request: GeoclipSimilarityRequest, user: str = Depends(get_current_user)):
     await verify_cost(user, 1)
     async def event_generator():
-        c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
+        c = modal.Cls.from_name("geoclip", "GeoCLIPModel")
+        obj = c()
         img = await proc_im_url_async(request.image_url)
         coords_geo = request.coords.to_geo()
-        res = c.similarity.remote(img, coords_geo)
+        res = obj.similarity.remote(img, coords_geo)
         yield f"data: {json_encode(encode_msg(res))}\n\n"
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @web_app.get("/geoclip/poke")
 def geoclip_poke():
-    c = modal.Cls.lookup("geoclip", "GeoCLIPModel")
-    c.inference.remote(None, poke=True)
+    c = modal.Cls.from_name("geoclip", "GeoCLIPModel")
+    obj = c()
+    obj.inference.remote(None, poke=True)
     return {"ok": True}
 
 class SatelliteLocateRequest(BaseModel):
@@ -140,7 +142,7 @@ class SatelliteLocateRequest(BaseModel):
 @web_app.post("/satellite/locate")
 async def satellite_locate(request: SatelliteLocateRequest, user: str = Depends(get_current_user)):
     await verify_cost(user, 1)
-    f = modal.Function.lookup("satellite", "satellite_locate")
+    f = modal.Function.from_name("satellite", "satellite_locate")
     img = await proc_im_url_async(request.image_url)
     res: geo.Coords = f.remote(img, request.bounds.to_geo())
     return schema.Coords.from_geo(res)
@@ -153,7 +155,7 @@ class SatelliteSimRequest(BaseModel):
 async def satellite_sim_sse(request: SatelliteSimRequest, user: str = Depends(get_current_user)):
     await verify_cost(user, 1)
     async def event_generator():
-        f = modal.Function.lookup("satellite", "satellite_sim")
+        f = modal.Function.from_name("satellite", "satellite_sim")
         img = await proc_im_url_async(request.image_url)
         res: ResultsUpdate = f.remote(img, request.coords.to_geo())
         yield sse_encode(res)
@@ -179,8 +181,9 @@ async def orienternet_locate(request: OrienterNetLocateRequest, user: Optional[s
         await verify_cost(user, 4)
     else:
         await ratelimit(request_ip, expensive=True)
-    c = modal.Cls.lookup("orienternet", "OrienterNetModel")
-    res: geo.Point = await c.locate.remote.aio(request.image_url, request.location_prior.to_geo(), request.tile_size)
+    c = modal.Cls.from_name("orienternet", "OrienterNetModel")
+    obj = c()
+    res: geo.Point = await obj.locate.remote.aio(request.image_url, request.location_prior.to_geo(), request.tile_size)
     return schema.Point.from_geo(res)
 
 @web_app.get("/test/echo-user")

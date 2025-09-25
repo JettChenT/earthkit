@@ -9,7 +9,7 @@ APP_NAMES = [
     "satellite",
     "streetview_dl",
     "vpr",
-    "crossview",
+    # "crossview",
     "satellite"
 ]
 
@@ -21,7 +21,8 @@ def deploy(apps: str, env_name: str = "dev", prod:bool=False):
 
     for app_name in app_list:
         if app_name in APP_NAMES:
-            os.system(f"modal deploy src.{app_name} --env {env_name}")
+            print(f"Deploying {app_name}")
+            os.system(f"modal deploy -m src.{app_name} --env {env_name}")
         else:
             typer.echo(f"App {app_name} not found in APP_NAMES")
 

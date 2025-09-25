@@ -1,16 +1,18 @@
 from concurrent.futures import ThreadPoolExecutor
 import modal
 from typing import List, Tuple, Any
-from .otel import instrument, OTEL_DEPS, ENVS
-instrument()
 import numpy as np
 from .common import cosine_similarity
 import os
-from modal import Secret, Stub, gpu, build, enter, method
+from modal import Secret, App, enter, method
 
-stub = Stub("vpr")
+app = App("vpr")
 
-inference_image = modal.Image.debian_slim(python_version="3.10").pip_install_from_pyproject("pyproject.toml").env(ENVS)
+# Create a volume for caching torch hub models
+torch_cache_vol = modal.Volume.from_name("torch-hub-cache", create_if_missing=True)
+
+inference_image = (modal.Image.debian_slim(python_version="3.10")
+                   .pip_install_from_pyproject("pyproject.toml"))
 
 with inference_image.imports():
     import torch
@@ -21,17 +23,14 @@ with inference_image.imports():
 
 ImgType = bytes | np.ndarray | Image.Image
 
-@stub.cls(gpu=gpu.A10G(), image=inference_image, enable_memory_snapshot=True, allow_concurrent_inputs=3)
+@app.cls(
+    gpu="A10G", 
+    image=inference_image.env({"TORCH_HOME": "/cache"}), 
+    enable_memory_snapshot=True,
+    volumes={"/cache": torch_cache_vol}
+)
+@modal.concurrent(max_inputs=3)
 class VPRModel: 
-    @build()
-    def build(self):
-        _ = torch.hub.load(
-            "gmberton/eigenplaces",
-            "get_trained_model",
-            backbone="ResNet50",
-            fc_output_dim=2048,
-        )
-
     @enter(snap=True)
     def load(self):
         self.model = torch.hub.load(
@@ -105,7 +104,7 @@ class VPRModel:
         return cos_sim.tolist()[0]
 
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main():
     import os
     import glob

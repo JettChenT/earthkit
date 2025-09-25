@@ -21,7 +21,7 @@ dependencies = [
     "torchmetrics>=1.0.3",
     "timm>=0.9.16",
     "matplotlib>=3.8.4",
-    "fastapi>=0.110.3",
+    "fastapi[standard]>=0.110.3",
     "pydantic>=2.7.1",
     "python-multipart>=0.0.9",
     "pyequilib",
@@ -34,7 +34,7 @@ dependencies = [
     "httpcore[socks]>=1.0.5",
     "pandarallel>=1.6.5",
     "websockets>=12.0",
-    "cattrs>=23.2.3",
+    "cattrs==23.2.3",
     "pyjwt[crypto]>=2.8.0",
     "supabase>=2.5.1",
     "redis>=5.0.6",
@@ -59,6 +59,7 @@ dependencies = [
     "scikit-learn",
     "exifread",
     "urllib3>=2",
+    "aiostream>=0.7.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"

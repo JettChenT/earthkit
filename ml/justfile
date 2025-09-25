@@ -1,2 +1,2 @@
 deploy *ARGS:
-    python scripts/deploy.py deploy {{ARGS}}
+    uv run scripts/deploy.py deploy {{ARGS}}
