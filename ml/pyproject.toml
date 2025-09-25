@@ -62,23 +62,7 @@ dependencies = [
     "aiostream>=0.7.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.11"
+requires-python = ">= 3.12"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-virtual = true
-dev-dependencies = [
-    "memray>=1.13.4",
-    "py-spy>=0.3.14",
-    "perspective2d @ git+https://github.com/jinlinyi/PerspectiveFields.git",
-]
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/ml"]
+[tool.uv]
+python-preference = "managed"
